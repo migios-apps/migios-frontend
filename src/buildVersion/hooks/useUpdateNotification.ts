@@ -25,7 +25,7 @@ export const useUpdateNotification = (
       const hasUpdate = await updateService.checkForUpdates()
       setIsUpdateAvailable(hasUpdate)
     } catch (error) {
-      console.error("Error checking for updates:", error)
+      console.warn("Error checking for updates:", error)
     } finally {
       setIsCheckingUpdate(false)
     }
@@ -39,7 +39,7 @@ export const useUpdateNotification = (
       }
       setIsUpdateAvailable(false)
     } catch (error) {
-      console.error("Error marking version as dismissed:", error)
+      console.warn("Error marking version as dismissed:", error)
       setIsUpdateAvailable(false)
     }
   }
@@ -72,7 +72,7 @@ export const useUpdateNotification = (
             }
           }
         })
-        .catch((err) => console.error("[SW ERROR]", err))
+        .catch((err) => console.warn("[SW ERROR]:::", err))
     }
 
     handleServiceWorkerUpdate()

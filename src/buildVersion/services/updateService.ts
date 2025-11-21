@@ -25,17 +25,13 @@ class UpdateServiceImpl implements UpdateService {
   }
 
   async getLatestBuildVersion(): Promise<string> {
-    if (import.meta.env.MODE === "development") {
-      return ""
-    }
-
     try {
       // Fetch the latest build version from the server
       const response = await fetch("/assets/buildVersion.json?" + Date.now())
       const data = await response.json()
       return data[this.currentEnvironment] || ""
     } catch (error) {
-      console.warn(`Build version file not found. Skipping update check.`)
+      console.warn("Error fetching latest build version:", error)
       return ""
     }
   }
