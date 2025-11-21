@@ -11,7 +11,6 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/layout/vertical/sidebar"
-import { SkipToMain } from "@/components/skip-to-main"
 import { ConfigDrawer } from "../config-drawer"
 import { ProfileDropdown } from "../profile-dropdown"
 import { Search } from "../search"
@@ -53,7 +52,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   if (isHorizontalLayout) {
     return (
       <SearchProvider>
-        <SkipToMain />
         <div className="flex min-h-svh flex-col">
           {/* Header dengan horizontal navigation */}
           <Header fixed showSidebarTrigger={false} className="border-b">
@@ -93,7 +91,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         open={themeConfig.sidebar_state}
         onOpenChange={handleOpenChange}
       >
-        <SkipToMain />
         <AppSidebar />
         <SidebarInset
           className={cn(

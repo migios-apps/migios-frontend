@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Facebook, Github } from "lucide-react"
 import * as yup from "yup"
-import { IconFacebook, IconGithub } from "@/assets/brand-icons"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormFieldItem } from "@/components/ui/form"
@@ -120,7 +120,7 @@ export function SignUpForm({
             type="button"
             disabled={isLoading}
           >
-            <IconGithub className="h-4 w-4" /> GitHub
+            <Github className="h-4 w-4" /> GitHub
           </Button>
           <Button
             variant="outline"
@@ -128,7 +128,7 @@ export function SignUpForm({
             type="button"
             disabled={isLoading}
           >
-            <IconFacebook className="h-4 w-4" /> Facebook
+            <Facebook className="h-4 w-4" /> Facebook
           </Button>
         </div>
       </form>
