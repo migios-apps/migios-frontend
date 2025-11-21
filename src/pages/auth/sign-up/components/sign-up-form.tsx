@@ -15,14 +15,14 @@ const formSchema = yup.object({
     .email("Email tidak valid")
     .required("Please enter your email"),
   password: yup
-      .string()
+    .string()
     .required("Please enter your password")
-      .min(7, "Password must be at least 7 characters long"),
+    .min(7, "Password must be at least 7 characters long"),
   confirmPassword: yup
     .string()
     .required("Please confirm your password")
     .oneOf([yup.ref("password")], "Passwords don't match."),
-  })
+})
 
 export type SignUpSchema = yup.InferType<typeof formSchema>
 
@@ -56,8 +56,8 @@ export function SignUpForm({
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn("flex flex-col gap-4", className)}
-      {...props}
-    >
+        {...props}
+      >
         <FormFieldItem
           control={form.control}
           name="email"
@@ -98,39 +98,39 @@ export function SignUpForm({
             />
           )}
         />
-      <Button disabled={isLoading} type="submit">
-        Create Account
-      </Button>
-
-      <div className="relative my-2">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <Button
-          variant="outline"
-          className="w-full"
-          type="button"
-          disabled={isLoading}
-        >
-          <IconGithub className="h-4 w-4" /> GitHub
+        <Button disabled={isLoading} type="submit">
+          Create Account
         </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          type="button"
-          disabled={isLoading}
-        >
-          <IconFacebook className="h-4 w-4" /> Facebook
-        </Button>
-      </div>
+
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background text-muted-foreground px-2">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            disabled={isLoading}
+          >
+            <IconGithub className="h-4 w-4" /> GitHub
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            type="button"
+            disabled={isLoading}
+          >
+            <IconFacebook className="h-4 w-4" /> Facebook
+          </Button>
+        </div>
       </form>
     </Form>
   )
