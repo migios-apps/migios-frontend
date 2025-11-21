@@ -6,13 +6,13 @@ import { useNavigate } from "react-router-dom"
 import { showSubmittedData } from "@/lib/show-submitted-data"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Form, FormItem } from "@/components/ui/form"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { Form, FormItem } from "@/components/ui/rh-form"
 
 const formSchema = z.object({
   otp: z

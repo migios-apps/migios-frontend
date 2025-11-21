@@ -1,6 +1,5 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
-import { DialogContent, DialogTitle } from "@radix-ui/react-dialog"
+import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { CreateCategory } from "@/services/api/@types/finance"
 import {
@@ -14,9 +13,15 @@ import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogFooter, DialogHeader } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import {
   CreateCategorySchema,
   ReturnCategoryFormSchema,
@@ -115,68 +120,65 @@ const CategoryForm: React.FC<FormProps> = ({
               {type === "create" ? "Create Category" : "Update Category"}
             </DialogTitle>
           </DialogHeader>
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <div className="">
-              <FormItem
-                asterisk
-                label="Name"
+          <Form {...formProps}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormFieldItem
+                control={control}
+                name="name"
+                label={
+                  <FormLabel>
+                    Name <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.name)}
                 errorMessage={errors.name?.message}
-              >
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="text"
-                      autoComplete="off"
-                      placeholder="Name"
-                      {...field}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Type"
-                className="w-full"
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Name"
+                    {...field}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="type"
+                label={
+                  <FormLabel>
+                    Type <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.type)}
                 errorMessage={errors.type?.message}
-              >
-                <Controller
-                  name="type"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex w-full items-center gap-2">
-                      <Button
-                        variant={
-                          field.value === "income" ? "default" : "outline"
-                        }
-                        type="button"
-                        className="w-full"
-                        onClick={() => field.onChange("income")}
-                      >
-                        Income
-                      </Button>
-                      <Button
-                        variant={
-                          field.value === "expense" ? "default" : "outline"
-                        }
-                        type="button"
-                        className={cn(
-                          "w-full",
-                          field.value === "expense" &&
-                            "bg-yellow-500 hover:bg-yellow-600"
-                        )}
-                        onClick={() => field.onChange("expense")}
-                      >
-                        Expense
-                      </Button>
-                    </div>
-                  )}
-                />
-              </FormItem>
-            </div>
+                render={({ field }) => (
+                  <div className="flex w-full items-center gap-2">
+                    <Button
+                      variant={field.value === "income" ? "default" : "outline"}
+                      type="button"
+                      className="w-full"
+                      onClick={() => field.onChange("income")}
+                    >
+                      Income
+                    </Button>
+                    <Button
+                      variant={
+                        field.value === "expense" ? "default" : "outline"
+                      }
+                      type="button"
+                      className={cn(
+                        "w-full",
+                        field.value === "expense" &&
+                          "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      )}
+                      onClick={() => field.onChange("expense")}
+                    >
+                      Expense
+                    </Button>
+                  </div>
+                )}
+              />
+            </form>
           </Form>
           <DialogFooter className="flex items-center justify-between">
             {type === "update" ? (

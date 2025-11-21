@@ -1,30 +1,30 @@
 import { useState } from "react"
-import { z } from "zod"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { yupResolver } from "@hookform/resolvers/yup"
+import * as yup from "yup"
 import { IconFacebook, IconGithub } from "@/assets/brand-icons"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import { PasswordInput } from "@/components/password-input"
 
-const formSchema = z
-  .object({
-    email: z.email({
-      error: (iss) =>
-        iss.input === "" ? "Please enter your email" : undefined,
-    }),
-    password: z
+const formSchema = yup.object({
+  email: yup
+    .string()
+    .email("Email tidak valid")
+    .required("Please enter your email"),
+  password: yup
       .string()
-      .min(1, "Please enter your password")
+    .required("Please enter your password")
       .min(7, "Password must be at least 7 characters long"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+  confirmPassword: yup
+    .string()
+    .required("Please confirm your password")
+    .oneOf([yup.ref("password")], "Passwords don't match."),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
-    path: ["confirmPassword"],
-  })
+
+export type SignUpSchema = yup.InferType<typeof formSchema>
 
 export function SignUpForm({
   className,
@@ -32,12 +32,8 @@ export function SignUpForm({
 }: React.HTMLAttributes<HTMLFormElement>) {
   const [isLoading, setIsLoading] = useState(false)
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SignUpSchema>({
+    resolver: yupResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -45,7 +41,7 @@ export function SignUpForm({
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  function onSubmit(data: SignUpSchema) {
     setIsLoading(true)
 
     console.log(data)
@@ -56,20 +52,16 @@ export function SignUpForm({
   }
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit)}
-      containerClassName={cn("flex flex-col gap-4", className)}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={cn("flex flex-col gap-4", className)}
       {...props}
     >
-      <FormItem
-        label="Email"
-        asterisk
-        invalid={Boolean(errors.email)}
-        errorMessage={errors.email?.message}
-      >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="email"
-          control={control}
+          label="Email"
           render={({ field }) => (
             <Input
               type="email"
@@ -80,16 +72,10 @@ export function SignUpForm({
             />
           )}
         />
-      </FormItem>
-      <FormItem
-        label="Password"
-        asterisk
-        invalid={Boolean(errors.password)}
-        errorMessage={errors.password?.message}
-      >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="password"
-          control={control}
+          label="Password"
           render={({ field }) => (
             <PasswordInput
               placeholder="********"
@@ -99,16 +85,10 @@ export function SignUpForm({
             />
           )}
         />
-      </FormItem>
-      <FormItem
-        label="Confirm Password"
-        asterisk
-        invalid={Boolean(errors.confirmPassword)}
-        errorMessage={errors.confirmPassword?.message}
-      >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="confirmPassword"
-          control={control}
+          label="Confirm Password"
           render={({ field }) => (
             <PasswordInput
               placeholder="********"
@@ -118,7 +98,6 @@ export function SignUpForm({
             />
           )}
         />
-      </FormItem>
       <Button disabled={isLoading} type="submit">
         Create Account
       </Button>
@@ -152,6 +131,7 @@ export function SignUpForm({
           <IconFacebook className="h-4 w-4" /> Facebook
         </Button>
       </div>
+      </form>
     </Form>
   )
 }

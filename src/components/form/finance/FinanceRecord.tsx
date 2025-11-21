@@ -1,5 +1,5 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
+import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   CategoryDetail,
@@ -29,12 +29,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
 import {
   type ReturnAsyncSelect,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import { Textarea } from "@/components/ui/textarea"
 import {
   CreateFinancialRecordSchema,
@@ -148,17 +148,19 @@ const FinanceRecord: React.FC<FormProps> = ({
         sort_column: "id",
         sort_type: "desc",
         search: [
-          (inputValue || "").length > 0
-            ? ({
-                search_column: "name",
-                search_condition: "like",
-                search_text: `${inputValue}`,
-              } as any)
-            : null,
+          ...((inputValue || "").length > 0
+            ? [
+                {
+                  search_column: "name",
+                  search_condition: "like" as const,
+                  search_text: `${inputValue}`,
+                },
+              ]
+            : []),
           {
-            search_operator: "and",
+            search_operator: "and" as const,
             search_column: "type",
-            search_condition: "=",
+            search_condition: "=" as const,
             search_text: `${watchData.type}`,
           },
         ],
@@ -188,17 +190,19 @@ const FinanceRecord: React.FC<FormProps> = ({
         sort_column: "id",
         sort_type: "desc",
         search: [
-          (inputValue || "").length > 0
-            ? ({
-                search_column: "name",
-                search_condition: "like",
-                search_text: `${inputValue}`,
-              } as any)
-            : null,
+          ...((inputValue || "").length > 0
+            ? [
+                {
+                  search_column: "name",
+                  search_condition: "like" as const,
+                  search_text: `${inputValue}`,
+                },
+              ]
+            : []),
           {
-            search_operator: "and",
+            search_operator: "and" as const,
             search_column: "enabled",
-            search_condition: "=",
+            search_condition: "=" as const,
             search_text: "true",
           },
         ],
@@ -226,157 +230,148 @@ const FinanceRecord: React.FC<FormProps> = ({
                 : "Update Financial Record"}
             </DialogTitle>
           </DialogHeader>
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <div className="">
-              <FormItem
-                asterisk
-                label="Date"
-                className="w-full"
+          <Form {...formProps}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormFieldItem
+                control={control}
+                name="date"
+                label={
+                  <FormLabel>
+                    Date <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.date)}
                 errorMessage={errors.date?.message}
-              >
-                <Controller
-                  name="date"
-                  control={control}
-                  render={({ field }) => (
-                    <DatePicker
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      placeholder="Date"
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Type"
-                className="w-full"
+                render={({ field, fieldState }) => (
+                  <DatePicker
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    placeholder="Date"
+                    error={!!fieldState.error}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="type"
+                label={
+                  <FormLabel>
+                    Type <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.type)}
                 errorMessage={errors.type?.message}
-              >
-                <Controller
-                  name="type"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex w-full items-center gap-2">
-                      <Button
-                        variant={
-                          field.value === "income" ? "default" : "outline"
-                        }
-                        type="button"
-                        className="w-full"
-                        onClick={() => field.onChange("income")}
-                      >
-                        Income
-                      </Button>
-                      <Button
-                        variant={
-                          field.value === "expense" ? "default" : "outline"
-                        }
-                        type="button"
-                        className={cn(
-                          "w-full",
-                          field.value === "expense" &&
-                            "bg-yellow-500 hover:bg-yellow-600"
-                        )}
-                        onClick={() => field.onChange("expense")}
-                      >
-                        Expense
-                      </Button>
-                    </div>
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Category"
+                render={({ field }) => (
+                  <div className="grid grid-cols-2 items-center gap-2">
+                    <Button
+                      variant={field.value === "income" ? "default" : "outline"}
+                      type="button"
+                      onClick={() => field.onChange("income")}
+                      className={cn(
+                        "w-full",
+                        field.value === "income" &&
+                          "bg-green-500 hover:bg-green-500/90"
+                      )}
+                    >
+                      Income
+                    </Button>
+                    <Button
+                      variant={
+                        field.value === "expense" ? "destructive" : "outline"
+                      }
+                      type="button"
+                      onClick={() => field.onChange("expense")}
+                    >
+                      Expense
+                    </Button>
+                  </div>
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="category"
+                label={
+                  <FormLabel>
+                    Category <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.category)}
                 errorMessage={errors.category?.message}
-              >
-                <Controller
-                  name="category"
-                  control={control}
-                  render={({ field }) => (
-                    <SelectAsyncPaginate
-                      isClearable
-                      //   isLoading={isLoading}
-                      isDisabled={!watchData.type}
-                      loadOptions={getCategoryList as any}
-                      additional={{ page: 1 }}
-                      placeholder="Select Category"
-                      value={field.value}
-                      cacheUniqs={[watchData.type]}
-                      getOptionLabel={(option) => option.name!}
-                      getOptionValue={(option) => option.id.toString()}
-                      debounceTimeout={500}
-                      onChange={(option) => field.onChange(option)}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Rekening"
+                render={({ field, fieldState }) => (
+                  <SelectAsyncPaginate
+                    isClearable
+                    isDisabled={!watchData.type}
+                    loadOptions={getCategoryList}
+                    additional={{ page: 1 }}
+                    placeholder="Select Category"
+                    value={field.value as CategoryDetail | undefined}
+                    cacheUniqs={[watchData.type]}
+                    getOptionLabel={(option) => option.name!}
+                    getOptionValue={(option) => option.id.toString()}
+                    debounceTimeout={500}
+                    onChange={(option) => field.onChange(option)}
+                    error={!!fieldState.error}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="rekening"
+                label={
+                  <FormLabel>
+                    Rekening <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.rekening)}
                 errorMessage={errors.rekening?.message}
-              >
-                <Controller
-                  name="rekening"
-                  control={control}
-                  render={({ field }) => (
-                    <SelectAsyncPaginate
-                      isClearable
-                      //   isLoading={isLoading}
-                      loadOptions={getRekeningList as any}
-                      additional={{ page: 1 }}
-                      placeholder="Select Rekening"
-                      value={field.value}
-                      //   cacheUniqs={[watchData.category]}
-                      getOptionLabel={(option) => option.name!}
-                      getOptionValue={(option) => option.id.toString()}
-                      debounceTimeout={500}
-                      onChange={(option) => field.onChange(option)}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Amount"
+                render={({ field, fieldState }) => (
+                  <SelectAsyncPaginate
+                    isClearable
+                    loadOptions={getRekeningList}
+                    additional={{ page: 1 }}
+                    placeholder="Select Rekening"
+                    value={field.value as RekeningDetail | undefined}
+                    getOptionLabel={(option) => option.name!}
+                    getOptionValue={(option) => option.id.toString()}
+                    debounceTimeout={500}
+                    onChange={(option) => field.onChange(option)}
+                    error={!!fieldState.error}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="amount"
+                label={
+                  <FormLabel>
+                    Amount <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.amount)}
                 errorMessage={errors.amount?.message}
-              >
-                <Controller
-                  name="amount"
-                  control={control}
-                  render={({ field }) => (
-                    <InputCurrency
-                      placeholder="Rp. 0"
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                label="Description"
-                className="mb-2 w-full"
+                render={({ field }) => (
+                  <InputCurrency
+                    placeholder="Rp. 0"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="description"
+                label={<FormLabel>Description</FormLabel>}
                 invalid={Boolean(errors.description)}
                 errorMessage={errors.description?.message}
-              >
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field }) => (
-                    <Textarea
-                      placeholder="description"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
-                  )}
-                />
-              </FormItem>
-            </div>
+                render={({ field }) => (
+                  <Textarea
+                    placeholder="Description"
+                    {...field}
+                    value={field.value ?? ""}
+                  />
+                )}
+              />
+            </form>
           </Form>
           <DialogFooter className="flex items-center justify-between">
             {type === "update" ? (

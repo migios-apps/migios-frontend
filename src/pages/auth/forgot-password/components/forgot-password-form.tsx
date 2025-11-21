@@ -1,20 +1,23 @@
 import { useState } from "react"
-import { z } from "zod"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
+import * as yup from "yup"
 import { cn, sleep } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Form, FormItem } from "@/components/ui/rh-form"
 
-const formSchema = z.object({
-  email: z.email({
-    error: (iss) => (iss.input === "" ? "Please enter your email" : undefined),
-  }),
+const formSchema = yup.object({
+  email: yup
+    .string()
+    .email("Email tidak valid")
+    .required("Please enter your email"),
 })
+
+export type ForgotPasswordSchema = yup.InferType<typeof formSchema>
 
 export function ForgotPasswordForm({
   className,
@@ -23,17 +26,12 @@ export function ForgotPasswordForm({
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ForgotPasswordSchema>({
+    resolver: yupResolver(formSchema),
     defaultValues: { email: "" },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  function onSubmit(data: ForgotPasswordSchema) {
     setIsLoading(true)
 
     console.log(data)
@@ -42,7 +40,7 @@ export function ForgotPasswordForm({
       loading: "Sending email...",
       success: () => {
         setIsLoading(false)
-        reset()
+        form.reset()
         navigate("/otp")
         return `Email sent to ${data.email}`
       },
@@ -51,20 +49,16 @@ export function ForgotPasswordForm({
   }
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit)}
-      containerClassName={cn("flex flex-col gap-4", className)}
-      {...props}
-    >
-      <FormItem
-        label="Email"
-        asterisk
-        invalid={Boolean(errors.email)}
-        errorMessage={errors.email?.message}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={cn("flex flex-col gap-4", className)}
+        {...props}
       >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="email"
-          control={control}
+          label="Email"
           render={({ field }) => (
             <Input
               type="email"
@@ -75,11 +69,11 @@ export function ForgotPasswordForm({
             />
           )}
         />
-      </FormItem>
-      <Button disabled={isLoading} type="submit">
-        Continue
-        {isLoading ? <Loader2 className="animate-spin" /> : <ArrowRight />}
-      </Button>
+        <Button disabled={isLoading} type="submit">
+          Continue
+          {isLoading ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+        </Button>
+      </form>
     </Form>
   )
 }

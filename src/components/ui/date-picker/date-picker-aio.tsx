@@ -308,6 +308,7 @@ const DatePickerAIO = ({
               mode="single"
               selected={date?.toDate()}
               onSelect={(date) => date && onChangeDateCalender(dayjs(date))}
+              captionLayout="dropdown"
             />
             <div className="flex justify-between gap-4 px-4 py-2">
               <span>{date?.format("DD MMMM YYYY")}</span>

@@ -1,5 +1,5 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
+import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { CreateEmployee } from "@/services/api/@types/employee"
 import {
@@ -30,13 +30,18 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Form,
+  FormControl,
+  FormFieldItem,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputGroup } from "@/components/ui/input-group"
-import { Label } from "@/components/ui/label"
 import PhoneInput from "@/components/ui/phone-input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select } from "@/components/ui/react-select"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import { Textarea } from "@/components/ui/textarea"
 import {
   CreateEmployeeSchema,
@@ -174,44 +179,42 @@ const FormEmployee: React.FC<FormProps> = ({
               {type === "create" ? "Create Employee" : "Update Employee"}
             </DialogTitle>
           </DialogHeader>
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <div className="w-full">
-              <div className="flex w-full flex-col items-center gap-0 md:flex-row md:gap-4">
-                <FormItem
-                  // asterisk
-                  label=""
-                  invalid={Boolean(errors.photo)}
-                  errorMessage={errors.photo?.message}
-                  className="mx-6"
-                >
-                  <Controller
-                    name="photo"
+          <Form {...formProps}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="w-full">
+                <div className="flex w-full flex-col items-center gap-0 md:flex-row md:gap-4">
+                  <FormFieldItem
                     control={control}
+                    name="photo"
+                    label={<FormLabel></FormLabel>}
+                    invalid={Boolean(errors.photo)}
+                    errorMessage={errors.photo?.message}
                     render={() => (
-                      <Avatar className="h-20 w-20">
-                        <AvatarFallback>
-                          <UserCirlceAdd
-                            color="currentColor"
-                            size="24"
-                            variant="Bold"
-                          />
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="mx-6">
+                        <Avatar className="h-20 w-20">
+                          <AvatarFallback>
+                            <UserCirlceAdd
+                              color="currentColor"
+                              size="24"
+                              variant="Bold"
+                            />
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                     )}
                   />
-                </FormItem>
-                <div className="w-full">
-                  <FormItem
-                    asterisk
-                    label="Type"
-                    className="w-full"
-                    invalid={Boolean(errors.type)}
-                    errorMessage={errors.type?.message}
-                  >
-                    <Controller
-                      name="type"
+                  <div className="w-full">
+                    <FormFieldItem
                       control={control}
-                      render={({ field }) => (
+                      name="type"
+                      label={
+                        <FormLabel>
+                          Type <span className="text-destructive">*</span>
+                        </FormLabel>
+                      }
+                      invalid={Boolean(errors.type)}
+                      errorMessage={errors.type?.message}
+                      render={({ field, fieldState }) => (
                         <Select
                           {...field}
                           isSearchable={false}
@@ -221,19 +224,20 @@ const FormEmployee: React.FC<FormProps> = ({
                           )}
                           options={userTypeOptions}
                           onChange={(option) => field.onChange(option?.value)}
+                          error={!!fieldState.error}
                         />
                       )}
                     />
-                  </FormItem>
-                  <FormItem
-                    asterisk
-                    label="Name"
-                    invalid={Boolean(errors.name)}
-                    errorMessage={errors.name?.message}
-                  >
-                    <Controller
-                      name="name"
+                    <FormFieldItem
                       control={control}
+                      name="name"
+                      label={
+                        <FormLabel>
+                          Name <span className="text-destructive">*</span>
+                        </FormLabel>
+                      }
+                      invalid={Boolean(errors.name)}
+                      errorMessage={errors.name?.message}
                       render={({ field }) => (
                         <Input
                           type="text"
@@ -243,18 +247,18 @@ const FormEmployee: React.FC<FormProps> = ({
                         />
                       )}
                     />
-                  </FormItem>
+                  </div>
                 </div>
-              </div>
-              <FormItem
-                asterisk
-                label="Email"
-                invalid={Boolean(errors.email)}
-                errorMessage={errors.email?.message}
-              >
-                <Controller
-                  name="email"
+                <FormFieldItem
                   control={control}
+                  name="email"
+                  label={
+                    <FormLabel>
+                      Email <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.email)}
+                  errorMessage={errors.email?.message}
                   render={({ field }) => (
                     <Input
                       type="email"
@@ -264,37 +268,37 @@ const FormEmployee: React.FC<FormProps> = ({
                     />
                   )}
                 />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Phone Number"
-                invalid={Boolean(errors.phone)}
-                errorMessage={errors.phone?.message}
-              >
-                <Controller
-                  name="phone"
+                <FormFieldItem
                   control={control}
+                  name="phone"
+                  label={
+                    <FormLabel>
+                      Phone Number <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.phone)}
+                  errorMessage={errors.phone?.message}
                   render={({ field }) => (
                     <PhoneInput placeholder="+62 *** *** ***" {...field} />
                   )}
                 />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="No. Identity"
-                invalid={
-                  Boolean(errors.identity_type) ||
-                  Boolean(errors.identity_number)
-                }
-                errorMessage={
-                  errors.identity_type?.message ||
-                  errors.identity_number?.message
-                }
-              >
-                <Controller
-                  name="identity_number"
+                <FormFieldItem
                   control={control}
-                  render={({ field }) => {
+                  name="identity_number"
+                  label={
+                    <FormLabel>
+                      No. Identity <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={
+                    Boolean(errors.identity_type) ||
+                    Boolean(errors.identity_number)
+                  }
+                  errorMessage={
+                    errors.identity_type?.message ||
+                    errors.identity_number?.message
+                  }
+                  render={({ field, fieldState }) => {
                     const dropdownItems = [
                       { key: "ktp", name: "KTP" },
                       { key: "sim", name: "SIM" },
@@ -303,12 +307,12 @@ const FormEmployee: React.FC<FormProps> = ({
                     return (
                       <InputGroup>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="flex items-center gap-2 rounded-tr-none rounded-br-none px-3"
-                            >
+                          <DropdownMenuTrigger
+                            asChild
+                            className="rounded-tr-none rounded-br-none"
+                            aria-invalid={!!fieldState.error}
+                          >
+                            <Button type="button" variant="outline">
                               <span>
                                 {
                                   dropdownItems.find(
@@ -327,8 +331,11 @@ const FormEmployee: React.FC<FormProps> = ({
                           <DropdownMenuContent align="start">
                             <DropdownMenuRadioGroup
                               value={watchData.identity_type}
-                              onValueChange={(val: any) => {
-                                formProps.setValue("identity_type", val)
+                              onValueChange={(val) => {
+                                formProps.setValue(
+                                  "identity_type",
+                                  val as "ktp" | "sim" | "passport"
+                                )
                               }}
                             >
                               {dropdownItems.map((item) => (
@@ -346,71 +353,77 @@ const FormEmployee: React.FC<FormProps> = ({
                           type="text"
                           autoComplete="off"
                           placeholder="No. Identity"
+                          className="rounded-tl-none rounded-bl-none"
+                          aria-invalid={!!fieldState.error}
                           {...field}
                         />
                       </InputGroup>
                     )
                   }}
                 />
-              </FormItem>
-              <div className="flex w-full flex-col items-center gap-0 md:flex-row md:gap-6">
-                <FormItem
-                  asterisk
-                  label="Gender"
-                  invalid={Boolean(errors.gender)}
-                  errorMessage={errors.gender?.message}
-                >
-                  <Controller
-                    name="gender"
+                <div className="flex w-full flex-col items-center gap-0 md:flex-row md:gap-6">
+                  <FormFieldItem
                     control={control}
+                    name="gender"
+                    label={
+                      <FormLabel>
+                        Gender <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.gender)}
+                    errorMessage={errors.gender?.message}
                     render={({ field }) => (
                       <RadioGroup
-                        value={field.value}
                         onValueChange={field.onChange}
-                        className="flex gap-4"
+                        value={field.value ? String(field.value) : undefined}
+                        className="flex space-y-1"
                       >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="m" id="male" />
-                          <Label htmlFor="male">Male</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="f" id="female" />
-                          <Label htmlFor="female">Female</Label>
-                        </div>
+                        <FormItem className="flex items-center space-y-0 space-x-3">
+                          <FormControl>
+                            <RadioGroupItem value="m" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Male</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-y-0 space-x-3">
+                          <FormControl>
+                            <RadioGroupItem value="f" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Female</FormLabel>
+                        </FormItem>
                       </RadioGroup>
                     )}
                   />
-                </FormItem>
-                <FormItem
-                  asterisk
-                  label="Birth Date"
-                  className="w-full"
-                  invalid={Boolean(errors.birth_date)}
-                  errorMessage={errors.birth_date?.message}
-                >
-                  <Controller
-                    name="birth_date"
+                  <FormFieldItem
                     control={control}
-                    render={({ field }) => (
+                    name="birth_date"
+                    label={
+                      <FormLabel>
+                        Birth Date <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.birth_date)}
+                    errorMessage={errors.birth_date?.message}
+                    render={({ field, fieldState }) => (
                       <DatePicker
                         selected={field.value}
                         onSelect={field.onChange}
                         placeholder="Birth Date"
+                        className="w-full"
+                        error={!!fieldState.error}
                       />
                     )}
                   />
-                </FormItem>
-              </div>
-              <FormItem
-                asterisk
-                label="Address"
-                className="w-full"
-                invalid={Boolean(errors.address)}
-                errorMessage={errors.address?.message}
-              >
-                <Controller
-                  name="address"
+                </div>
+                <FormFieldItem
                   control={control}
+                  name="address"
+                  label={
+                    <FormLabel>
+                      Address <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.address)}
+                  errorMessage={errors.address?.message}
                   render={({ field }) => (
                     <Textarea
                       placeholder="Address"
@@ -419,65 +432,67 @@ const FormEmployee: React.FC<FormProps> = ({
                     />
                   )}
                 />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Specialist"
-                className="w-full"
-                invalid={Boolean(errors.specialist)}
-                errorMessage={errors.specialist?.message}
-              >
-                <Controller
-                  name="specialist"
+                <FormFieldItem
                   control={control}
-                  render={({ field }) => (
-                    <Select
-                      isMulti={true}
-                      value={
-                        field.value
-                          ?.split(",")
-                          .map((option) => ({
-                            label: option.trim(),
-                            value: option.trim(),
-                          }))
-                          .filter((item) => item.value !== "") || []
-                      }
-                      options={selectedOptions}
-                      hideSelectedOptions={true}
-                      backspaceRemovesValue={false}
-                      onChange={(e) => {
-                        const vaue = e as unknown as OptionType[]
-                        const newVal = vaue?.filter((item) => item.value !== "")
-                        setSelectedOptions(newVal)
-                        field.onChange(
-                          newVal.map((item) => item.value).join(", ")
-                        )
-                      }}
-                      onInputChange={(newValue, actionMeta) => {
-                        if (actionMeta.action === "input-change") {
-                          const options = newValue.split(",").map((option) => ({
-                            label: option.trim(),
-                            value: option.trim(),
-                          }))
-                          setSelectedOptions(options)
+                  name="specialist"
+                  label={
+                    <FormLabel>
+                      Specialist <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.specialist)}
+                  errorMessage={errors.specialist?.message}
+                  render={({ field, fieldState }) => (
+                    <>
+                      <Select
+                        isMulti={true}
+                        value={
+                          field.value
+                            ?.split(",")
+                            .map((option) => ({
+                              label: option.trim(),
+                              value: option.trim(),
+                            }))
+                            .filter((item) => item.value !== "") || []
                         }
-                      }}
-                    />
+                        options={selectedOptions}
+                        hideSelectedOptions={true}
+                        backspaceRemovesValue={false}
+                        onChange={(e) => {
+                          const vaue = e as unknown as OptionType[]
+                          const newVal = vaue?.filter(
+                            (item) => item.value !== ""
+                          )
+                          setSelectedOptions(newVal)
+                          field.onChange(
+                            newVal.map((item) => item.value).join(", ")
+                          )
+                        }}
+                        onInputChange={(newValue, actionMeta) => {
+                          if (actionMeta.action === "input-change") {
+                            const options = newValue
+                              .split(",")
+                              .map((option) => ({
+                                label: option.trim(),
+                                value: option.trim(),
+                              }))
+                            setSelectedOptions(options)
+                          }
+                        }}
+                        error={!!fieldState.error}
+                      />
+                      <span className="text-xs text-gray-500">
+                        Pisahkan dengan Enter
+                      </span>
+                    </>
                   )}
                 />
-                <span className="text-xs text-gray-500">
-                  Pisahkan dengan Enter
-                </span>
-              </FormItem>
-              <FormItem
-                label="Description (Optional)"
-                className="w-full"
-                invalid={Boolean(errors.description)}
-                errorMessage={errors.description?.message}
-              >
-                <Controller
-                  name="description"
+                <FormFieldItem
                   control={control}
+                  name="description"
+                  label={<FormLabel>Description (Optional)</FormLabel>}
+                  invalid={Boolean(errors.description)}
+                  errorMessage={errors.description?.message}
                   render={({ field }) => (
                     <Textarea
                       placeholder="Description"
@@ -486,46 +501,47 @@ const FormEmployee: React.FC<FormProps> = ({
                     />
                   )}
                 />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Join Date"
-                className="w-full"
-                invalid={Boolean(errors.join_date)}
-                errorMessage={errors.join_date?.message}
-              >
-                <Controller
-                  name="join_date"
+                <FormFieldItem
                   control={control}
-                  render={({ field }) => (
+                  name="join_date"
+                  label={
+                    <FormLabel>
+                      Join Date <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.join_date)}
+                  errorMessage={errors.join_date?.message}
+                  render={({ field, fieldState }) => (
                     <DatePicker
                       selected={field.value}
                       onSelect={field.onChange}
                       placeholder="Join Date"
+                      error={!!fieldState.error}
                     />
                   )}
                 />
-              </FormItem>
-              <FormItem
-                label=""
-                className="w-full"
-                invalid={Boolean(errors.enabled)}
-                errorMessage={errors.enabled?.message}
-              >
-                <Controller
-                  name="enabled"
+                <FormFieldItem
                   control={control}
+                  name="enabled"
+                  label={<FormLabel></FormLabel>}
+                  invalid={Boolean(errors.enabled)}
+                  errorMessage={errors.enabled?.message}
                   render={({ field }) => (
-                    <Checkbox
-                      checked={field.value ?? false}
-                      onCheckedChange={field.onChange}
-                    >
-                      {field.value ? "Enabled" : "Disabled"}
-                    </Checkbox>
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                        >
+                          {field.value ? "Enabled" : "Disabled"}
+                        </Checkbox>
+                      </FormControl>
+                      <FormLabel className="font-normal">Enabled</FormLabel>
+                    </FormItem>
                   )}
                 />
-              </FormItem>
-            </div>
+              </div>
+            </form>
           </Form>
           <DialogFooter className="flex items-center justify-between">
             {type === "update" ? (

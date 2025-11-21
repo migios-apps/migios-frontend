@@ -1,9 +1,11 @@
 import React, { useMemo } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useAuth } from "@/auth"
+import dashboardDark from "@/pages/auth/sign-in/assets/dashboard-dark.png"
+import dashboardLight from "@/pages/auth/sign-in/assets/dashboard-light.png"
 import { Filter } from "@/services/api/@types/api"
 import { apiGetUserClubList } from "@/services/api/ClubService"
-import { Add, LogoutCurve } from "iconsax-reactjs"
+import { Add, LogoutCurve, SearchStatus1 } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -12,7 +14,10 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import InputDebounce from "@/components/ui/input-debounce"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import AlertDialogExpiredSubscription from "@/components/AlertDialogExpiredSubscription"
+import Logo from "@/components/layout/Logo"
+import { ThemeSwitch } from "@/components/theme-switch"
 
 const Clubs = () => {
   const { setClubData, signOut } = useAuth()
@@ -65,125 +70,210 @@ const Clubs = () => {
 
   return (
     <>
-      <div className="flex w-full flex-col items-start gap-4 px-4">
-        <div className="relative flex w-full items-center justify-between gap-4">
-          <Button
-            className="gap-1 px-2"
-            onClick={() => {
-              signOut()
-            }}
-          >
-            Sign Out
-            <LogoutCurve
-              color="currentColor"
-              size="32"
-              variant="Bulk"
-              className="rotate-180"
-            />
-          </Button>
+      <div className="relative container grid h-svh flex-col lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="absolute top-4 left-4 z-10">
+          <ThemeSwitch />
         </div>
-        <div className="relative">
-          <h2 className="mb-2">Welcome!</h2>
-          <p className="heading-text font-semibold">
-            Please select a club to continue
-          </p>
-        </div>
-        <div className="flex w-full items-center gap-2">
-          <InputDebounce
-            placeholder="Search..."
-            wait={1000}
-            onChange={handleSearch}
+        <div
+          className={cn(
+            "bg-muted relative h-full overflow-hidden max-lg:hidden",
+            "[&>img]:absolute [&>img]:top-[15%] [&>img]:left-20 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:object-top-left [&>img]:select-none"
+          )}
+        >
+          <img
+            src={dashboardLight}
+            className="dark:hidden"
+            width={1024}
+            height={1151}
+            alt="Migios-Admin"
           />
-          <Button
-            className="gap-1 px-3"
-            onClick={() => {
-              signOut()
-            }}
-          >
-            <Add color="#000" className="h-5 w-5" />
-            Add
-          </Button>
+          <img
+            src={dashboardDark}
+            className="hidden dark:block"
+            width={1024}
+            height={1138}
+            alt="Migios-Admin"
+          />
         </div>
-        <ScrollArea className="h-full max-h-[70vh] w-full pr-3 pb-4">
-          <div className="grid grid-cols-1 gap-3 md:gap-3 lg:grid-cols-2">
-            {data?.pages.map((page) =>
-              page.data.data.map((data, index) => (
-                <Card
-                  key={index}
-                  className="relative p-0"
-                  // clickable={['active'].includes(data.subscription_status!)}
-                  // disabled={!['active'].includes(data.subscription_status!)}
-                >
-                  {!["active"].includes(data.subscription_status!) ? (
-                    <Button
-                      className="absolute right-1 bottom-1 z-10 h-8 p-2 py-0"
-                      onClick={() => {
-                        setOpenRenewSubscription(true)
-                        setClubId(data.id)
+
+        <div className="lg:p-8">
+          <div className="flex w-full flex-col space-y-2">
+            <div className="mb-4 flex items-center justify-between">
+              <Logo
+                className="me-2"
+                type="full"
+                svgProps={{ className: "h-12 w-auto" }}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  signOut()
+                }}
+              >
+                Sign Out
+                <LogoutCurve
+                  color="currentColor"
+                  size="20"
+                  variant="Bulk"
+                  className="rotate-180"
+                />
+              </Button>
+            </div>
+          </div>
+          <div className="flex w-full flex-col space-y-4">
+            <div className="flex flex-col text-start">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Selamat Datang!
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Silakan pilih club untuk melanjutkan
+              </p>
+            </div>
+
+            <div className="flex w-full items-center gap-2">
+              <InputDebounce
+                placeholder="Search clubs..."
+                wait={1000}
+                onChange={handleSearch}
+                className="flex-1"
+              />
+              <Button variant="outline" size="icon" className="shrink-0">
+                <Add className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-15rem)] w-full md:h-[calc(100vh-16rem)]">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 pr-4 pb-4">
+                {dataMemo.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center justify-center gap-4 py-8">
+                    <SearchStatus1
+                      size="90"
+                      color="currentColor"
+                      variant="Bulk"
+                    />
+                    <p className="text-muted-foreground text-sm">
+                      Tidak ada club ditemukan
+                    </p>
+                  </div>
+                ) : (
+                  dataMemo.map((clubData, index) => (
+                    <Card
+                      key={index}
+                      className={cn(
+                        "relative overflow-hidden p-0 shadow-none transition-all hover:shadow-md",
+                        {
+                          "cursor-pointer": ["active"].includes(
+                            clubData.subscription_status!
+                          ),
+                          "cursor-not-allowed opacity-50": !["active"].includes(
+                            clubData.subscription_status!
+                          ),
+                        }
+                      )}
+                      onClick={async () => {
+                        if (
+                          ["active"].includes(clubData.subscription_status!)
+                        ) {
+                          await setClubData(clubData)
+                        }
                       }}
                     >
-                      Renew
-                    </Button>
-                  ) : null}
-                  <div
-                    className={cn("cursor-pointer p-6", {
-                      "cursor-not-allowed rounded-2xl opacity-50": ![
-                        "active",
-                      ].includes(data.subscription_status!),
-                    })}
-                    onClick={async () => {
-                      if (["active"].includes(data.subscription_status!)) {
-                        await setClubData(data)
-                      }
-                    }}
-                  >
-                    <h5 className="mb-2 text-lg leading-5 font-semibold text-gray-900 dark:text-gray-200">
-                      {data.name}
-                    </h5>
-                    <p className="text-gray-900 dark:text-gray-200">
-                      {data.address}
-                    </p>
-                    {data.roles?.map((role, index) => (
-                      <Badge
-                        key={index}
-                        className="mt-2 bg-emerald-200 text-gray-900 dark:bg-emerald-200 dark:text-gray-900"
-                      >
-                        <span className="capitalize">{role.name}</span>
-                      </Badge>
-                    ))}
-                    {!["active"].includes(data.subscription_status!) ? (
-                      <Badge className="mt-2 bg-red-200 text-gray-900 dark:bg-red-200 dark:text-gray-900">
-                        <span className="capitalize">
-                          Subscription {data.subscription_status}
-                        </span>
-                      </Badge>
-                    ) : (
-                      <Badge>
-                        Expires on{" "}
-                        {dayjs(data.subscription_end_date).format(
-                          "DD MMM YYYY"
-                        )}
-                      </Badge>
-                    )}
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-          <div className="mt-4 text-center">
-            {dataMemo.length !== metaData?.total ? (
-              <Button
-                disabled={isLoading || isFetchingNextPage}
-                onClick={() => fetchNextPage()}
-              >
-                {(isLoading || isFetchingNextPage) && (
-                  <span className="mr-2">Loading...</span>
+                      {!["active"].includes(clubData.subscription_status!) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute top-2 right-2 z-10"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenRenewSubscription(true)
+                            setClubId(clubData.id)
+                          }}
+                        >
+                          Renew
+                        </Button>
+                      )}
+                      <div className="p-6">
+                        <h5 className="mb-2 text-lg leading-5 font-semibold">
+                          {clubData.name}
+                        </h5>
+                        <p className="text-muted-foreground mb-3 text-sm">
+                          {clubData.address}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {clubData.roles?.map((role, roleIndex) => (
+                            <Badge
+                              key={roleIndex}
+                              variant="secondary"
+                              className="bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100"
+                            >
+                              <span className="capitalize">{role.name}</span>
+                            </Badge>
+                          ))}
+                          {!["active"].includes(
+                            clubData.subscription_status!
+                          ) ? (
+                            <Badge
+                              variant="destructive"
+                              className="bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100"
+                            >
+                              <span className="capitalize">
+                                Subscription {clubData.subscription_status}
+                              </span>
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">
+                              Expires on{" "}
+                              {dayjs(clubData.subscription_end_date).format(
+                                "DD MMM YYYY"
+                              )}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
                 )}
-                Load More
-              </Button>
-            ) : null}
+
+                {isLoading &&
+                  Array.from(new Array(10), (_, i) => i + 1).map((_, index) => (
+                    <Card
+                      key={index}
+                      className="relative overflow-hidden p-0 shadow-none"
+                    >
+                      <div className="space-y-3 p-6">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          <Skeleton className="h-5 w-16" />
+                          <Skeleton className="h-5 w-20" />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                {dataMemo.length !== metaData?.total && (
+                  <div className="col-span-full mt-4 text-center">
+                    <Button
+                      variant="outline"
+                      disabled={isLoading || isFetchingNextPage}
+                      onClick={() => fetchNextPage()}
+                    >
+                      {isLoading || isFetchingNextPage ? (
+                        <>
+                          <span className="mr-2">Loading...</span>
+                        </>
+                      ) : (
+                        "Load More"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        </div>
       </div>
       <AlertDialogExpiredSubscription
         showCloseButton

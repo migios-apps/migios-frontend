@@ -34,8 +34,10 @@ const AppRoute = <T extends Record<string, unknown>>({
       if (!previousThemeConfig) {
         setPreviousThemeConfig(currentThemeConfig)
       }
-      // Apply meta themeConfig
-      setThemeConfig(themeConfig)
+      // Apply meta themeConfig, tapi JANGAN override theme (dark/light) dari user preference
+      // Hanya override property lain seperti layout, sidebar, dll
+      const { theme: _, ...routeThemeConfigWithoutTheme } = themeConfig
+      setThemeConfig(routeThemeConfigWithoutTheme)
     }
     // Jika route tidak punya meta themeConfig
     else if (!themeConfig) {

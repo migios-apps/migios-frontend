@@ -1,27 +1,30 @@
 import { useState } from "react"
-import { z } from "zod"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 import { useAuth } from "@/auth"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { Loader2, LogIn } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
+import * as yup from "yup"
 import { IconFacebook, IconGithub } from "@/assets/brand-icons"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import { PasswordInput } from "@/components/password-input"
 
-const formSchema = z.object({
-  email: z.email({
-    error: (iss) => (iss.input === "" ? "Please enter your email" : undefined),
-  }),
-  password: z
+const formSchema = yup.object({
+  email: yup
     .string()
-    .min(1, "Please enter your password")
+    .email("Email tidak valid")
+    .required("Please enter your email"),
+  password: yup
+    .string()
+    .required("Please enter your password")
     .min(7, "Password must be at least 7 characters long"),
 })
+
+export type SignInSchema = yup.InferType<typeof formSchema>
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
   redirectTo?: string
@@ -36,19 +39,15 @@ export function UserAuthForm({
   const navigate = useNavigate()
   const { signIn } = useAuth()
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SignInSchema>({
+    resolver: yupResolver(formSchema),
     defaultValues: {
       email: "john@example.com",
       password: "password",
     },
   })
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: SignInSchema) {
     setIsLoading(true)
 
     try {
@@ -71,20 +70,16 @@ export function UserAuthForm({
   }
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit)}
-      containerClassName={cn("flex flex-col gap-4", className)}
-      {...props}
-    >
-      <FormItem
-        label="Email"
-        asterisk
-        invalid={Boolean(errors.email)}
-        errorMessage={errors.email?.message}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className={cn("flex flex-col gap-4", className)}
+        {...props}
       >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="email"
-          control={control}
+          label="Email"
           render={({ field }) => (
             <Input
               type="email"
@@ -95,24 +90,20 @@ export function UserAuthForm({
             />
           )}
         />
-      </FormItem>
-      <FormItem
-        label="Password"
-        asterisk
-        invalid={Boolean(errors.password)}
-        errorMessage={errors.password?.message}
-        endLabel={
-          <Link
-            to="/forgot-password"
-            className="text-muted-foreground text-sm font-medium hover:opacity-75"
-          >
-            Forgot password?
-          </Link>
-        }
-      >
-        <Controller
+        <FormFieldItem
+          control={form.control}
           name="password"
-          control={control}
+          label={
+            <div className="flex items-center justify-between">
+              <span>Password</span>
+              <Link
+                to="/forgot-password"
+                className="text-muted-foreground text-sm font-medium hover:opacity-75"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          }
           render={({ field }) => (
             <PasswordInput
               placeholder="********"
@@ -122,31 +113,45 @@ export function UserAuthForm({
             />
           )}
         />
-      </FormItem>
-      <Button disabled={isLoading} type="submit">
-        {isLoading ? <Loader2 className="animate-spin" /> : <LogIn />}
-        Sign in
-      </Button>
-
-      <div className="relative my-2">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="outline" type="button" disabled={isLoading}>
-          <IconGithub className="h-4 w-4" /> GitHub
+        {/* forgot password? */}
+        <Link
+          to="/forgot-password"
+          className="text-muted-foreground text-sm font-medium hover:opacity-75"
+        >
+          Forgot password?
+        </Link>
+        <Button disabled={isLoading} type="submit">
+          {isLoading ? <Loader2 className="animate-spin" /> : <LogIn />}
+          Sign in
         </Button>
-        <Button variant="outline" type="button" disabled={isLoading}>
-          <IconFacebook className="h-4 w-4" /> Facebook
-        </Button>
-      </div>
+        {/* don't have an account? */}
+        <div className="text-muted-foreground text-center text-sm">
+          Don&apos;t have an account?{" "}
+          <Link to="/sign-up" className="text-primary hover:underline">
+            Sign up
+          </Link>
+        </div>
+
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background text-muted-foreground px-2">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" type="button" disabled={isLoading}>
+            <IconGithub className="h-4 w-4" /> GitHub
+          </Button>
+          <Button variant="outline" type="button" disabled={isLoading}>
+            <IconFacebook className="h-4 w-4" /> Facebook
+          </Button>
+        </div>
+      </form>
     </Form>
   )
 }

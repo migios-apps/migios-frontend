@@ -1,5 +1,5 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
+import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { CreateRekening } from "@/services/api/@types/finance"
 import {
@@ -20,9 +20,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormFieldItem,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
-import { Form, FormItem } from "@/components/ui/rh-form"
 import { Switch } from "@/components/ui/switch"
 import {
   CreateRekeningSchema,
@@ -128,88 +134,90 @@ const RekeningForm: React.FC<FormProps> = ({
               {type === "create" ? "Create Rekening" : "Update Rekening"}
             </DialogTitle>
           </DialogHeader>
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <div className="">
-              <FormItem
-                asterisk
-                label="Name"
+          <Form {...formProps}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormFieldItem
+                control={control}
+                name="name"
+                label={
+                  <FormLabel>
+                    Name <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.name)}
                 errorMessage={errors.name?.message}
-              >
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="text"
-                      autoComplete="off"
-                      placeholder="Name"
-                      {...field}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                asterisk
-                label="Balance"
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Name"
+                    {...field}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="balance"
+                label={
+                  <FormLabel>
+                    Balance <span className="text-destructive">*</span>
+                  </FormLabel>
+                }
                 invalid={Boolean(errors.balance)}
                 errorMessage={errors.balance?.message}
-              >
-                <Controller
-                  name="balance"
-                  control={control}
-                  render={({ field }) => (
-                    <InputCurrency
-                      placeholder="Rp. 0"
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    />
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                label=""
-                className="w-full"
+                render={({ field }) => (
+                  <InputCurrency
+                    placeholder="Rp. 0"
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="show_in_payment"
+                label={<FormLabel>Show in Payment</FormLabel>}
                 invalid={Boolean(errors.show_in_payment)}
                 errorMessage={errors.show_in_payment?.message}
-              >
-                <Controller
-                  name="show_in_payment"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex items-center gap-2">
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Show in Payment
+                      </FormLabel>
+                    </div>
+                    <FormControl>
                       <Switch
                         checked={Boolean(field.value === 1)}
                         onCheckedChange={(checked) => {
                           field.onChange(checked ? 1 : 0)
                         }}
                       />
-                      <span>Show in Payment</span>
-                    </div>
-                  )}
-                />
-              </FormItem>
-              <FormItem
-                label=""
-                className="w-full"
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="enabled"
+                label={<FormLabel></FormLabel>}
                 invalid={Boolean(errors.enabled)}
                 errorMessage={errors.enabled?.message}
-              >
-                <Controller
-                  name="enabled"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex items-center gap-2">
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-0">
+                    <FormControl>
                       <Checkbox
                         checked={field.value ?? false}
                         onCheckedChange={field.onChange}
                       />
-                      <span>{field.value ? "Enabled" : "Disabled"}</span>
-                    </div>
-                  )}
-                />
-              </FormItem>
-            </div>
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      {field.value ? "Enabled" : "Disabled"}
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+            </form>
           </Form>
           <DialogFooter className="flex items-center justify-between">
             {type === "update" ? (
