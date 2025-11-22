@@ -1,6 +1,7 @@
-import type { fonts } from "@/config/fonts"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+
+export const fonts = ["inter", "manrope", "system"] as const
 
 export type Direction = "ltr" | "rtl"
 export type Font = (typeof fonts)[number]
