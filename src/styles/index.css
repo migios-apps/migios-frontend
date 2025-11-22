@@ -152,7 +152,7 @@ These serve as the fallback; there is no separate default.css file. */
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
+    @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar-inset min-h-svh w-full;
   }
 
   /* Smooth page transitions */

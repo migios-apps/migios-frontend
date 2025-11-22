@@ -59,6 +59,10 @@ const queryClient = new QueryClient({
           cookiesStorage.removeItem(TOKEN_NAME_IN_STORAGE)
           cookiesStorage.removeItem(REFRESH_TOKEN_NAME_IN_STORAGE)
           const redirect = `${window.location.pathname}${window.location.search}`
+          if (redirect === "/sign-in") {
+            window.location.href = `/sign-in`
+          }
+
           window.location.href = `/sign-in?redirect=${encodeURIComponent(redirect)}`
         }
         if (error.response?.status === 500) {
