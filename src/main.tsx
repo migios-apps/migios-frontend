@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
         )
       },
       refetchOnWindowFocus: import.meta.env.PROD,
-      staleTime: 10 * 1000, // 10s
+      // staleTime: 10 * 1000, // 10s
     },
     mutations: {
       onError: (error) => {
@@ -88,7 +88,7 @@ if (!rootElement.innerHTML) {
         </ThemeConfigProvider>
         <Toaster duration={5000} />
         {import.meta.env.MODE === "development" && (
-          <ReactQueryDevtools buttonPosition="bottom-right" />
+          <ReactQueryDevtools buttonPosition="bottom-left" />
         )}
       </QueryClientProvider>
     </StrictMode>

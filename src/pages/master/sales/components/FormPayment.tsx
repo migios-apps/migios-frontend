@@ -1,5 +1,5 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
+import { SubmitHandler } from "react-hook-form"
 import {
   useInfiniteQuery,
   useMutation,
@@ -29,7 +29,7 @@ import {
   WalletCheck,
   Warning2,
 } from "iconsax-reactjs"
-import { HiOutlineUser } from "react-icons/hi"
+import { User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
@@ -37,17 +37,25 @@ import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { FormFieldItem } from "@/components/ui/form"
 import InputCurrency, { currencyFormat } from "@/components/ui/input-currency"
 import {
   ReturnAsyncSelect,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, Button, Dropdown, FormItem } from "@/components/ui"
+import { Spinner } from "@/components/ui/spinner"
 import { generateCartData } from "../utils/generateCartData"
 import {
   ReturnTransactionFormSchema,
-  ReturnTransactionItemFormSchema,
   ValidationTransactionSchema,
   defaultValueTransaction,
   resetTransactionForm,
@@ -57,7 +65,6 @@ type FormPaymentProps = {
   type: "create" | "update"
   detail?: SalesDetailType | null
   formPropsTransaction: ReturnTransactionFormSchema
-  formPropsTransactionItem: ReturnTransactionItemFormSchema
   transactionId?: number
   isPaid?: PaymentStatus
   onClose?: () => void
@@ -67,7 +74,6 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   type,
   detail = null,
   formPropsTransaction,
-  formPropsTransactionItem,
   transactionId,
   isPaid = 0,
 }) => {
@@ -86,7 +92,6 @@ const FormPayment: React.FC<FormPaymentProps> = ({
     }
   }
 
-  const formPropsItem = formPropsTransactionItem
   const {
     watch,
     control,
@@ -218,9 +223,9 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
   const {
     data: rekenings,
-    fetchNextPage: fetchNextPageRekenings,
-    hasNextPage: hasNextPageRekenings,
-    isFetchingNextPage: isFetchingNextPageRekenings,
+    // fetchNextPage: fetchNextPageRekenings,
+    // hasNextPage: hasNextPageRekenings,
+    // isFetchingNextPage: isFetchingNextPageRekenings,
     isLoading: isLoadingRekenings,
   } = useInfiniteQuery({
     queryKey: [QUERY_KEY.packages, club.id],
@@ -265,7 +270,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
     () => (rekenings ? rekenings.pages.flatMap((page) => page.data.data) : []),
     [rekenings]
   )
-  const totalRekening = rekenings?.pages[0]?.data.meta.total
+  // const totalRekening = rekenings?.pages[0]?.data.meta.total
 
   const handlePrefecth = (res?: any) => {
     const data = res?.data?.data
@@ -329,16 +334,16 @@ const FormPayment: React.FC<FormPaymentProps> = ({
       items:
         (data.items.map((item) => {
           const {
-            package_type,
-            loyalty_point,
-            classes,
-            instructors,
             trainers,
-            name,
-            sell_price,
-            is_promo,
-            data: itemData,
-            ...rest
+            // package_type,
+            // loyalty_point,
+            // classes,
+            // instructors,
+            // name,
+            // sell_price,
+            // is_promo,
+            // data: itemData,
+            // ...rest
           } = item
 
           // Base payload dengan field yang selalu ada
@@ -412,26 +417,27 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   return (
     <>
       <div className="flex h-full w-full flex-col">
-        <ScrollArea className="flex h-[calc(100vh-490px)] flex-1 flex-col gap-3 overflow-y-auto p-4">
-          <FormItem
-            asterisk={watchTransaction.items?.some(
-              (item) => item.item_type === "package"
-            )}
-            label={`Member ${
-              watchTransaction.items?.some(
-                (item) => item.item_type === "package"
-              )
-                ? ""
-                : "(Optional)"
-            }`}
-            invalid={Boolean(errors.member)}
-            errorMessage={"Member is required when a package is included."}
-            labelClass="w-full flex justify-between items-center"
-          >
-            <Controller
-              name="member"
+        <ScrollArea className="h-[calc(100vh-490px)] flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-4 p-4">
+            <FormFieldItem
               control={control}
-              render={({ field }) => (
+              name="member"
+              label={
+                <div className="flex w-full items-center gap-2">
+                  {watchTransaction.items?.some(
+                    (item) => item.item_type === "package"
+                  ) ? (
+                    <>
+                      Member <span className="text-destructive">*</span>
+                    </>
+                  ) : (
+                    "Member (Optional)"
+                  )}
+                </div>
+              }
+              invalid={Boolean(errors.member)}
+              errorMessage="Member is required when a package is included."
+              render={({ field, fieldState }) => (
                 <SelectAsyncPaginate
                   isClearable
                   loadOptions={getMemberList as any}
@@ -443,14 +449,18 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   getOptionLabel={(option) => option.name!}
                   getOptionValue={(option) => `${option.id}`}
                   debounceTimeout={500}
+                  error={!!fieldState.error}
                   formatOptionLabel={({ name, photo }) => {
                     return (
                       <div className="flex items-center justify-start gap-2">
-                        <Avatar
-                          size="sm"
-                          {...(photo && { src: photo || "" })}
-                          {...(!photo && { icon: <HiOutlineUser /> })}
-                        />
+                        <Avatar className="size-8">
+                          {photo ? (
+                            <AvatarImage src={photo} alt={name} />
+                          ) : null}
+                          <AvatarFallback>
+                            <User className="size-4" />
+                          </AvatarFallback>
+                        </Avatar>
                         <span className="text-sm">{name}</span>
                       </div>
                     )
@@ -459,17 +469,13 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                 />
               )}
             />
-          </FormItem>
-          <FormItem
-            label="Sales (Optional)"
-            invalid={Boolean(errors.employee)}
-            errorMessage={errors.employee?.message}
-            labelClass="w-full flex justify-between items-center"
-          >
-            <Controller
-              name="employee"
+            <FormFieldItem
               control={control}
-              render={({ field }) => (
+              name="employee"
+              label="Sales (Optional)"
+              invalid={Boolean(errors.employee)}
+              errorMessage={errors.employee?.message}
+              render={({ field, fieldState }) => (
                 <SelectAsyncPaginate
                   isClearable
                   loadOptions={getEmployeeList as any}
@@ -481,15 +487,19 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   getOptionLabel={(option: any) => option.name || ""}
                   getOptionValue={(option: any) => option.id?.toString() || ""}
                   debounceTimeout={500}
+                  error={!!fieldState.error}
                   formatOptionLabel={(option: any) => {
                     const { name, photo } = option
                     return (
                       <div className="flex items-center justify-start gap-2">
-                        <Avatar
-                          size="sm"
-                          {...(photo && { src: photo || "" })}
-                          {...(!photo && { icon: <HiOutlineUser /> })}
-                        />
+                        <Avatar className="size-8">
+                          {photo ? (
+                            <AvatarImage src={photo} alt={name} />
+                          ) : null}
+                          <AvatarFallback>
+                            <User className="size-4" />
+                          </AvatarFallback>
+                        </Avatar>
                         <span className="text-sm">{name}</span>
                       </div>
                     )
@@ -498,17 +508,17 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                 />
               )}
             />
-          </FormItem>
-          {isPaid === 1 || detail?.is_void === 1 ? null : (
-            <FormItem
-              asterisk
-              label="Payment"
-              invalid={Boolean(errors.balance_amount)}
-              errorMessage={errors.balance_amount?.message}
-            >
-              <Controller
-                name="balance_amount"
+            {isPaid === 1 || detail?.is_void === 1 ? null : (
+              <FormFieldItem
                 control={control}
+                name="balance_amount"
+                label={
+                  <div className="flex w-full items-center gap-2">
+                    Payment <span className="text-destructive">*</span>
+                  </div>
+                }
+                invalid={Boolean(errors.balance_amount)}
+                errorMessage={errors.balance_amount?.message}
                 render={({ field }) => {
                   React.useEffect(() => {
                     if (field.value !== cartDataGenerated.balance_amount) {
@@ -520,7 +530,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     <InputCurrency
                       value={field.value}
                       disabled={isPaidOf}
-                      className="bg-primary-subtle text-primary focus:bg-primary-subtle h-[80px] text-center text-2xl font-bold"
+                      className="bg-primary-subtle text-primary focus:bg-primary-subtle h-[80px] text-center text-3xl! font-bold"
                       onValueChange={(_value, _name, values) => {
                         field.onChange(values?.float)
                       }}
@@ -528,117 +538,116 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   )
                 }}
               />
-            </FormItem>
-          )}
-
-          {/* Payment Method grid */}
-          <div className="mt-4">
-            {isPaid === 1 && detail?.is_void === 0 ? (
-              <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                <div className="mb-2 text-gray-400 dark:text-gray-500">
-                  <WalletCheck color="currentColor" size="50" />
-                </div>
-                <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
-                  {detail?.status?.split("_").join(" ")}
-                </h1>
-              </div>
-            ) : detail?.is_void === 1 ? (
-              <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                <div className="mb-2 text-gray-400 dark:text-gray-500">
-                  <WalletCheck color="currentColor" size="50" />
-                </div>
-                <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
-                  {detail?.status?.split("_").join(" ")}
-                </h1>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {isLoadingRekenings ? (
-                  // Skeleton loading untuk rekening
-                  <>
-                    {[...Array(6)].map((_, index) => (
-                      <div
-                        key={index}
-                        className="h-14 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700"
-                      />
-                    ))}
-                  </>
-                ) : listRekenings.length > 0 ? (
-                  // Tampilan daftar rekening
-                  listRekenings.map((rekening) => {
-                    return (
-                      <Button
-                        key={rekening.id}
-                        variant="solid"
-                        disabled={
-                          isPaidOf || watchTransaction.balance_amount <= 0
-                        }
-                        type="button"
-                        className={`bg-primary flex items-center justify-center rounded-xl py-4 font-medium text-white`}
-                        onClick={() => {
-                          if (
-                            !isPaidOf &&
-                            watchTransaction.balance_amount > 0
-                          ) {
-                            const updatedPayments = [...watch("payments")]
-                            const existingPaymentIndex =
-                              updatedPayments.findIndex(
-                                (item) =>
-                                  item.id === rekening.id &&
-                                  item.isDefault === false
-                              )
-
-                            if (existingPaymentIndex !== -1) {
-                              // Gabungkan dengan payment yang sudah ada
-                              updatedPayments[existingPaymentIndex].amount +=
-                                Number(watch("balance_amount"))
-                            } else {
-                              // Tambahkan payment baru
-                              updatedPayments.push({
-                                id: rekening.id,
-                                name: rekening.name,
-                                amount: Number(watch("balance_amount")),
-                                isDefault: false,
-                              })
-                            }
-
-                            formPropsTransaction.setValue(
-                              "payments",
-                              updatedPayments
-                            )
-                            formPropsTransaction.setValue(
-                              "balance_amount",
-                              cartDataGenerated.total_amount -
-                                updatedPayments.reduce(
-                                  (acc, curr) => acc + curr.amount,
-                                  0
-                                )
-                            )
-                            formPropsTransaction.clearErrors("payments")
-                          }
-                        }}
-                      >
-                        {rekening.name?.toUpperCase()}
-                      </Button>
-                    )
-                  })
-                ) : (
-                  // Tampilan ketika tidak ada rekening
-                  <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                    <div className="mb-2 text-gray-400 dark:text-gray-500">
-                      <EmptyWalletRemove color="currentColor" size="50" />
-                    </div>
-                    <h3 className="text-base font-medium text-gray-700 dark:text-gray-300">
-                      Belum ada metode pembayaran
-                    </h3>
-                    <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Silakan tambahkan metode pembayaran terlebih dahulu di
-                      menu pengaturan
-                    </p>
-                  </div>
-                )}
-              </div>
             )}
+
+            {/* Payment Method grid */}
+            <div className="mt-4">
+              {isPaid === 1 && detail?.is_void === 0 ? (
+                <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
+                  <div className="mb-2 text-gray-400 dark:text-gray-500">
+                    <WalletCheck color="currentColor" size="50" />
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
+                    {detail?.status?.split("_").join(" ")}
+                  </h1>
+                </div>
+              ) : detail?.is_void === 1 ? (
+                <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
+                  <div className="mb-2 text-gray-400 dark:text-gray-500">
+                    <WalletCheck color="currentColor" size="50" />
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
+                    {detail?.status?.split("_").join(" ")}
+                  </h1>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {isLoadingRekenings ? (
+                    // Skeleton loading untuk rekening
+                    <>
+                      {[...Array(6)].map((_, index) => (
+                        <div
+                          key={index}
+                          className="h-14 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700"
+                        />
+                      ))}
+                    </>
+                  ) : listRekenings.length > 0 ? (
+                    // Tampilan daftar rekening
+                    listRekenings.map((rekening) => {
+                      return (
+                        <Button
+                          key={rekening.id}
+                          variant="default"
+                          disabled={
+                            isPaidOf || watchTransaction.balance_amount <= 0
+                          }
+                          type="button"
+                          onClick={() => {
+                            if (
+                              !isPaidOf &&
+                              watchTransaction.balance_amount > 0
+                            ) {
+                              const updatedPayments = [...watch("payments")]
+                              const existingPaymentIndex =
+                                updatedPayments.findIndex(
+                                  (item) =>
+                                    item.id === rekening.id &&
+                                    item.isDefault === false
+                                )
+
+                              if (existingPaymentIndex !== -1) {
+                                // Gabungkan dengan payment yang sudah ada
+                                updatedPayments[existingPaymentIndex].amount +=
+                                  Number(watch("balance_amount"))
+                              } else {
+                                // Tambahkan payment baru
+                                updatedPayments.push({
+                                  id: rekening.id,
+                                  name: rekening.name,
+                                  amount: Number(watch("balance_amount")),
+                                  isDefault: false,
+                                })
+                              }
+
+                              formPropsTransaction.setValue(
+                                "payments",
+                                updatedPayments
+                              )
+                              formPropsTransaction.setValue(
+                                "balance_amount",
+                                cartDataGenerated.total_amount -
+                                  updatedPayments.reduce(
+                                    (acc, curr) => acc + curr.amount,
+                                    0
+                                  )
+                              )
+                              formPropsTransaction.clearErrors("payments")
+                            }
+                          }}
+                        >
+                          {rekening.name?.toUpperCase()}
+                        </Button>
+                      )
+                    })
+                  ) : (
+                    // Tampilan ketika tidak ada rekening
+                    <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
+                      <div className="mb-2 text-gray-400 dark:text-gray-500">
+                        <EmptyWalletRemove color="currentColor" size="50" />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-700 dark:text-gray-300">
+                        Belum ada metode pembayaran
+                      </h3>
+                      <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Silakan tambahkan metode pembayaran terlebih dahulu di
+                        menu pengaturan
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </ScrollArea>
         <div className="flex flex-col gap-2.5 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
@@ -693,102 +702,111 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                 ))}
             </div>
           ) : null}
-          <div className="flex w-full flex-col items-start gap-2 md:flex-row md:justify-between">
+          <div className="grid w-full grid-cols-2 gap-2">
             {detail?.status !== "void" ? (
               <>
-                <Dropdown
-                  toggleClassName="w-full md:w-5/12"
-                  renderTitle={
+                <DropdownMenu
+                  open={openDropdown}
+                  onOpenChange={setOpenDropdown}
+                >
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      className={cn("w-full rounded-full", {
-                        "text-primary border-primary": openDropdown,
+                      variant="outline"
+                      className={cn("w-full", {
+                        "border-primary text-primary": openDropdown,
                       })}
-                      variant="default"
-                      icon={
-                        <ArrowDown2
-                          color="currentColor"
-                          size={16}
-                          className={cn(
-                            "ml-1 transition-transform duration-300",
-                            {
-                              "rotate-180": openDropdown,
-                            }
-                          )}
-                        />
-                      }
-                      iconAlignment="end"
                     >
                       Lainnya
+                      <ArrowDown2
+                        color="currentColor"
+                        size={16}
+                        className={cn(
+                          "ml-1 transition-transform duration-200",
+                          {
+                            "rotate-180": openDropdown,
+                          }
+                        )}
+                      />
                     </Button>
-                  }
-                  onOpen={setOpenDropdown}
-                >
-                  {type === "update" && [1].includes(isPaid) ? (
-                    <Dropdown.Item
-                      eventKey="canceled"
-                      className="text-red-500"
-                      onClick={() => navigate(`/sales/${detail?.id}/refund`)}
-                    >
-                      Pengembalian
-                    </Dropdown.Item>
-                  ) : null}
-                  {(type === "update" && [0, 1, 2, 3].includes(isPaid)) ||
-                  detail?.is_refunded ? (
-                    <Dropdown.Item
-                      eventKey="canceled"
-                      className="text-red-500"
-                      onClick={() => setConfirmVoid(true)}
-                    >
-                      Dibatalkan
-                    </Dropdown.Item>
-                  ) : null}
-                  {!isPaidOf &&
-                  watch("payments")?.filter((item) => item.isDefault === false)
-                    ?.length > 0 ? (
-                    <Dropdown.Item
-                      eventKey="part_paid"
-                      onClick={handleSubmit(handleCheck)}
-                    >
-                      Simpan Dibayar Sebagian
-                    </Dropdown.Item>
-                  ) : null}
-                  {type === "create" ? (
-                    <Dropdown.Item
-                      eventKey="unpaid"
-                      onClick={handleSubmit((data) => {
-                        onSubmit({ ...data, isPaid: 0, payments: [] })
-                      })}
-                    >
-                      Simpan Belum Dibayar
-                    </Dropdown.Item>
-                  ) : null}
-                </Dropdown>
-                {isPaid === 1 ? null : (
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {type === "update" && [1].includes(isPaid) ? (
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => navigate(`/sales/${detail?.id}/refund`)}
+                      >
+                        Pengembalian
+                      </DropdownMenuItem>
+                    ) : null}
+                    {(type === "update" && [0, 1, 2, 3].includes(isPaid)) ||
+                    detail?.is_refunded ? (
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setConfirmVoid(true)}
+                      >
+                        Dibatalkan
+                      </DropdownMenuItem>
+                    ) : null}
+                    {!isPaidOf &&
+                    watch("payments")?.filter(
+                      (item) => item.isDefault === false
+                    )?.length > 0 ? (
+                      <DropdownMenuItem onClick={handleSubmit(handleCheck)}>
+                        Simpan Dibayar Sebagian
+                      </DropdownMenuItem>
+                    ) : null}
+                    {type === "create" ? (
+                      <DropdownMenuItem
+                        onClick={handleSubmit((data) => {
+                          onSubmit({ ...data, isPaid: 0, payments: [] })
+                        })}
+                      >
+                        Simpan Belum Dibayar
+                      </DropdownMenuItem>
+                    ) : null}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {isPaid === 1 ? (
                   <Button
-                    className="w-full rounded-full"
-                    variant="solid"
-                    loading={
+                    variant="default"
+                    className="w-full"
+                    onClick={handleBack}
+                  >
+                    Tutup
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
+                    className="w-full"
+                    disabled={
+                      getTotal > 0 ||
                       createCheckout.isPending ||
                       updateSales.isPending ||
                       updateSalesPayment.isPending
                     }
-                    disabled={getTotal > 0}
                     onClick={handleSubmit((data) =>
                       onSubmit({ ...data, isPaid: 1 })
                     )}
                   >
+                    {createCheckout.isPending ||
+                    updateSales.isPending ||
+                    updateSalesPayment.isPending ? (
+                      <Spinner className="mr-2" />
+                    ) : null}
                     {type === "create" ? "Bayar sekarang" : "Perbarui pesanan"}
                   </Button>
                 )}
               </>
             ) : (
-              <Button
-                className="w-full rounded-full"
-                variant="solid"
-                onClick={handleBack}
-              >
-                Tutup
-              </Button>
+              <>
+                <Button
+                  variant="default"
+                  className="col-span-2 w-full"
+                  onClick={handleBack}
+                >
+                  Tutup
+                </Button>
+              </>
             )}
           </div>
         </div>

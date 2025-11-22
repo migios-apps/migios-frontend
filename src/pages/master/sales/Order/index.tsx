@@ -12,7 +12,7 @@ import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import { apiGetPackageList } from "@/services/api/PackageService"
 import { apiGetProductList } from "@/services/api/ProductService"
 import { apiGetSettings } from "@/services/api/settings/settings"
-import { Box, DocumentFilter, Warning2 } from "iconsax-reactjs"
+import { Box, CloseCircle, DocumentFilter, Warning2 } from "iconsax-reactjs"
 import { useNavigate } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
@@ -20,16 +20,17 @@ import useFormPersist from "@/utils/hooks/useFormPersist"
 import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
 import { categoryPackage } from "@/constants/packages"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
-import CloseButton from "@/components/ui/CloseButton"
 import AlertConfirm from "@/components/ui/alert-confirm"
+import { Button } from "@/components/ui/button"
 import InputDebounce from "@/components/ui/input-debounce"
 import {
   ReturnAsyncSelect,
   Select,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
-import ModeSwitcher from "@/components/template/ThemeConfigurator/ModeSwitcher"
-import { Button, Skeleton, Tabs } from "@/components/ui"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { ThemeSwitch } from "@/components/theme-switch"
 import CartDetail from "../components/CartDetail"
 import FormAddItemSale from "../components/FormAddItemSale"
 import ItemPackageCard from "../components/ItemPackageCard"
@@ -44,8 +45,6 @@ import {
   useTransactionForm,
   useTransactionItemForm,
 } from "../utils/validation"
-
-const { TabNav, TabList, TabContent } = Tabs
 
 const PointOfSales = () => {
   const queryClient = useQueryClient()
@@ -341,8 +340,10 @@ const PointOfSales = () => {
         <h5>Point Of Sale</h5>
         <div className="top-4.5 ltr:right-6 rtl:left-6">
           <div className="flex justify-start gap-4">
-            <ModeSwitcher />
-            <CloseButton
+            <ThemeSwitch />
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 if (watchTransaction.items.length > 0) {
                   setConfirmClose(true)
@@ -350,7 +351,9 @@ const PointOfSales = () => {
                   handleBack()
                 }
               }}
-            />
+            >
+              <CloseCircle size={20} />
+            </Button>
           </div>
         </div>
       </div>
@@ -365,30 +368,20 @@ const PointOfSales = () => {
           onBack={() => setShowCartDetail(false)}
         />
       ) : (
-        <div className="grid h-full grid-cols-1 items-start lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
-          <Tabs value={tab} onChange={(tab) => setTab(tab)}>
-            <TabList>
-              <TabNav
-                value="package"
-                icon={
-                  <DocumentFilter
-                    color="currentColor"
-                    size={24}
-                    variant="Bulk"
-                  />
-                }
-              >
+        <div className="grid h-full grid-cols-1 items-start p-2 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
+          <Tabs value={tab} onValueChange={(value) => setTab(value)}>
+            <TabsList>
+              <TabsTrigger value="package">
+                <DocumentFilter color="currentColor" variant="Bulk" />
                 Package Plan
-              </TabNav>
-              <TabNav
-                value="product"
-                icon={<Box color="currentColor" size={24} variant="Bulk" />}
-              >
+              </TabsTrigger>
+              <TabsTrigger value="product">
+                <Box color="currentColor" variant="Bulk" />
                 Product
-              </TabNav>
-            </TabList>
-            <TabContent value="package">
-              <div className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between">
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="package" className="flex flex-col gap-3 px-2">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <Select
                   isClearable
                   isSearchable={false}
@@ -426,7 +419,7 @@ const PointOfSales = () => {
               </div>
               <div
                 ref={containerRefPackage}
-                className="overflow-y-auto p-4"
+                className="overflow-y-auto"
                 style={{ height: "calc(100vh - 200px)" }}
               >
                 <div
@@ -457,11 +450,7 @@ const PointOfSales = () => {
                   {isFetchingNextPagePackages
                     ? Array.from({ length: 12 }, (_, i) => i + 1).map(
                         (_, i) => (
-                          <Skeleton
-                            key={i}
-                            height={120}
-                            className="rounded-xl"
-                          />
+                          <Skeleton key={i} className="h-[120px] rounded-xl" />
                         )
                       )
                     : null}
@@ -472,23 +461,21 @@ const PointOfSales = () => {
                   </p>
                 )}
               </div>
-            </TabContent>
-            <TabContent value="product">
-              <div className="p-4">
-                <InputDebounce
-                  defaultValue={searchProduct}
-                  placeholder="Search name..."
-                  handleOnchange={(value) => {
-                    setSearchProduct(value)
-                    queryClient.invalidateQueries({
-                      queryKey: [QUERY_KEY.products],
-                    })
-                  }}
-                />
-              </div>
+            </TabsContent>
+            <TabsContent value="product" className="flex flex-col gap-3 px-2">
+              <InputDebounce
+                defaultValue={searchProduct}
+                placeholder="Search name..."
+                handleOnchange={(value) => {
+                  setSearchProduct(value)
+                  queryClient.invalidateQueries({
+                    queryKey: [QUERY_KEY.products],
+                  })
+                }}
+              />
               <div
                 ref={containerRefProduct}
-                className="overflow-y-auto p-4"
+                className="overflow-y-auto"
                 style={{ height: "calc(100vh - 175px)" }}
               >
                 <div
@@ -522,11 +509,7 @@ const PointOfSales = () => {
                   {isFetchingNextPageProducts
                     ? Array.from({ length: 12 }, (_, i) => i + 1).map(
                         (_, i) => (
-                          <Skeleton
-                            key={i}
-                            height={120}
-                            className="rounded-xl"
-                          />
+                          <Skeleton key={i} className="h-[120px] rounded-xl" />
                         )
                       )
                     : null}
@@ -537,12 +520,12 @@ const PointOfSales = () => {
                   </p>
                 )}
               </div>
-            </TabContent>
+            </TabsContent>
           </Tabs>
           <div className="h-full border-l border-gray-200 dark:border-gray-700">
             <div
-              className="flex flex-col gap-3 overflow-y-auto p-4"
-              style={{ height: "calc(100vh - 190px)" }}
+              className="flex flex-col gap-3 overflow-y-auto p-2"
+              style={{ height: "calc(100vh - 195px)" }}
             >
               {cartDataGenerated.items?.map((item, index) => {
                 return (
@@ -585,7 +568,7 @@ const PointOfSales = () => {
 
               <Button
                 className="rounded-full"
-                variant="solid"
+                variant="default"
                 disabled={watchTransaction.items?.length === 0}
                 onClick={() => setShowCartDetail(true)}
               >

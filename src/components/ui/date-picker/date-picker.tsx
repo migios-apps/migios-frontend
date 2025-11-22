@@ -1,6 +1,7 @@
-import { Locale, format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
+import { DayPicker } from "react-day-picker"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -9,13 +10,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-type DatePickerProps = {
+interface DatePickerProps
+  extends Omit<
+    React.ComponentProps<typeof DayPicker>,
+    "selected" | "onSelect"
+  > {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
   error?: boolean
-  className?: string
-  locale?: Locale
+  classNameBtn?: string
   formatStr?: string
   disabled?: (date: Date) => boolean
 }
@@ -25,10 +29,10 @@ export function DatePicker({
   onSelect,
   placeholder = "Pick a date",
   error = false,
-  className,
-  locale,
-  formatStr = "PPP",
+  classNameBtn,
+  formatStr,
   disabled,
+  ...props
 }: DatePickerProps) {
   return (
     <Popover>
@@ -39,11 +43,12 @@ export function DatePicker({
           className={cn(
             "data-[empty=true]:text-muted-foreground w-full justify-start text-start font-normal",
             error && "border-destructive ring-destructive/20 ring-[3px]",
-            className
+            classNameBtn
           )}
         >
           {selected ? (
-            format(selected, formatStr, locale ? { locale } : undefined)
+            // format(selected, formatStr, locale ? { locale } : undefined)
+            dayjs(selected).format(formatStr ?? "YYYY-MM-DD")
           ) : (
             <span>{placeholder}</span>
           )}
@@ -56,11 +61,9 @@ export function DatePicker({
           selected={selected}
           onSelect={onSelect}
           captionLayout="dropdown"
-          disabled={
-            disabled ||
-            ((date: Date) => date > new Date() || date < new Date("1900-01-01"))
-          }
+          disabled={disabled}
           initialFocus
+          {...(props as any)}
         />
       </PopoverContent>
     </Popover>

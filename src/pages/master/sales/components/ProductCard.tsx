@@ -1,7 +1,7 @@
 import { ProductDetail } from "@/services/api/@types/product"
 import { Box } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
-import { Card } from "@/components/ui"
+import { Card, CardContent } from "@/components/ui/card"
 import { ReturnTransactionItemFormSchema } from "../utils/validation"
 
 type ProductCardProps = {
@@ -19,12 +19,11 @@ const ProductCard = ({
 }: ProductCardProps) => {
   return (
     <Card
-      clickable={!disabled}
       className={cn(
-        "overflow-hidden dark:text-gray-50",
-        disabled && "bg-gray-300"
+        "hover:bg-accent/50 overflow-hidden p-0 shadow-none",
+        disabled && "bg-muted opacity-50",
+        !disabled && "cursor-pointer"
       )}
-      bodyClass="p-0"
       onClick={() => {
         if (!disabled) {
           formProps.setValue("data", item)
@@ -40,20 +39,26 @@ const ProductCard = ({
         }
       }}
     >
-      <div className="flex gap-2">
-        <div
-          className={cn(
-            "h-20 w-20 overflow-hidden rounded-tl-lg rounded-bl-lg bg-gray-200 text-gray-400 dark:bg-gray-700",
-            disabled && "text-gray-500"
-          )}
-        >
-          <Box color="currentColor" size="80" variant="Bulk" />
+      <CardContent className="p-0">
+        <div className="flex gap-2">
+          <div
+            className={cn(
+              "bg-muted text-muted-foreground flex h-20 w-20 items-center justify-center overflow-hidden rounded-tl-lg rounded-bl-lg",
+              disabled && "opacity-50"
+            )}
+          >
+            <Box color="currentColor" size="80" variant="Bulk" />
+          </div>
+          <div className="relative flex flex-1 flex-col justify-center gap-1 p-1 pl-0">
+            <h3 className="line-clamp-1 text-base font-semibold">
+              {item.name}
+            </h3>
+            <span className="text-primary text-lg font-semibold">
+              {item.fprice}
+            </span>
+          </div>
         </div>
-        <div className="relative flex-1 p-1 pl-0">
-          <h3 className="line-clamp-1 text-base font-bold">{item.name}</h3>
-          <span className="text-lg font-bold">{item.fprice}</span>
-        </div>
-      </div>
+      </CardContent>
     </Card>
   )
 }

@@ -1,17 +1,25 @@
 import React from "react"
-import { Controller, useWatch } from "react-hook-form"
+import { useWatch } from "react-hook-form"
 import { RekeningDetail } from "@/services/api/@types/finance"
 import { apiGetRekeningList } from "@/services/api/FinancialService"
 import { ArrowDown2, Trash } from "iconsax-reactjs"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { FormFieldItem } from "@/components/ui/form"
 import InputCurrency, { currencyFormat } from "@/components/ui/input-currency"
 import {
   ReturnAsyncSelect,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button, Dropdown, FormItem } from "@/components/ui"
+import { Spinner } from "@/components/ui/spinner"
 import { mergeDuplicateAmounts } from "../utils/mergeDuplicateAmounts"
 import { usePaymentForm } from "./validation"
 
@@ -132,118 +140,117 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
   return (
     <div className="flex h-full flex-col border-l border-gray-200 dark:border-gray-700">
       <ScrollArea className="flex h-[calc(100vh-490px)] flex-1 flex-col gap-3 overflow-y-auto p-4">
-        <FormItem
-          asterisk
-          label="Payment"
+        <FormFieldItem
+          control={control}
+          name="balance_amount"
+          label={
+            <>
+              Payment <span className="text-destructive">*</span>
+            </>
+          }
           invalid={Boolean(errors.balance_amount)}
           errorMessage={errors.balance_amount?.message}
-        >
-          <Controller
-            name="balance_amount"
-            control={control}
-            render={({ field }) => {
-              React.useEffect(() => {
-                if (field.value !== detail?.ballance_amount) {
-                  field.onChange(detail?.ballance_amount)
-                }
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-              }, [detail?.ballance_amount])
-              return (
-                <InputCurrency
-                  value={field.value}
-                  disabled={isPaidOf}
-                  className="bg-primary-subtle text-primary focus:bg-primary-subtle h-[80px] text-center text-2xl font-bold"
-                  onValueChange={(_value, _name, values) => {
-                    field.onChange(values?.float)
-                  }}
-                />
-              )
-            }}
-          />
-        </FormItem>
-        <FormItem
-          asterisk
-          label="Payment Method"
-          invalid={Boolean(errors.payments)}
-          errorMessage={errors.payments?.message}
-          labelClass="w-full flex justify-between items-center"
-        >
-          <Controller
-            name="payments"
-            control={control}
-            render={({ field }) => (
-              <SelectAsyncPaginate
-                isClearable
-                isMulti
-                loadOptions={getRekeningList as any}
-                additional={{ page: 1 }}
-                placeholder="Select Payment"
+          render={({ field }) => {
+            React.useEffect(() => {
+              if (field.value !== detail?.ballance_amount) {
+                field.onChange(detail?.ballance_amount)
+              }
+              // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [detail?.ballance_amount])
+            return (
+              <InputCurrency
                 value={field.value}
-                cacheUniqs={[watchPayments]}
-                getOptionLabel={(option) => option.name!}
-                getOptionValue={(option) => option.id?.toString()}
-                debounceTimeout={500}
-                isDisabled={isPaidOf}
-                isOptionDisabled={(option) =>
-                  (option.name !== "Cash" && isPaidOf) ||
-                  watch("balance_amount") < 0
-                }
-                onChange={(val, ctx) => {
-                  if (ctx.action === "clear") {
-                    field.onChange([])
-                    setValue(
-                      "balance_amount",
-                      detail ? detail.total_amount || 0 : 0
-                    )
-                    setError("payments", {
-                      type: "custom",
-                      message: "Metode pembayaran diperlukan",
-                    })
-                  } else if (ctx.action === "remove-value") {
-                    field.onChange(val)
-                    const getRemoveTotal =
-                      Number(watch("balance_amount")) +
-                      Number(
-                        val.reduce((acc: any, cur: any) => acc + cur.amount, 0)
-                      )
-                    setValue(
-                      "balance_amount",
-                      val.length <= 0
-                        ? detail
-                          ? detail.total_amount || 0
-                          : 0
-                        : getRemoveTotal
-                    )
-                  } else if (ctx.action === "select-option") {
-                    const idsToRemove = new Set(
-                      watch("payments").map((obj) => obj.id)
-                    )
-                    const merege = mergeDuplicateAmounts([
-                      ...watch("payments"),
-                      ...val
-                        .filter((obj: any) => !idsToRemove.has(obj.id))
-                        .map((item: any) => ({
-                          id: item.id,
-                          name: item.name,
-                          amount: Number(watch("balance_amount")),
-                        })),
-                    ])
-                    field.onChange(merege)
-
-                    setValue(
-                      "balance_amount",
-                      detail
-                        ? detail.total_amount || 0
-                        : 0 - Number(watch("balance_amount"))
-                    )
-
-                    clearErrors("payments")
-                  }
+                disabled={isPaidOf}
+                className="bg-primary-subtle text-primary focus:bg-primary-subtle h-[80px] text-center text-2xl font-bold"
+                onValueChange={(_value, _name, values) => {
+                  field.onChange(values?.float)
                 }}
               />
-            )}
-          />
-        </FormItem>
+            )
+          }}
+        />
+        <FormFieldItem
+          control={control}
+          name="payments"
+          label={
+            <>
+              Payment Method <span className="text-destructive">*</span>
+            </>
+          }
+          invalid={Boolean(errors.payments)}
+          errorMessage={errors.payments?.message}
+          render={({ field }) => (
+            <SelectAsyncPaginate
+              isClearable
+              isMulti
+              loadOptions={getRekeningList as any}
+              additional={{ page: 1 }}
+              placeholder="Select Payment"
+              value={field.value}
+              cacheUniqs={[watchPayments]}
+              getOptionLabel={(option) => option.name!}
+              getOptionValue={(option) => option.id?.toString()}
+              debounceTimeout={500}
+              isDisabled={isPaidOf}
+              isOptionDisabled={(option) =>
+                (option.name !== "Cash" && isPaidOf) ||
+                watch("balance_amount") < 0
+              }
+              onChange={(val, ctx) => {
+                if (ctx.action === "clear") {
+                  field.onChange([])
+                  setValue(
+                    "balance_amount",
+                    detail ? detail.total_amount || 0 : 0
+                  )
+                  setError("payments", {
+                    type: "custom",
+                    message: "Metode pembayaran diperlukan",
+                  })
+                } else if (ctx.action === "remove-value") {
+                  field.onChange(val)
+                  const getRemoveTotal =
+                    Number(watch("balance_amount")) +
+                    Number(
+                      val.reduce((acc: any, cur: any) => acc + cur.amount, 0)
+                    )
+                  setValue(
+                    "balance_amount",
+                    val.length <= 0
+                      ? detail
+                        ? detail.total_amount || 0
+                        : 0
+                      : getRemoveTotal
+                  )
+                } else if (ctx.action === "select-option") {
+                  const idsToRemove = new Set(
+                    watch("payments").map((obj) => obj.id)
+                  )
+                  const merege = mergeDuplicateAmounts([
+                    ...watch("payments"),
+                    ...val
+                      .filter((obj: any) => !idsToRemove.has(obj.id))
+                      .map((item: any) => ({
+                        id: item.id,
+                        name: item.name,
+                        amount: Number(watch("balance_amount")),
+                      })),
+                  ])
+                  field.onChange(merege)
+
+                  setValue(
+                    "balance_amount",
+                    detail
+                      ? detail.total_amount || 0
+                      : 0 - Number(watch("balance_amount"))
+                  )
+
+                  clearErrors("payments")
+                }
+              }}
+            />
+          )}
+        />
       </ScrollArea>
       <div className="flex flex-col gap-2.5 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
         {/* Payment Details */}
@@ -285,54 +292,46 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           </div>
         )}
         <div className="flex w-full flex-col items-start gap-2 md:flex-row md:justify-between">
-          <Dropdown
-            toggleClassName="w-full md:w-5/12"
-            renderTitle={
+          <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+            <DropdownMenuTrigger asChild>
               <Button
-                className={cn("w-full rounded-full", {
+                className={cn("w-full rounded-full md:w-5/12", {
                   "text-primary border-primary": openDropdown,
                 })}
                 variant="default"
-                icon={
-                  <ArrowDown2
-                    color="currentColor"
-                    size={16}
-                    className={cn("ml-1 transition-transform duration-300", {
-                      "rotate-180": openDropdown,
-                    })}
-                  />
-                }
-                iconAlignment="end"
               >
                 Other
+                <ArrowDown2
+                  color="currentColor"
+                  size={16}
+                  className={cn("ml-1 transition-transform duration-300", {
+                    "rotate-180": openDropdown,
+                  })}
+                />
               </Button>
-            }
-            onOpen={setOpenDropdown}
-          >
-            {watch("payments")?.length > 0 && !isPaidOf ? (
-              <Dropdown.Item
-                eventKey="part_paid"
-                onClick={handleSubmit(handleCheck)}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {watch("payments")?.length > 0 && !isPaidOf ? (
+                <DropdownMenuItem onClick={handleSubmit(handleCheck)}>
+                  Save as Part Paid
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem
+                onClick={handleSubmit((data) => {
+                  onSubmit({ ...data, isPaid: 0, payments: [] })
+                })}
               >
-                Save as Part Paid
-              </Dropdown.Item>
-            ) : null}
-            <Dropdown.Item
-              eventKey="unpaid"
-              onClick={handleSubmit((data) => {
-                onSubmit({ ...data, isPaid: 0, payments: [] })
-              })}
-            >
-              Save as Unpaid
-            </Dropdown.Item>
-          </Dropdown>
+                Save as Unpaid
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             className="w-full rounded-full"
-            variant="solid"
-            loading={isPending}
-            disabled={getTotal > 0}
+            variant="default"
+            disabled={getTotal > 0 || isPending}
             onClick={handleSubmit((data) => onSubmit({ ...data, isPaid: 1 }))}
           >
+            {isPending && <Spinner className="mr-2" />}
             Update Pesanan
           </Button>
         </div>

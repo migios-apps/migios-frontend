@@ -210,7 +210,7 @@ function FormFieldItem<
 
         return (
           <FormItemErrorContext.Provider value={{ invalid, errorMessage }}>
-            <FormItem className="w-full">
+            <FormItem>
               {label &&
                 (typeof label === "string" ? (
                   <FormLabel>{label}</FormLabel>

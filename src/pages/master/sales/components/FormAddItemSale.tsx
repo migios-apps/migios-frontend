@@ -1,31 +1,40 @@
 import React from "react"
-import { Controller, SubmitHandler } from "react-hook-form"
+import { SubmitHandler } from "react-hook-form"
 import { TrainerPackageTypes } from "@/services/api/@types/package"
 import { apiGetAllTrainerByPackage } from "@/services/api/PackageService"
 import dayjs from "dayjs"
 import { Add, Minus, Trash } from "iconsax-reactjs"
-import { HiOutlineUser } from "react-icons/hi"
+import { User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { cn } from "@/lib/utils"
 import calculateDiscountAmount from "@/utils/calculateDiscountAmount"
 import { PackageType, categoryPackage } from "@/constants/packages"
 import AlertConfirm from "@/components/ui/alert-confirm"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Card, CardContent } from "@/components/ui/card"
+import { DatePicker } from "@/components/ui/date-picker"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Form, FormFieldItem } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
   ReturnAsyncSelect,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
-import {
-  Avatar,
-  Button,
-  Card,
-  DatePicker,
-  Dialog,
-  Form,
-  FormItem,
-  Input,
-  InputGroup,
-} from "@/components/ui"
+import { Textarea } from "@/components/ui/textarea"
 import {
   ReturnTransactionItemFormSchema,
   TransactionItemSchema,
@@ -132,160 +141,171 @@ const FormAddItemSale: React.FC<FormProps> = ({
   )
   return (
     <>
-      <Dialog
-        scrollBody
-        width={620}
-        isOpen={open}
-        onClose={handleClose}
-        onRequestClose={handleClose}
-      >
-        <div className="flex h-full flex-col justify-between">
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <h5 className="mb-4">
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent
+          scrollBody
+          className="max-w-[620px]"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>
               {type === "create" ? "Add item" : "Update Item"}
-            </h5>
-            <div className="mb-4 flex w-full flex-col">
-              <Card bodyClass="p-3 flex flex-col justify-between h-full relative z-10">
-                <h6 className="font-bold">{watchData.name}</h6>
-                <div
-                  className={cn("z-10 flex", {
-                    "w-full items-end justify-between":
-                      watchData.item_type === "package",
-                  })}
-                >
-                  <div className="flex flex-col">
-                    <span>
-                      {
-                        categoryPackage.filter(
-                          (option) => option.value === watchData.package_type
-                        )[0]?.label
-                      }
-                      {watchData.package_type === PackageType.PT_PROGRAM &&
-                        ` (${watchData.session_duration} Ss)`}
-                    </span>
-                    <span>
-                      {watchData.duration} {watchData.duration_type}
-                    </span>
-                  </div>
-                  {/* <div
-                    className={cn('leading-none', {
-                      'text-right': watchData.item_type === 'package',
-                    })}
-                  >
-                    {watchData.discount && watchData.discount > 0 ? (
-                      <span className="line-through text-sm">
-                        {currencyFormat(watchData.sell_price ?? 0)}
-                      </span>
-                    ) : null}
-                    <span className="font-bold text-lg block -mt-0.5">
-                      {currencyFormat(watchData.price ?? 0)}
-                    </span>
-                  </div> */}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex h-full flex-col justify-between">
+            <Form {...formProps}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="mb-4 flex w-full flex-col">
+                  <Card className="relative z-10 flex h-full flex-col justify-between p-3">
+                    <CardContent className="p-0">
+                      <h6 className="font-bold">{watchData.name}</h6>
+                      <div
+                        className={cn("z-10 flex", {
+                          "w-full items-end justify-between":
+                            watchData.item_type === "package",
+                        })}
+                      >
+                        <div className="flex flex-col">
+                          <span>
+                            {
+                              categoryPackage.filter(
+                                (option) =>
+                                  option.value === watchData.package_type
+                              )[0]?.label
+                            }
+                            {watchData.package_type ===
+                              PackageType.PT_PROGRAM &&
+                              ` (${watchData.session_duration} Ss)`}
+                          </span>
+                          <span>
+                            {watchData.duration} {watchData.duration_type}
+                          </span>
+                        </div>
+                      </div>
+                      {watchData.package_type === PackageType.CLASS ? (
+                        <>
+                          <div className="mt-1 w-full border-b border-gray-200 dark:border-gray-600"></div>
+                          <div className="flex flex-col">
+                            <span className="mt-1 font-bold">Class</span>
+                            <span className="text-sm">
+                              {watchData.classes
+                                ?.map((item) => item.name)
+                                .join(", ")}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="mt-1 font-bold">
+                              {watchData.package_type === PackageType.PT_PROGRAM
+                                ? "Trainer"
+                                : "Instructor"}
+                            </span>
+                            <span className="text-sm">
+                              {trainers.length === 0
+                                ? "Available with all Instructor"
+                                : trainers}
+                            </span>
+                          </div>
+                        </>
+                      ) : null}
+                    </CardContent>
+                  </Card>
                 </div>
-                {}
-                {watchData.package_type === PackageType.CLASS ? (
-                  <>
-                    <div className="mt-1 w-full border-b border-gray-200 dark:border-gray-600"></div>
-                    <div className="flex flex-col">
-                      <span className="mt-1 font-bold">Class</span>
-                      <span className="text-sm">
-                        {watchData.classes?.map((item) => item.name).join(", ")}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="mt-1 font-bold">
-                        {watchData.package_type === PackageType.PT_PROGRAM
-                          ? "Trainer"
-                          : "Instructor"}
-                      </span>
-                      <span className="text-sm">
-                        {trainers.length === 0
-                          ? "Available with all Instructor"
-                          : trainers}
-                      </span>
-                    </div>
-                  </>
-                ) : null}
-              </Card>
-            </div>
-            <div className="">
-              {watchData.item_type === "package" && (
-                <>
-                  <FormItem
-                    label="Start Date"
-                    className="w-full"
-                    invalid={Boolean(errors.start_date)}
-                    errorMessage={errors.start_date?.message}
-                  >
-                    <Controller
-                      name="start_date"
-                      control={control}
-                      render={({ field }) => (
-                        <DatePicker
-                          inputFormat="DD-MM-YYYY"
-                          placeholder="Start Date"
-                          {...field}
-                          value={
-                            field.value ? dayjs(field.value).toDate() : null
-                          } //dayjs(field.value).toDate()}
-                        />
-                      )}
-                    />
-                  </FormItem>
-                  {watchData.package_type === PackageType.PT_PROGRAM && (
-                    <FormItem
-                      asterisk
-                      label="Trainers"
-                      invalid={Boolean(errors.trainers)}
-                      errorMessage={errors.trainers?.message}
-                      labelClass="w-full flex justify-between items-center"
-                    >
-                      <Controller
-                        name="trainers"
+                <div className="flex flex-col gap-3">
+                  {watchData.item_type === "package" && (
+                    <>
+                      <FormFieldItem
                         control={control}
-                        render={({ field }) => (
-                          <SelectAsyncPaginate
-                            isClearable
-                            // isMulti
-                            // isLoading={isLoading}
-                            loadOptions={getTrainerList as any}
-                            additional={{ page: 1 }}
-                            placeholder="Select Trainer"
-                            value={field.value}
-                            cacheUniqs={[watchData.trainers]}
-                            getOptionLabel={(option) => option.name!}
-                            getOptionValue={(option) => option.code || ""}
-                            debounceTimeout={500}
-                            formatOptionLabel={({ name, photo }) => {
-                              return (
-                                <div className="flex items-center justify-start gap-2">
-                                  <Avatar
-                                    size="sm"
-                                    {...(photo && { src: photo || "" })}
-                                    {...(!photo && { icon: <HiOutlineUser /> })}
-                                  />
-                                  <span className="text-sm">{name}</span>
-                                </div>
+                        name="start_date"
+                        label="Start Date"
+                        invalid={Boolean(errors.start_date)}
+                        errorMessage={errors.start_date?.message}
+                        render={({ field, fieldState }) => (
+                          <DatePicker
+                            selected={
+                              field.value
+                                ? dayjs(field.value).toDate()
+                                : undefined
+                            }
+                            onSelect={(date) => {
+                              field.onChange(
+                                date ? dayjs(date).format("YYYY-MM-DD") : null
                               )
                             }}
-                            onChange={(option) => field.onChange(option)}
+                            placeholder="Start Date"
+                            error={!!fieldState.error}
                           />
                         )}
                       />
-                    </FormItem>
-                  )}
-                  {watchData.package_type !== PackageType.CLASS && (
-                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
-                      {watchData.package_type !== PackageType.MEMBERSHIP ? (
-                        <FormItem
-                          label="Extra Session"
-                          className="w-full"
-                          invalid={Boolean(errors.extra_session)}
-                          errorMessage={errors.extra_session?.message}
-                        >
-                          <Controller
-                            name="extra_session"
+                      {watchData.package_type === PackageType.PT_PROGRAM && (
+                        <FormFieldItem
+                          control={control}
+                          name="trainers"
+                          label={
+                            <div className="flex items-start gap-1">
+                              Trainers{" "}
+                              <span className="text-destructive">*</span>
+                            </div>
+                          }
+                          invalid={Boolean(errors.trainers)}
+                          errorMessage={errors.trainers?.message}
+                          render={({ field, fieldState }) => (
+                            <SelectAsyncPaginate
+                              isClearable
+                              loadOptions={getTrainerList as any}
+                              additional={{ page: 1 }}
+                              placeholder="Select Trainer"
+                              value={field.value}
+                              cacheUniqs={[watchData.trainers]}
+                              getOptionLabel={(option) => option.name!}
+                              getOptionValue={(option) => option.code || ""}
+                              debounceTimeout={500}
+                              error={!!fieldState.error}
+                              formatOptionLabel={({ name, photo }) => {
+                                return (
+                                  <div className="flex items-center justify-start gap-2">
+                                    <Avatar className="size-8">
+                                      {photo ? (
+                                        <AvatarImage src={photo} alt={name} />
+                                      ) : null}
+                                      <AvatarFallback>
+                                        <User className="size-4" />
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">{name}</span>
+                                  </div>
+                                )
+                              }}
+                              onChange={(option) => field.onChange(option)}
+                            />
+                          )}
+                        />
+                      )}
+                      {watchData.package_type !== PackageType.CLASS && (
+                        <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                          {watchData.package_type !== PackageType.MEMBERSHIP ? (
+                            <FormFieldItem
+                              control={control}
+                              name="extra_session"
+                              label="Extra Session"
+                              invalid={Boolean(errors.extra_session)}
+                              errorMessage={errors.extra_session?.message}
+                              render={({ field }) => (
+                                <Input
+                                  type="number"
+                                  autoComplete="off"
+                                  placeholder="0"
+                                  {...field}
+                                  value={field.value ?? undefined}
+                                />
+                              )}
+                            />
+                          ) : null}
+                          <FormFieldItem
                             control={control}
+                            name="extra_day"
+                            label="Extra Day"
+                            invalid={Boolean(errors.extra_day)}
+                            errorMessage={errors.extra_day?.message}
                             render={({ field }) => (
                               <Input
                                 type="number"
@@ -296,48 +316,21 @@ const FormAddItemSale: React.FC<FormProps> = ({
                               />
                             )}
                           />
-                        </FormItem>
-                      ) : null}
-                      <FormItem
-                        label="Extra Day"
-                        className="w-full"
-                        invalid={Boolean(errors.extra_day)}
-                        errorMessage={errors.extra_day?.message}
-                      >
-                        <Controller
-                          name="extra_day"
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              autoComplete="off"
-                              placeholder="0"
-                              {...field}
-                              value={field.value ?? undefined}
-                            />
-                          )}
-                        />
-                      </FormItem>
-                    </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                </>
-              )}
-              {watchData.item_type === "product" && (
-                <FormItem
-                  label="Quantity"
-                  invalid={Boolean(errors.quantity)}
-                  errorMessage={errors.quantity?.message}
-                  labelClass="w-full flex justify-between items-center"
-                  extraType="start"
-                >
-                  <Controller
-                    name="quantity"
-                    control={control}
-                    render={({ field }) => {
-                      return (
-                        <>
+                  {watchData.item_type === "product" && (
+                    <FormFieldItem
+                      control={control}
+                      name="quantity"
+                      label="Quantity"
+                      invalid={Boolean(errors.quantity)}
+                      errorMessage={errors.quantity?.message}
+                      render={({ field }) => {
+                        return (
                           <InputGroup>
-                            <Input
+                            <InputGroupInput
                               type="number"
                               autoComplete="off"
                               className="text-center"
@@ -375,66 +368,71 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 }
                               }}
                             />
-                            <Button
-                              type="button"
-                              variant="default"
-                              disabled={field.value <= 0}
-                              onClick={() => {
-                                const newValue = Number(field.value) - 1
-                                if (newValue >= 1) {
-                                  field.onChange(newValue)
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price * newValue
-                                  )
-                                  formProps.setValue("discount", 0)
-                                }
-                              }}
+                            <InputGroupAddon
+                              align="inline-end"
+                              className="pr-0"
                             >
-                              <Minus color="currentColor" size="20" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="default"
-                              disabled={
-                                field.value >= (watchData.product_qty as number)
-                              }
-                              onClick={() => {
-                                const newValue = Number(field.value) + 1
-                                if (
-                                  newValue <= (watchData.product_qty as number)
-                                ) {
-                                  field.onChange(newValue)
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price * newValue
-                                  )
-                                  formProps.setValue("discount", 0)
-                                }
-                              }}
-                            >
-                              <Add color="currentColor" size="20" />
-                            </Button>
+                              <ButtonGroup>
+                                <InputGroupButton
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="bg-accent"
+                                  disabled={field.value <= 0}
+                                  onClick={() => {
+                                    const newValue = Number(field.value) - 1
+                                    if (newValue >= 1) {
+                                      field.onChange(newValue)
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price * newValue
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    }
+                                  }}
+                                >
+                                  <Minus color="currentColor" size={16} />
+                                </InputGroupButton>
+                                <InputGroupButton
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={
+                                    field.value >=
+                                    (watchData.product_qty as number)
+                                  }
+                                  onClick={() => {
+                                    const newValue = Number(field.value) + 1
+                                    if (
+                                      newValue <=
+                                      (watchData.product_qty as number)
+                                    ) {
+                                      field.onChange(newValue)
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price * newValue
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    }
+                                  }}
+                                >
+                                  <Add color="currentColor" size={16} />
+                                </InputGroupButton>
+                              </ButtonGroup>
+                            </InputGroupAddon>
                           </InputGroup>
-                        </>
-                      )
-                    }}
-                  />
-                </FormItem>
-              )}
-              <FormItem
-                label="Discount"
-                invalid={Boolean(errors.discount)}
-                errorMessage={errors.discount?.message}
-                labelClass="w-full flex justify-between items-center"
-                extraType="start"
-              >
-                <Controller
-                  name="discount"
-                  control={control}
-                  render={({ field }) => {
-                    return (
-                      <>
+                        )
+                      }}
+                    />
+                  )}
+                  <FormFieldItem
+                    control={control}
+                    name="discount"
+                    label="Discount"
+                    invalid={Boolean(errors.discount)}
+                    errorMessage={errors.discount?.message}
+                    render={({ field }) => {
+                      return (
                         <InputGroup>
                           {watchData.discount_type === "nominal" ? (
                             <InputCurrency
@@ -465,7 +463,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                               }}
                             />
                           ) : (
-                            <Input
+                            <InputGroupInput
                               type="number"
                               autoComplete="off"
                               placeholder="10%"
@@ -503,82 +501,92 @@ const FormAddItemSale: React.FC<FormProps> = ({
                               }}
                             />
                           )}
-                          <Button
-                            type="button"
-                            variant={
-                              watchData.discount_type === "percent"
-                                ? "solid"
-                                : "default"
-                            }
-                            disabled={Boolean(watchData.is_promo)}
-                            onClick={() => {
-                              formProps.setValue("discount_type", "percent")
-                              formProps.setValue("discount", 0)
-                            }}
-                          >
-                            %
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={
-                              watchData.discount_type === "nominal"
-                                ? "solid"
-                                : "default"
-                            }
-                            disabled={Boolean(watchData.is_promo)}
-                            onClick={() => {
-                              formProps.setValue("discount_type", "nominal")
-                              formProps.setValue("discount", 0)
-                            }}
-                          >
-                            Rp
-                          </Button>
+                          <InputGroupAddon align="inline-end" className="pr-0">
+                            <ButtonGroup>
+                              <InputGroupButton
+                                type="button"
+                                variant={
+                                  watchData.discount_type === "percent"
+                                    ? "default"
+                                    : "ghost"
+                                }
+                                size="sm"
+                                className={
+                                  watchData.discount_type === "percent"
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : ""
+                                }
+                                disabled={Boolean(watchData.is_promo)}
+                                onClick={() => {
+                                  formProps.setValue("discount_type", "percent")
+                                  formProps.setValue("discount", 0)
+                                }}
+                              >
+                                %
+                              </InputGroupButton>
+                              <InputGroupButton
+                                type="button"
+                                variant={
+                                  watchData.discount_type === "nominal"
+                                    ? "default"
+                                    : "ghost"
+                                }
+                                size="sm"
+                                className={
+                                  watchData.discount_type === "nominal"
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : ""
+                                }
+                                disabled={Boolean(watchData.is_promo)}
+                                onClick={() => {
+                                  formProps.setValue("discount_type", "nominal")
+                                  formProps.setValue("discount", 0)
+                                }}
+                              >
+                                Rp
+                              </InputGroupButton>
+                            </ButtonGroup>
+                          </InputGroupAddon>
                         </InputGroup>
-                      </>
-                    )
-                  }}
-                />
-              </FormItem>
-              <FormItem
-                label="Notes"
-                className="mb-2 w-full"
-                invalid={Boolean(errors.notes)}
-                errorMessage={errors.notes?.message}
-              >
-                <Controller
-                  name="notes"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      textArea
-                      type="text"
-                      autoComplete="off"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
+                      )
+                    }}
+                  />
+                  <FormFieldItem
+                    control={control}
+                    name="notes"
+                    label="Notes"
+                    invalid={Boolean(errors.notes)}
+                    errorMessage={errors.notes?.message}
+                    render={({ field }) => (
+                      <Textarea
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Notes"
+                      />
+                    )}
+                  />
+                </div>
+                <div className="mt-6 flex items-center justify-between gap-2 text-right">
+                  {type === "update" ? (
+                    <Button
+                      className="flex items-center gap-1 bg-red-500 text-white hover:bg-red-600 ltr:mr-2 rtl:ml-2"
+                      variant="default"
+                      type="button"
+                      onClick={() => setConfirmDelete(true)}
+                    >
+                      <Trash color="currentColor" size="24" variant="Outline" />
+                    </Button>
+                  ) : (
+                    <div></div>
                   )}
-                />
-              </FormItem>
-            </div>
-            <div className="mt-6 flex items-center justify-between gap-2 text-right">
-              {type === "update" ? (
-                <Button
-                  className="flex items-center gap-1 bg-red-500 text-white hover:bg-red-600 ltr:mr-2 rtl:ml-2"
-                  variant="solid"
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  <Trash color="currentColor" size="24" variant="Outline" />
-                </Button>
-              ) : (
-                <div></div>
-              )}
-              <Button variant="solid" type="submit">
-                Save
-              </Button>
-            </div>
-          </Form>
-        </div>
+                  <Button variant="default" type="submit">
+                    Save
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </DialogContent>
       </Dialog>
 
       <AlertConfirm

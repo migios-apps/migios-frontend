@@ -14,22 +14,26 @@ import { apiGetPackageList } from "@/services/api/PackageService"
 import { apiGetProductList } from "@/services/api/ProductService"
 import { apiGetSales } from "@/services/api/SalesService"
 import { apiGetSettings } from "@/services/api/settings/settings"
-import { Box, DocumentFilter } from "iconsax-reactjs"
+import dayjs from "dayjs"
+import { Box, CloseCircle, DocumentFilter } from "iconsax-reactjs"
 import { useNavigate, useParams } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
 import { categoryPackage } from "@/constants/packages"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
-import CloseButton from "@/components/ui/CloseButton"
+import { statusPaymentColor } from "@/constants/utils"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import InputDebounce from "@/components/ui/input-debounce"
 import {
   ReturnAsyncSelect,
   Select,
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
-import ModeSwitcher from "@/components/template/ThemeConfigurator/ModeSwitcher"
-import { Button, Skeleton, Tabs, Tag } from "@/components/ui"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { ThemeSwitch } from "@/components/theme-switch"
 import CartDetail from "../components/CartDetail"
 import CartDetailSkeleton from "../components/CartDetailSkeleton"
 import FormAddItemSale from "../components/FormAddItemSale"
@@ -43,8 +47,6 @@ import {
   useTransactionForm,
   useTransactionItemForm,
 } from "../utils/validation"
-
-const { TabNav, TabList, TabContent } = Tabs
 
 const EditSales = () => {
   const queryClient = useQueryClient()
@@ -108,7 +110,9 @@ const EditSales = () => {
         member: salesData.member,
         discount_type: salesData.discount_type,
         discount: salesData.discount,
-        due_date: new Date(salesData.due_date),
+        due_date: salesData.due_date
+          ? dayjs(salesData.due_date).toDate()
+          : new Date(),
         notes: salesData.notes,
         balance_amount: salesData.ballance_amount || 0,
         items:
@@ -395,19 +399,29 @@ const EditSales = () => {
       <div className="flex w-full items-center justify-between gap-4 border-b border-gray-300 p-4 shadow-sm dark:border-gray-700">
         <div className="flex items-center gap-4">
           <h5>Edit Pesanan #{id}</h5>
-          <Tag className={paymentStatusColor[salesData?.status || "unpaid"]}>
+          <Badge
+            variant="outline"
+            className={
+              statusPaymentColor[salesData?.status || "unpaid"] ||
+              statusPaymentColor.unpaid
+            }
+          >
             <span className="capitalize">{salesData?.fstatus}</span>
-          </Tag>
+          </Badge>
         </div>
         <div className="top-4.5 ltr:right-6 rtl:left-6">
           <div className="flex justify-start gap-4">
-            <ModeSwitcher />
-            <CloseButton
+            <ThemeSwitch />
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 window.localStorage.removeItem("item_edit_pos")
                 handleBack()
               }}
-            />
+            >
+              <CloseCircle size={20} />
+            </Button>
           </div>
         </div>
       </div>
@@ -433,28 +447,22 @@ const EditSales = () => {
             />
           ) : (
             <div className="grid h-full grid-cols-1 items-start lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
-              <Tabs value={tab} onChange={(tab) => setTab(tab)}>
-                <TabList>
-                  <TabNav
-                    value="package"
-                    icon={
-                      <DocumentFilter
-                        color="currentColor"
-                        size={24}
-                        variant="Bulk"
-                      />
-                    }
-                  >
+              <Tabs value={tab} onValueChange={(value) => setTab(value)}>
+                <TabsList>
+                  <TabsTrigger value="package">
+                    <DocumentFilter
+                      color="currentColor"
+                      size={24}
+                      variant="Bulk"
+                    />
                     Package Plan
-                  </TabNav>
-                  <TabNav
-                    value="product"
-                    icon={<Box color="currentColor" size={24} variant="Bulk" />}
-                  >
+                  </TabsTrigger>
+                  <TabsTrigger value="product">
+                    <Box color="currentColor" size={24} variant="Bulk" />
                     Product
-                  </TabNav>
-                </TabList>
-                <TabContent value="package">
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="package">
                   <div className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between">
                     <Select
                       isClearable
@@ -528,8 +536,7 @@ const EditSales = () => {
                           (_, i) => (
                             <Skeleton
                               key={i}
-                              height={120}
-                              className="rounded-xl"
+                              className="h-[120px] rounded-xl"
                             />
                           )
                         )}
@@ -540,8 +547,8 @@ const EditSales = () => {
                       </p>
                     )}
                   </div>
-                </TabContent>
-                <TabContent value="product">
+                </TabsContent>
+                <TabsContent value="product">
                   <div className="p-4">
                     <InputDebounce
                       defaultValue={searchProduct}
@@ -592,8 +599,7 @@ const EditSales = () => {
                           (_, i) => (
                             <Skeleton
                               key={i}
-                              height={120}
-                              className="rounded-xl"
+                              className="h-[120px] rounded-xl"
                             />
                           )
                         )}
@@ -604,7 +610,7 @@ const EditSales = () => {
                       </p>
                     )}
                   </div>
-                </TabContent>
+                </TabsContent>
               </Tabs>
               <div className="h-full border-l border-gray-200 dark:border-gray-700">
                 <div
@@ -652,7 +658,7 @@ const EditSales = () => {
 
                   <Button
                     className="rounded-full"
-                    variant="solid"
+                    variant="default"
                     disabled={watchTransaction.items?.length === 0}
                     onClick={() => setShowCartDetail(true)}
                   >

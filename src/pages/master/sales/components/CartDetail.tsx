@@ -1,11 +1,13 @@
 import React, { Fragment } from "react"
-import { Controller } from "react-hook-form"
 import { PaymentStatus, SalesDetailType } from "@/services/api/@types/sales"
 import dayjs from "dayjs"
-import { Calendar, Location, SearchNormal1 } from "iconsax-reactjs"
+import { Location, SearchNormal1 } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DatePicker } from "@/components/ui/date-picker"
+import { Form, FormFieldItem } from "@/components/ui/form"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { DatePicker, FormItem } from "@/components/ui"
+import { Separator } from "@/components/ui/separator"
 import { generateCartData } from "../utils/generateCartData"
 import {
   ReturnTransactionFormSchema,
@@ -57,14 +59,14 @@ const CartDetail: React.FC<CartDetailProps> = ({
   )
 
   return (
-    <>
+    <Form {...formPropsTransaction}>
       <div className="grid h-full grid-cols-1 items-start lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
         <div className="flex w-full flex-col">
-          <div className="flex flex-col gap-3 p-4">
+          <div className="flex flex-col gap-3 p-4 pb-0">
             {/* Bagian atas: Lokasi & Tanggal */}
             <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-0">
               {/* Lokasi */}
-              <div className="flex items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
+              <div className="flex w-full items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
                 <Location size="20" color="currentColor" variant="Outline" />
                 <span className="text-sm font-semibold sm:text-base">
                   {club?.name}
@@ -72,35 +74,33 @@ const CartDetail: React.FC<CartDetailProps> = ({
               </div>
 
               {/* Tanggal */}
-              <FormItem
-                label=""
-                className="mb-0 w-full sm:w-auto"
+              <FormFieldItem
+                control={control}
+                name="due_date"
                 invalid={Boolean(errors.due_date)}
                 errorMessage={errors.due_date?.message}
-              >
-                <Controller
-                  name="due_date"
-                  control={control}
-                  render={({ field }) => (
-                    <DatePicker
-                      inputFormat="DD-MM-YYYY"
-                      placeholder="Start Date"
-                      {...field}
-                      disabled={isPaid !== 0}
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      inputPrefix={
-                        <Calendar
-                          size="20"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      }
-                      value={field.value ? dayjs(field.value).toDate() : null}
-                    />
-                  )}
-                />
-              </FormItem>
+                render={({ field, fieldState }) => (
+                  <DatePicker
+                    selected={
+                      field.value ? dayjs(field.value).toDate() : undefined
+                    }
+                    onSelect={(date) => {
+                      field.onChange(
+                        date ? dayjs(date).format("YYYY-MM-DD") : null
+                      )
+                    }}
+                    placeholder="Start Date"
+                    error={!!fieldState.error}
+                    classNameBtn="w-fit justify-end"
+                    disabled={
+                      isPaid !== 0
+                        ? () => true
+                        : (date: Date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                    }
+                  />
+                )}
+              />
             </div>
 
             {/* Search Bar */}
@@ -156,79 +156,88 @@ const CartDetail: React.FC<CartDetailProps> = ({
               })}
 
               <div className="mt-4 flex justify-end">
-                <div className="w-full max-w-md rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-3 text-lg font-bold text-gray-800 dark:text-gray-200">
-                    Ringkasan Faktur
-                  </h3>
+                <Card className="w-full max-w-md gap-0 shadow-none">
+                  <CardHeader>
+                    <CardTitle>Ringkasan Faktur</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Subtotal & Tax */}
+                    <div className="space-y-2">
+                      <div className="m-0 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Sub total</span>
+                        <span className="text-card-foreground font-medium">
+                          {cartDataGenerated.fsubtotal}
+                        </span>
+                      </div>
+                      <div className="m-0 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Pajak</span>
+                        <span className="text-card-foreground font-medium">
+                          {cartDataGenerated.ftotal_tax}
+                        </span>
+                      </div>
+                    </div>
 
-                  {/* Subtotal & Tax */}
-                  <div className="mb-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Sub total
-                      </span>
-                      <span className="font-medium">
-                        {cartDataGenerated.fsubtotal}
-                      </span>
-                    </div>
-                    {/* <div className="flex justify-between text-sm">
-                      <span className="text-primary cursor-pointer hover:underline">
-                        Tambah diskon
-                      </span>
-                      <span className="text-sm text-gray-500">-</span>
-                    </div> */}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Pajak
-                      </span>
-                      <span className="font-medium">
-                        {cartDataGenerated.ftotal_tax}
-                      </span>
-                    </div>
-                  </div>
+                    <Separator />
 
-                  {/* Total */}
-                  <div className="mb-4 border-t border-gray-200 pt-3 dark:border-gray-600">
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span>{cartDataGenerated.ftotal_amount}</span>
-                    </div>
-                    <div className="mt-1 flex justify-between text-sm text-gray-600 italic dark:text-gray-400">
-                      <span>Potensi mendapatkan poin</span>
-                      <span>+{loyalty_point} Pts</span>
+                    {/* Total */}
+                    <div className="space-y-2">
+                      <div className="m-0 flex justify-between">
+                        <span className="text-base font-semibold">Total</span>
+                        <span className="text-base font-semibold">
+                          {cartDataGenerated.ftotal_amount}
+                        </span>
+                      </div>
+                      <div className="text-muted-foreground flex justify-between text-sm">
+                        <span>Potensi mendapatkan poin</span>
+                        <span>+{loyalty_point} Pts</span>
+                      </div>
                     </div>
 
                     {detail && detail?.payments?.length > 0 ? (
-                      <div className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-600">
-                        <span className="text-lg font-bold">Pembayaran</span>
-                        {detail?.payments?.map((payment) => (
-                          <div
-                            key={payment.id}
-                            className="flex justify-between"
-                          >
-                            <div className="flex justify-start gap-1">
-                              <span className="font-semibold">{`${payment.rekening_name},`}</span>
-                              <span className="text-sm">{`${dayjs(payment.date).format("DD MMM YYYY")}`}</span>
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          <span className="text-sm font-semibold">
+                            Pembayaran
+                          </span>
+                          {detail?.payments?.map((payment) => (
+                            <div
+                              key={payment.id}
+                              className="flex justify-between text-sm"
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium">
+                                  {payment.rekening_name},
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {dayjs(payment.date).format("DD MMM YYYY")}
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                {payment.famount}
+                              </span>
                             </div>
-                            <span className="font-semibold">
-                              {payment.famount}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </>
                     ) : null}
 
                     {/* Remaining Payment */}
                     {cartDataGenerated.balance_amount > 0 && (
-                      <div className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-600">
-                        <div className="flex justify-between text-lg font-bold text-red-600 dark:text-red-400">
-                          <span>Sisa pembayaran</span>
-                          <span>{cartDataGenerated.fbalance_amount}</span>
+                      <>
+                        <Separator />
+                        <div className="flex justify-between">
+                          <span className="text-destructive text-sm font-semibold">
+                            Sisa pembayaran
+                          </span>
+                          <span className="text-destructive text-sm font-semibold">
+                            {cartDataGenerated.fbalance_amount}
+                          </span>
                         </div>
-                      </div>
+                      </>
                     )}
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </ScrollArea>
@@ -238,13 +247,12 @@ const CartDetail: React.FC<CartDetailProps> = ({
             type={type}
             detail={detail}
             formPropsTransaction={formPropsTransaction}
-            formPropsTransactionItem={formPropsTransactionItem}
             transactionId={transactionId}
             isPaid={isPaid}
           />
         </div>
       </div>
-    </>
+    </Form>
   )
 }
 

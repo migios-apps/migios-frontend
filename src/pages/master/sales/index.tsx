@@ -6,17 +6,21 @@ import { SalesType } from "@/services/api/@types/sales"
 import { apiGetSalesList } from "@/services/api/SalesService"
 import dayjs from "dayjs"
 import { Add } from "iconsax-reactjs"
-import { GoDotFill } from "react-icons/go"
-import { TbEye } from "react-icons/tb"
+import { Circle, Eye } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
-import TabList from "@/components/ui/Tabs/TabList"
-import TabNav from "@/components/ui/Tabs/TabNav"
-import Tabs from "@/components/ui/Tabs/Tabs"
+import { statusPaymentColor } from "@/constants/utils"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
 import InputDebounce from "@/components/ui/input-debounce"
-import { Button, Tag, Tooltip } from "@/components/ui"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const Sales = () => {
   const navigate = useNavigate()
@@ -89,13 +93,33 @@ const Sales = () => {
       {
         accessorKey: "code",
         header: "Faktur",
-        size: 10,
+        size: 50,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        size: 50,
         enableColumnActions: false,
+        cell: ({ row }) => {
+          const status = row.original
+          return (
+            <div className="flex items-center">
+              <Badge
+                className={
+                  statusPaymentColor[status.status] || statusPaymentColor.unpaid
+                }
+              >
+                <span className="capitalize">
+                  {status.fstatus?.split("_").join(" ")}
+                </span>
+              </Badge>
+            </div>
+          )
+        },
       },
       {
         accessorKey: "due_date",
         header: "Tanggal",
-        enableColumnActions: false,
         cell: ({ row }) => {
           return dayjs(row.original.due_date).format("DD-MM-YYYY")
         },
@@ -103,36 +127,14 @@ const Sales = () => {
       {
         accessorKey: "amount",
         header: "Total",
-        size: 10,
-        enableColumnActions: false,
         cell: ({ row }) => {
           return row.original.ftotal_amount
         },
       },
       {
         header: "Total Bayar",
-        size: 10,
-        enableColumnActions: false,
         cell: ({ row }) => {
           return row.original.ftotal_payments
-        },
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        size: 10,
-        enableColumnActions: false,
-        cell: ({ row }) => {
-          const status = row.original
-          return (
-            <div className="flex items-center">
-              <Tag className={paymentStatusColor[status.status]}>
-                <span className="capitalize">
-                  {status.fstatus?.split("_").join(" ")}
-                </span>
-              </Tag>
-            </div>
-          )
         },
       },
       {
@@ -143,16 +145,21 @@ const Sales = () => {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-3">
-              <Tooltip title="View">
-                <div
-                  className={`cursor-pointer text-xl font-semibold select-none`}
-                  role="button"
-                  onClick={() => {
-                    navigate(`/sales/${row.original.code}`)
-                  }}
-                >
-                  <TbEye />
-                </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className="cursor-pointer text-xl font-semibold select-none"
+                    role="button"
+                    onClick={() => {
+                      navigate(`/sales/${row.original.code}`)
+                    }}
+                  >
+                    <Eye className="h-5 w-5" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View</p>
+                </TooltipContent>
               </Tooltip>
               {/* <Tooltip title="Edit">
                 <div
@@ -190,38 +197,35 @@ const Sales = () => {
             })
           }}
         />
-        <Button
-          variant="solid"
-          icon={<Add color="currentColor" size={24} className="mr-1 h-5 w-5" />}
-          onClick={() => navigate("/sales/order")}
-        >
+        <Button variant="default" onClick={() => navigate("/sales/order")}>
+          <Add color="currentColor" size={20} />
           Add new
         </Button>
       </div>
-      <Tabs defaultValue={tabName} onChange={setTabName}>
-        <TabList>
-          <TabNav value="all">
-            <GoDotFill className="text-primary h-6 w-6" />
+      <Tabs value={tabName} onValueChange={setTabName}>
+        <TabsList>
+          <TabsTrigger value="all">
+            <Circle className="text-primary h-4 w-4" />
             All
-          </TabNav>
-          <TabNav value="paid">
-            <GoDotFill className="h-6 w-6 text-emerald-200" />
+          </TabsTrigger>
+          <TabsTrigger value="paid">
+            <Circle className="h-4 w-4 text-emerald-700" />
             Paid
-          </TabNav>
-          <TabNav value="unpaid">
-            <GoDotFill className="h-6 w-6 text-yellow-700" />
+          </TabsTrigger>
+          <TabsTrigger value="unpaid">
+            <Circle className="h-4 w-4 text-gray-700" />
             Unpaid
-          </TabNav>
-          <TabNav value="part_paid">
-            <GoDotFill className="h-6 w-6 text-yellow-500" />
+          </TabsTrigger>
+          <TabsTrigger value="part_paid">
+            <Circle className="h-4 w-4 text-amber-700" />
             Part-paid
-          </TabNav>
-          <TabNav value="void">
-            <GoDotFill className="h-6 w-6 text-red-500" />
+          </TabsTrigger>
+          <TabsTrigger value="void">
+            <Circle className="h-4 w-4 text-red-700" />
             Cancelled
-          </TabNav>
-        </TabList>
-        <div className="py-4">
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value={tabName} className="py-4">
           <DataTable
             columns={columns}
             data={listData}
@@ -255,7 +259,7 @@ const Sales = () => {
               })
             }}
           />
-        </div>
+        </TabsContent>
       </Tabs>
     </div>
   )

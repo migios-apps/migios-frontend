@@ -15,11 +15,11 @@ export const statusColor: Record<string, string> = {
 // Status colors untuk payment
 export const statusPaymentColor: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-700 border-emerald-300",
-  part_paid: "bg-blue-100 text-blue-700 border-blue-300",
-  unpaid: "bg-red-100 text-red-700 border-red-300",
+  part_paid: "bg-amber-700/20 text-amber-700 border-amber-700",
+  unpaid: "bg-gray-100 text-gray-700 border-gray-300",
   overdue: "bg-rose-100 text-rose-700 border-rose-300",
   refunded: "bg-purple-100 text-purple-700 border-purple-300",
-  void: "bg-gray-100 text-gray-700 border-gray-300",
-  pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
+  void: "bg-red-100 text-red-700 border-red-300",
+  pending: "bg-gray-900 text-gray-100 border-gray-900",
   completed: "bg-green-100 text-green-700 border-green-300",
 }
