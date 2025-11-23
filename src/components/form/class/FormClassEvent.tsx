@@ -4,14 +4,16 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import dayjs from "dayjs"
 import { useSessionUser } from "@/stores/auth-store"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form } from "@/components/ui/form"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import {
   CreateEventSchemaType,
   EventType,
@@ -100,31 +102,45 @@ const FormClassEvent: React.FC<FormProps> = ({ open, formProps, onClose }) => {
     onClose()
   }
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[620px]">
-        <DialogHeader>
-          <DialogTitle>Event</DialogTitle>
-          <DialogDescription />
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onClose}>
+      <SheetContent
+        side="right"
+        className="w-full gap-0 sm:max-w-[620px]"
+        floating
+      >
+        <SheetHeader>
+          <SheetTitle>Event</SheetTitle>
+          <SheetDescription />
+        </SheetHeader>
         <Form {...formEventProps}>
           <form onSubmit={formEventProps.handleSubmit(onSubmit)}>
-            <FormEvent
-              shwoTitle={false}
-              showDescription={false}
-              formProps={formEventProps}
-              frequencyOptions={frequencyOptions}
-            />
-            <Button
-              type="submit"
-              className="mt-5"
-              disabled={formEventProps.formState.isSubmitting}
-            >
-              Save
-            </Button>
+            <ScrollArea className="h-[calc(100vh-10rem)] px-2">
+              <div className="px-4">
+                <FormEvent
+                  shwoTitle={false}
+                  showDescription={false}
+                  formProps={formEventProps}
+                  frequencyOptions={frequencyOptions}
+                />
+              </div>
+            </ScrollArea>
+            <SheetFooter>
+              <div className="flex w-full items-center justify-end gap-2 px-4">
+                <Button variant="outline" type="button" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={formEventProps.formState.isSubmitting}
+                >
+                  {formEventProps.formState.isSubmitting ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            </SheetFooter>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }
 

@@ -1,6 +1,7 @@
 import { lazy } from "react"
 import type { Routes } from "@/@types/routes"
 import { attendanceRoute } from "./pages/attendance.route"
+import { classRoute } from "./pages/class.route"
 import { employeeRoute } from "./pages/employee.route"
 import { financeRoute } from "./pages/finance.route"
 import { measurementRoute } from "./pages/measurement.route"
@@ -18,6 +19,7 @@ const protectedRoute: Routes = [
   ...measurementRoute,
   ...packageRoute,
   ...salesRoute,
+  ...classRoute,
   {
     path: `/clubs`,
     component: lazy(() => import("@/pages/clubs")),
@@ -38,11 +40,18 @@ const protectedRoute: Routes = [
     component: lazy(() => import("@/pages/cutting-sessions")),
     authority: [],
   },
-  // {
-  //   path: "/schedule",
-  //   component: lazy(() => import("@/pages/schedule")),
-  //   authority: [],
-  // },
+  {
+    path: "/schedule",
+    component: lazy(() => import("@/pages/schedule")),
+    authority: [],
+    meta: {
+      themeConfig: {
+        layout: "inset",
+        sidebar: "icon", // Sidebar akan icon mode
+        sidebar_state: false,
+      },
+    },
+  },
   {
     path: "/products",
     component: lazy(() => import("@/pages/master/products")),

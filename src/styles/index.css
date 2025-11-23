@@ -265,3 +265,5 @@ These serve as the fallback; there is no separate default.css file. */
     @apply bg-background text-foreground;
   }
 }
+
+@import "./_full-calendar.css";

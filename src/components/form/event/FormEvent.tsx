@@ -4,9 +4,12 @@ import dayjs from "dayjs"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker"
 import {
-  FormControl,
+  DatePicker,
+  DateTimePicker,
+  SimpleTimePicker,
+} from "@/components/ui/date-picker"
+import {
   FormField,
   FormFieldItem,
   FormItem,
@@ -174,28 +177,29 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                     watchData.frequency === "daily"
                   ) {
                     return (
-                      <DatePicker.DateTimepicker
-                        inputFormat="DD-MM-YYYY HH:mm"
-                        amPm={false}
-                        placeholder="Start Date"
-                        selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (dayjs(field.value).toDate() as Date)
+                            : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD HH:mm") : null
                           )
                         }}
+                        use12HourFormat={false}
                         error={!!fieldState.error}
                       />
                     )
                   } else {
                     return (
                       <DatePicker
-                        inputFormat="DD-MM-YYYY"
                         placeholder="Start Date"
                         selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                          field.value
+                            ? (dayjs(field.value).toDate() as Date)
+                            : undefined
                         }
                         onSelect={(date) => {
                           field.onChange(
@@ -222,28 +226,29 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                     watchData.frequency === "daily"
                   ) {
                     return (
-                      <DatePicker.DateTimepicker
-                        inputFormat="DD-MM-YYYY HH:mm"
-                        amPm={false}
-                        placeholder="End Date"
-                        selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (dayjs(field.value).toDate() as Date)
+                            : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD HH:mm") : null
                           )
                         }}
+                        use12HourFormat={false}
                         error={!!fieldState.error}
                       />
                     )
                   } else {
                     return (
                       <DatePicker
-                        inputFormat="DD-MM-YYYY"
                         placeholder="End Date"
                         selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                          field.value
+                            ? (dayjs(field.value).toDate() as Date)
+                            : undefined
                         }
                         onSelect={(date) => {
                           field.onChange(
@@ -318,17 +323,15 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                           const isChecked = currentValue.includes(week)
                           return (
                             <FormItem className="flex flex-row items-start space-y-0 space-x-3">
-                              <FormControl>
-                                <Checkbox
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) => {
-                                    const newValue = checked
-                                      ? [...currentValue, week]
-                                      : currentValue.filter((n) => n !== week)
-                                    field.onChange(newValue)
-                                  }}
-                                />
-                              </FormControl>
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
+                                    ? [...currentValue, week]
+                                    : currentValue.filter((n) => n !== week)
+                                  field.onChange(newValue)
+                                }}
+                              />
                               <FormLabel className="font-normal">
                                 {week === -1 ? "Last Week" : `Week ${week}`}
                               </FormLabel>
@@ -363,17 +366,15 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                           const isChecked = currentValue.includes(month)
                           return (
                             <FormItem className="flex flex-row items-start space-y-0 space-x-3">
-                              <FormControl>
-                                <Checkbox
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) => {
-                                    const newValue = checked
-                                      ? [...currentValue, month]
-                                      : currentValue.filter((n) => n !== month)
-                                    field.onChange(newValue)
-                                  }}
-                                />
-                              </FormControl>
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
+                                    ? [...currentValue, month]
+                                    : currentValue.filter((n) => n !== month)
+                                  field.onChange(newValue)
+                                }}
+                              />
                               <FormLabel className="font-normal">
                                 {dayjs(new Date(0, month)).format("MMMM")}
                               </FormLabel>
@@ -450,17 +451,41 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                                     errors.selected_weekdays?.[index]
                                       ?.start_time?.message
                                   }
-                                  render={({ field }) => (
-                                    <Input
-                                      type="time"
-                                      value={field.value || ""}
-                                      onChange={(e) => {
-                                        field.onChange(
-                                          e.target.value || undefined
-                                        )
-                                      }}
-                                    />
-                                  )}
+                                  render={({ field, fieldState }) => {
+                                    const timeValue = field.value
+                                      ? (() => {
+                                          const [hours, minutes] =
+                                            field.value.split(":")
+                                          const date = new Date()
+                                          date.setHours(
+                                            parseInt(hours || "0", 10),
+                                            parseInt(minutes || "0", 10),
+                                            0,
+                                            0
+                                          )
+                                          return date
+                                        })()
+                                      : new Date()
+
+                                    return (
+                                      <SimpleTimePicker
+                                        value={timeValue}
+                                        onChange={(date) => {
+                                          const hours = date
+                                            .getHours()
+                                            .toString()
+                                            .padStart(2, "0")
+                                          const minutes = date
+                                            .getMinutes()
+                                            .toString()
+                                            .padStart(2, "0")
+                                          field.onChange(`${hours}:${minutes}`)
+                                        }}
+                                        use12HourFormat={false}
+                                        error={!!fieldState.error}
+                                      />
+                                    )
+                                  }}
                                 />
                               </div>
                               <div className="w-full">
@@ -475,17 +500,41 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                                     errors.selected_weekdays?.[index]?.end_time
                                       ?.message
                                   }
-                                  render={({ field }) => (
-                                    <Input
-                                      type="time"
-                                      value={field.value || ""}
-                                      onChange={(e) => {
-                                        field.onChange(
-                                          e.target.value || undefined
-                                        )
-                                      }}
-                                    />
-                                  )}
+                                  render={({ field, fieldState }) => {
+                                    const timeValue = field.value
+                                      ? (() => {
+                                          const [hours, minutes] =
+                                            field.value.split(":")
+                                          const date = new Date()
+                                          date.setHours(
+                                            parseInt(hours || "0", 10),
+                                            parseInt(minutes || "0", 10),
+                                            0,
+                                            0
+                                          )
+                                          return date
+                                        })()
+                                      : new Date()
+
+                                    return (
+                                      <SimpleTimePicker
+                                        value={timeValue}
+                                        onChange={(date) => {
+                                          const hours = date
+                                            .getHours()
+                                            .toString()
+                                            .padStart(2, "0")
+                                          const minutes = date
+                                            .getMinutes()
+                                            .toString()
+                                            .padStart(2, "0")
+                                          field.onChange(`${hours}:${minutes}`)
+                                        }}
+                                        use12HourFormat={false}
+                                        error={!!fieldState.error}
+                                      />
+                                    )
+                                  }}
                                 />
                               </div>
                             </div>

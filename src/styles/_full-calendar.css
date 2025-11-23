@@ -1,0 +1,326 @@
+.calendar-view {
+  @apply h-full;
+
+  .fc {
+    @apply h-full;
+  }
+
+  .fc-theme-standard .fc-scrollgrid {
+    @apply border-0;
+  }
+
+  .fc-theme-standard td,
+  .fc-theme-standard th {
+    @apply border-border;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  .fc-theme-standard td {
+    @apply bg-background;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    @apply text-foreground py-3 text-sm! font-medium!;
+  }
+
+  .fc-col-header-cell {
+    @apply bg-card border-border border-b;
+  }
+
+  .fc .fc-daygrid-day-number {
+    @apply text-foreground flex h-[30px] w-[30px] items-center justify-center rounded-full font-semibold;
+  }
+
+  /* .fc-view {
+    @apply border-border bg-card rounded-xl border shadow-sm;
+  } */
+
+  .fc-daygrid-dot-event .fc-event-title {
+    @apply text-foreground;
+  }
+
+  .fc .fc-button {
+    @apply h-9 rounded-md py-2 font-medium transition-all;
+  }
+
+  .fc .fc-toolbar {
+    @apply flex-col items-start gap-2 lg:flex-row lg:items-center;
+  }
+
+  .fc .fc-button-primary {
+    @apply bg-background border-border text-muted-foreground border font-medium shadow-xs;
+
+    &:focus-visible {
+      @apply ring-ring/50 ring-offset-background ring-2 ring-offset-2 outline-none;
+    }
+
+    &:hover {
+      @apply bg-accent text-accent-foreground border-accent;
+    }
+
+    &:disabled {
+      @apply pointer-events-none cursor-not-allowed opacity-50;
+    }
+  }
+
+  .fc .fc-button-primary:not(:disabled):active:focus,
+  .fc .fc-button-primary:not(:disabled).fc-button-active:focus {
+    @apply ring-ring/50 ring-offset-background ring-2 ring-offset-2 outline-none;
+  }
+
+  .fc .fc-button-primary:not(:disabled):active {
+    @apply bg-accent text-accent-foreground border-accent;
+  }
+
+  .fc .fc-button-primary:not(:disabled).fc-button-active {
+    @apply bg-primary text-primary-foreground border-primary;
+  }
+
+  .fc {
+    .fc-dayGridMonth-button,
+    .fc-timeGridDay-button,
+    .fc-timeGridWeek-button,
+    .fc-today-button {
+      @apply px-4 capitalize;
+    }
+  }
+
+  .fc .fc-daygrid-day-top {
+    @apply p-1;
+  }
+
+  .fc .fc-highlight {
+    @apply bg-accent/50;
+  }
+
+  .fc-daygrid-dot-event:hover,
+  .fc-daygrid-dot-event.fc-event-mirror {
+    @apply bg-transparent;
+  }
+
+  .fc .fc-daygrid-day.fc-day-today {
+    @apply bg-accent/20;
+  }
+
+  .fc .fc-daygrid-event {
+    @apply mb-2 rounded-md p-0;
+  }
+
+  .fc-h-event {
+    @apply border-0 bg-transparent;
+  }
+
+  .fc-event-selected,
+  .fc-event:focus {
+    @apply shadow-none outline-none;
+
+    &:after {
+      @apply bg-transparent;
+    }
+  }
+
+  .fc .fc-cell-shaded,
+  .fc .fc-day-disabled {
+    @apply bg-muted/50;
+  }
+
+  .fc-daygrid-bg-harness {
+    .fc-highlight {
+      @apply bg-accent/50;
+    }
+  }
+
+  .fc-daygrid-event {
+    @apply text-xs;
+  }
+
+  .fc .custom-calendar-event {
+    @apply flex h-full min-h-7 w-full items-center overflow-hidden rounded-md p-2 text-ellipsis;
+  }
+
+  .fc-v-event {
+    @apply border-0 bg-transparent;
+  }
+
+  .fc .fc-scrollgrid-section table {
+    @apply w-full!;
+  }
+
+  .fc .fc-daygrid-body {
+    @apply w-full!;
+  }
+
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+    @apply mx-0;
+  }
+
+  .fc-toolbar-chunk {
+    @apply flex w-full flex-col gap-2 sm:w-auto sm:flex-row;
+  }
+
+  .fc .fc-day-other {
+    @apply bg-muted/30 opacity-80;
+
+    .fc-daygrid-day-top {
+      @apply opacity-50;
+    }
+
+    .fc-highlight {
+      @apply -z-10;
+    }
+  }
+
+  .fc-timegrid-slot {
+    @apply border-border;
+  }
+
+  .fc-timegrid-slot-label {
+    @apply text-muted-foreground;
+  }
+
+  .fc-timegrid-now-indicator-line {
+    @apply border-primary;
+  }
+
+  .fc-timegrid-now-indicator-arrow {
+    @apply border-primary;
+  }
+
+  /* List/Agenda View Styles */
+  .fc-theme-standard .fc-list {
+    @apply border-0;
+  }
+  .fc .fc-list-sticky .fc-list-day > * {
+    @apply bg-card;
+  }
+
+  /* Restructure list event to stack time above title */
+  .fc-list-event {
+    @apply text-foreground;
+  }
+
+  .fc-list-event > td {
+    @apply p-0! py-2! align-middle;
+  }
+
+  /* Hide the default time column */
+  .fc-list-event-time {
+    @apply hidden!;
+  }
+
+  /* Make the event title cell full width and use flex column layout */
+  .fc-list-event-title {
+    @apply text-foreground block w-full p-3 pl-0! align-middle;
+  }
+
+  /* Style the dot/graphic column to be minimal and vertically centered */
+  .fc-list-event-graphic {
+    @apply hidden w-auto pr-2! pl-3 align-middle;
+  }
+
+  /* Ensure the dot is vertically centered within its cell */
+  .fc-list-event-dot {
+    @apply inline-block align-middle;
+  }
+
+  /* Use ::before to show time above title */
+  .fc-list-event-title::before {
+    content: attr(data-time);
+    @apply text-muted-foreground mb-1.5 block text-xs font-medium tracking-wide uppercase;
+  }
+
+  /* Hide ::before when data-time is empty */
+  .fc-list-event-title:not([data-time])::before,
+  .fc-list-event-title[data-time=""]::before {
+    content: none;
+    @apply mb-0;
+  }
+
+  /* Make event title text slightly larger */
+  .fc-list-event-title a {
+    @apply text-sm font-medium;
+  }
+
+  .fc-list-day-text,
+  .fc-list-day-side-text {
+    @apply text-foreground;
+  }
+
+  .fc-list-day-cushion {
+    @apply bg-muted/30;
+  }
+
+  .fc-list-table {
+    @apply border-border;
+  }
+
+  .fc-list-event:hover td {
+    @apply bg-accent/50;
+  }
+
+  /* Sembunyikan popover bawaan FullCalendar tanpa merusak layout JS-nya */
+  .fc-more-popover {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.9); /* optional, biar bener-bener nggak keganggu */
+  }
+
+  /* Kalau mau aman, hilangkan shadow dan border juga */
+  .fc-more-popover .fc-popover-body,
+  .fc-more-popover .fc-popover-header {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Ensure Week View shows time slots properly */
+  .fc-timeGridWeek-view .fc-timegrid-slot {
+    @apply border-border;
+  }
+
+  /* Remove borders from time axis in Week View */
+  .fc-timeGridWeek-view .fc-timegrid-axis,
+  .fc-timeGridWeek-view .fc-timegrid-slot-label {
+    @apply border-0;
+  }
+
+  .fc-timeGridWeek-view .fc-timegrid-slot-label-cushion {
+    @apply text-muted-foreground text-xs font-medium;
+  }
+
+  .fc-timeGridWeek-view .fc-timegrid-col {
+    @apply border-border;
+  }
+
+  /* Remove box shadow from timegrid events */
+  .fc-timegrid-event-harness-inset .fc-timegrid-event,
+  .fc-timegrid-event.fc-event-mirror,
+  .fc-timegrid-more-link {
+    box-shadow: none !important;
+  }
+
+  /* Month view should not show time slots */
+  .fc-dayGridMonth-view .fc-timegrid-slot {
+    @apply hidden;
+  }
+
+  /* Increase height of time slots in Week and Day views for better visibility */
+  .fc-timeGridWeek-view .fc-timegrid-slot,
+  .fc-timeGridDay-view .fc-timegrid-slot {
+    height: 80px !important; /* Increased from default ~48px */
+  }
+
+  /* Adjust slot label positioning for taller slots */
+  .fc-timeGridWeek-view .fc-timegrid-slot-label-frame,
+  .fc-timeGridDay-view .fc-timegrid-slot-label-frame {
+    @apply items-start pt-1;
+  }
+
+  /* Events will automatically adjust to the increased slot height */
+  .fc-timeGridWeek-view .fc-timegrid-event,
+  .fc-timeGridDay-view .fc-timegrid-event {
+    @apply min-h-5;
+  }
+}
