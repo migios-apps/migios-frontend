@@ -16,7 +16,14 @@ import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import InputDebounce from "@/components/ui/input-debounce"
 import Loading from "@/components/ui/loading"
 import { FullPagination } from "@/components/ui/pagination"
@@ -26,6 +33,11 @@ import {
 } from "@/components/ui/react-select"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import FormClassPage from "@/components/form/class/FormClassPage"
 import {
   LevelClassOptions,
@@ -140,7 +152,7 @@ const ClassIndex = () => {
   return (
     <LayoutClasses>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 pt-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <SelectAsyncPaginate
             isClearable
             isLoading={isLoading}
@@ -209,218 +221,228 @@ const ClassIndex = () => {
                     const status = item.enabled ? "active" : "inactive"
                     const event = item.events[0]
                     return (
-                      <Card key={index} className="min-h-[140px]">
+                      <Card key={index} className="gap-0">
                         <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <h6 className="font-bold">{item.name}</h6>
+                          <CardTitle>{item.name}</CardTitle>
+                          <CardAction>
                             <Badge className={statusColor[status]}>
                               <span className="capitalize">{status}</span>
                             </Badge>
-                          </div>
+                          </CardAction>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4 py-2">
                           <Separator />
 
-                          <div className="flex flex-col">
-                            <div className="grid grid-cols-[120px_1fr] items-start space-x-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Call
-                                    color="currentColor"
-                                    size="16"
-                                    variant="Bulk"
-                                  />
+                          <div className="grid gap-3">
+                            <div className="flex items-center gap-3">
+                              <Call
+                                color="currentColor"
+                                size={16}
+                                variant="Bulk"
+                                className="text-muted-foreground shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="text-muted-foreground text-xs">
                                   Phone
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start font-bold capitalize">
-                                {item.phone}
+                                </div>
+                                <div className="text-sm font-medium">
+                                  {item.phone}
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-[120px_1fr] items-start space-x-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Profile2User
-                                    color="currentColor"
-                                    size="16"
-                                    variant="Bulk"
-                                  />
+                            <div className="flex items-center gap-3">
+                              <Profile2User
+                                color="currentColor"
+                                size={16}
+                                variant="Bulk"
+                                className="text-muted-foreground shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="text-muted-foreground text-xs">
                                   Capacity
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start font-bold capitalize">
-                                {item.capacity}
+                                </div>
+                                <div className="text-sm font-medium">
+                                  {item.capacity}
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-[120px_1fr] items-start space-x-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Chart21
-                                    color="currentColor"
-                                    size="16"
-                                    variant="Bulk"
-                                  />
+                            <div className="flex items-center gap-3">
+                              <Chart21
+                                color="currentColor"
+                                size={16}
+                                variant="Bulk"
+                                className="text-muted-foreground shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="text-muted-foreground text-xs">
                                   Level
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start font-bold capitalize">
-                                {
-                                  LevelClassOptions.find(
-                                    (cls) => cls.value === item.level
-                                  )?.label
-                                }
+                                </div>
+                                <div className="text-sm font-medium">
+                                  {
+                                    LevelClassOptions.find(
+                                      (cls) => cls.value === item.level
+                                    )?.label
+                                  }
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-[120px_1fr] items-start space-x-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Layer
-                                    color="currentColor"
-                                    size="16"
-                                    variant="Bulk"
-                                  />
+                            <div className="flex items-center gap-3">
+                              <Layer
+                                color="currentColor"
+                                size={16}
+                                variant="Bulk"
+                                className="text-muted-foreground shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="text-muted-foreground text-xs">
                                   Category
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start font-bold capitalize">
-                                {item.category?.name}
+                                </div>
+                                <div className="text-sm font-medium">
+                                  {item.category?.name || "-"}
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-[120px_1fr] items-start space-x-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Flame size={16} />
+                            <div className="flex items-center gap-3">
+                              <Flame
+                                size={16}
+                                className="text-muted-foreground shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="text-muted-foreground text-xs">
                                   Calorie Burn
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start font-bold capitalize">
-                                {item.burn_calories} Cal
+                                </div>
+                                <div className="text-sm font-medium">
+                                  {item.burn_calories} Cal
+                                </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="relative mt-2">
-                            <span className="flex items-center gap-1 align-top">
-                              Schedule
-                            </span>
-                            {item.events.length > 0 && (
-                              <>
-                                {event?.frequency === EventFrequency.daily ? (
-                                  `${dayjs(event.start).format("DD MMM YYYY HH:mm")} - ${dayjs(event.end).format("DD MMM YYYY HH:mm")}`
-                                ) : (
-                                  <div className="flex flex-wrap gap-1">
-                                    {event.selected_weekdays?.map(
-                                      (item, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex flex-col rounded-xl bg-gray-100 p-2 dark:bg-gray-800"
-                                        >
-                                          <span className="font-semibold capitalize">
-                                            {item.day_of_week}
-                                          </span>
-                                          <span className="text-xs">
-                                            {item.start_time} - {item.end_time}
-                                          </span>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
+                          {item.events.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="text-muted-foreground text-xs font-medium">
+                                Schedule
+                              </div>
+                              {event?.frequency === EventFrequency.daily ? (
+                                <div className="text-sm">
+                                  {`${dayjs(event.start).format("DD MMM YYYY HH:mm")} - ${dayjs(event.end).format("DD MMM YYYY HH:mm")}`}
+                                </div>
+                              ) : (
+                                <div className="flex flex-wrap gap-2">
+                                  {event.selected_weekdays?.map(
+                                    (weekday, weekdayIndex) => (
+                                      <Badge
+                                        key={weekdayIndex}
+                                        variant="outline"
+                                        className="flex flex-col items-start gap-1 px-3 py-1.5"
+                                      >
+                                        <span className="text-xs font-semibold capitalize">
+                                          {weekday.day_of_week}
+                                        </span>
+                                        <span className="text-xs">
+                                          {weekday.start_time} -{" "}
+                                          {weekday.end_time}
+                                        </span>
+                                      </Badge>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {item.description && (
+                            <div className="space-y-2">
+                              <div className="text-muted-foreground text-xs font-medium">
+                                Description
+                              </div>
+                              <p className="text-muted-foreground text-sm">
+                                {item.description}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                        <CardFooter className="flex items-center justify-between border-t pt-2!">
+                          <div className="flex items-center">
+                            {item.allow_all_instructor ? (
+                              <Badge className={statusColor["active"]}>
+                                <span className="capitalize">
+                                  All Instructor
+                                </span>
+                              </Badge>
+                            ) : (
+                              <div className="flex items-center -space-x-2">
+                                {item.instructors
+                                  ?.slice(0, 3)
+                                  .map(
+                                    (
+                                      instructor: any,
+                                      instructorIndex: number
+                                    ) => (
+                                      <Tooltip key={instructorIndex}>
+                                        <TooltipTrigger asChild>
+                                          <Avatar className="border-background size-7 cursor-pointer border-2">
+                                            <AvatarImage
+                                              src={instructor.photo || ""}
+                                              alt={instructor.name || ""}
+                                            />
+                                            <AvatarFallback className="text-xs">
+                                              {instructor.name
+                                                ?.charAt(0)
+                                                ?.toUpperCase() || "?"}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>{instructor.name || "Unknown"}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )
+                                  )}
+                                {(item.instructors?.length || 0) > 3 && (
+                                  <Avatar className="bg-muted border-background size-7 border-2">
+                                    <AvatarFallback className="text-xs">
+                                      +{(item.instructors?.length || 0) - 3}
+                                    </AvatarFallback>
+                                  </Avatar>
                                 )}
-                              </>
+                              </div>
                             )}
                           </div>
-
-                          <div className="relative mt-2">
-                            <span className="flex items-center gap-1 align-top">
-                              Description
-                            </span>
-                            <p className="align-top">
-                              {item.description ?? "-"}
-                            </p>
-                          </div>
-                          <div className="mt-4 flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <div className="-ml-2">
-                                {item.allow_all_instructor ? (
-                                  <div className="flex items-center">
-                                    <Badge className={statusColor["active"]}>
-                                      <span className="capitalize">
-                                        All Instructor
-                                      </span>
-                                    </Badge>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center -space-x-2">
-                                    {item.instructors
-                                      ?.slice(0, 3)
-                                      .map((instructor: any, index: number) => (
-                                        <Avatar
-                                          key={index}
-                                          className="size-7 cursor-pointer border-2 border-white dark:border-gray-500"
-                                        >
-                                          <AvatarImage
-                                            src={instructor.photo || ""}
-                                            alt={instructor.name || ""}
-                                          />
-                                          <AvatarFallback className="text-xs">
-                                            {instructor.name
-                                              ?.charAt(0)
-                                              ?.toUpperCase() || "?"}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                      ))}
-                                    {(item.instructors?.length || 0) > 3 && (
-                                      <Avatar className="bg-muted size-7 border-2 border-white dark:border-gray-500">
-                                        <AvatarFallback className="text-xs">
-                                          +{(item.instructors?.length || 0) - 3}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto py-0"
-                              onClick={() => {
-                                setShowForm(true)
-                                setFormType("update")
-                                formProps.setValue("id", item.id)
-                                formProps.setValue("photo", item.photo)
-                                formProps.setValue("name", item.name)
-                                formProps.setValue("phone", item.phone)
-                                formProps.setValue("capacity", item.capacity)
-                                formProps.setValue("level", item.level)
-                                formProps.setValue(
-                                  "burn_calories",
-                                  item.burn_calories
-                                )
-                                formProps.setValue("category", item.category)
-                                formProps.setValue(
-                                  "description",
-                                  item.description
-                                )
-                                formProps.setValue(
-                                  "allow_all_instructor",
-                                  item.allow_all_instructor
-                                )
-                                formProps.setValue("enabled", item.enabled)
-                                // formProps.setValue('instructors', item.instructors)
-                                formProps.setValue("events", item.events as [])
-                              }}
-                            >
-                              Edit class
-                              <ArrowRight size={16} />
-                            </Button>
-                          </div>
-                        </CardContent>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowForm(true)
+                              setFormType("update")
+                              formProps.setValue("id", item.id)
+                              formProps.setValue("photo", item.photo)
+                              formProps.setValue("name", item.name)
+                              formProps.setValue("phone", item.phone)
+                              formProps.setValue("capacity", item.capacity)
+                              formProps.setValue("level", item.level)
+                              formProps.setValue(
+                                "burn_calories",
+                                item.burn_calories
+                              )
+                              formProps.setValue("category", item.category)
+                              formProps.setValue(
+                                "description",
+                                item.description
+                              )
+                              formProps.setValue(
+                                "allow_all_instructor",
+                                item.allow_all_instructor
+                              )
+                              formProps.setValue("enabled", item.enabled)
+                              // formProps.setValue('instructors', item.instructors)
+                              formProps.setValue("events", item.events as [])
+                            }}
+                          >
+                            Edit class
+                            <ArrowRight size={16} />
+                          </Button>
+                        </CardFooter>
                       </Card>
                     )
                   })}

@@ -43,18 +43,16 @@ const ScheduleIndex = () => {
   return (
     <LayoutClasses>
       <Loading loading={false}>
-        <div className="mt-4">
-          <CalendarView
-            showHeader={false}
-            editable={false}
-            droppable={false}
-            eventStartEditable={false}
-            eventDurationEditable={false}
-            isLoading={loadingEvents}
-            initialView={"timeGridWeek"}
-            events={events}
-          />
-        </div>
+        <CalendarView
+          showHeader={false}
+          editable={false}
+          droppable={false}
+          eventStartEditable={false}
+          eventDurationEditable={false}
+          isLoading={loadingEvents}
+          initialView={"timeGridWeek"}
+          events={events}
+        />
       </Loading>
     </LayoutClasses>
   )
