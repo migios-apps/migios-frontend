@@ -52,6 +52,10 @@ const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
       if (error instanceof AxiosError) {
+        if (error?.code === "ERR_NETWORK") {
+          toast.error("Network error!")
+          return
+        }
         if (error.response?.status === 401) {
           toast.error("Session expired!")
           useSessionUser.getState().setSessionSignedIn(false)
@@ -64,12 +68,13 @@ const queryClient = new QueryClient({
           }
 
           window.location.href = `/sign-in?redirect=${encodeURIComponent(redirect)}`
-        }
-        if (error.response?.status === 500) {
+        } else if (error.response?.status === 500) {
           toast.error("Internal Server Error!")
           if (import.meta.env.PROD) {
             window.location.href = "/500"
           }
+        } else {
+          toast.error("Something went wrong!")
         }
       }
     },
@@ -86,7 +91,7 @@ if (!rootElement.innerHTML) {
         <ThemeConfigProvider>
           <App />
         </ThemeConfigProvider>
-        <Toaster duration={5000} />
+        <Toaster duration={5000} position="top-center" />
         {import.meta.env.MODE === "development" && (
           <ReactQueryDevtools buttonPosition="bottom-left" />
         )}
