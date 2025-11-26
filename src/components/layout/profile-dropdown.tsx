@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useSessionUser } from "@/stores/auth-store"
 import useDialogState from "@/hooks/use-dialog-state"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,13 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SignOutDialog } from "@/components/sign-out-dialog"
 
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
+  const user = useSessionUser((state) => state.user)
 
   return (
     <>
@@ -31,40 +32,30 @@ export function ProfileDropdown() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-1.5">
-              <p className="text-sm leading-none font-medium">migios</p>
+              <p className="text-sm leading-none font-medium">{user.name}</p>
               <p className="text-muted-foreground text-xs leading-none">
-                migios@gmail.com
+                {user.email}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link to="/settings">
-                Profile
-                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </Link>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/account/profile">Profile</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings">
-                Billing
-                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </Link>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/account/account">Account</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings">
-                Settings
-                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-              </Link>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/settings/gym/about">Gym settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>New Team</DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/settings/others/membership">Membership settings</Link>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
             Sign out
-            <DropdownMenuShortcut className="text-current">
-              ⇧⌘Q
-            </DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

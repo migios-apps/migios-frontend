@@ -17,8 +17,3 @@ export type TableQueries = {
     key: string | number
   }
 }
-
-export type TraslationFn = (
-  key: string,
-  fallback?: string | Record<string, string | number>
-) => string

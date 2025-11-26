@@ -1,23 +1,22 @@
-import type { JSX, LazyExoticComponent, ReactNode } from "react"
+import type { JSX, LazyExoticComponent } from "react"
 import type { ThemeConfig } from "@/stores/theme-config-store"
 
-export type PageHeaderProps = {
-  title?: string | ReactNode | LazyExoticComponent<() => JSX.Element>
-  description?: string | ReactNode
-  contained?: boolean
+export interface ContainerProps {
+  fixed?: boolean
+  fluid?: boolean
+  className?: string
 }
 
 export interface Meta {
-  pageContainerType?: "default" | "gutterless" | "contained"
-  pageBackgroundType?: "default" | "plain"
+  container?: ContainerProps
   themeConfig?: Partial<ThemeConfig>
 }
 
-export type Route = {
+export type RouteProps = {
   path: string
   component: LazyExoticComponent<<T extends Meta>(props: T) => JSX.Element>
   authority: string[]
   meta?: Meta
 }
 
-export type Routes = Route[]
+export type Routes = RouteProps[]

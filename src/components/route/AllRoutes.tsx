@@ -1,9 +1,9 @@
 import { lazy } from "react"
+import { RouteProps } from "@/@types/routes"
 import { useAuth } from "@/auth"
 import appConfig from "@/config/app.config"
 import { protectedRoutes, publicRoutes } from "@/routes"
 import { Navigate, Route, Routes } from "react-router-dom"
-import { ThemeConfig } from "@/stores/theme-config-store"
 import { AuthenticatedLayout } from "../layout/authenticated-layout"
 import AppRoute from "./AppRoute"
 import AuthorityGuard from "./AuthorityGuard"
@@ -12,16 +12,9 @@ import PublicRoute from "./PublicRoute"
 
 const Error404 = lazy(() => import("@/pages/errors/not-found-error"))
 
-interface ViewsProps {
-  pageContainerType?: "default" | "gutterless" | "contained"
-  themeConfig?: ThemeConfig
-}
-
-type AllRoutesProps = ViewsProps
-
 const { authenticatedEntryPath, clubsAuthenticatedEntryPath } = appConfig
 
-const AllRoutes = (props: AllRoutesProps) => {
+const AllRoutes = (props: RouteProps["meta"]) => {
   const { user, authDashboard, authenticated } = useAuth()
 
   return (

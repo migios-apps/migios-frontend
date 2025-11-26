@@ -1,5 +1,6 @@
 import { lazy } from "react"
 import type { Routes } from "@/@types/routes"
+import { accountRoute } from "./pages/account.route"
 import { attendanceRoute } from "./pages/attendance.route"
 import { classRoute } from "./pages/class.route"
 import { employeeRoute } from "./pages/employee.route"
@@ -20,6 +21,7 @@ const protectedRoute: Routes = [
   ...packageRoute,
   ...salesRoute,
   ...classRoute,
+  ...accountRoute,
   {
     path: `/clubs`,
     component: lazy(() => import("@/pages/clubs")),

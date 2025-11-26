@@ -1,4 +1,5 @@
 import { Suspense, useState } from "react"
+import { ContainerProps, RouteProps } from "@/@types/routes"
 import { Outlet } from "react-router-dom"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
@@ -12,7 +13,6 @@ import {
   SidebarProvider,
 } from "@/components/layout/vertical/sidebar"
 import { ConfigDrawer } from "../config-drawer"
-import { ProfileDropdown } from "../profile-dropdown"
 import { Search } from "../search"
 import { ThemeCustomizer, ThemeCustomizerTrigger } from "../theme-customizer"
 import { ThemeSwitch } from "../theme-switch"
@@ -20,17 +20,27 @@ import { PageLoader } from "../ui/page-loader"
 import { Header } from "./header"
 import { TeamSwitcherHorizontal } from "./horizontal/team-switcher-horizontal"
 import { Main } from "./main"
+import { ProfileDropdown } from "./profile-dropdown"
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
-}
+} & RouteProps["meta"]
 
-export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
+export function AuthenticatedLayout({
+  children,
+  container,
+}: AuthenticatedLayoutProps) {
   const themeConfig = useThemeConfig((state) => state.themeConfig)
   const setThemeConfig = useThemeConfig((state) => state.setThemeConfig)
   const sidebarData = useSidebarData()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [themeCustomizerOpen, setThemeCustomizerOpen] = useState(false)
+
+  const containerProps = {
+    fixed: container?.fixed ?? false,
+    fluid: container?.fluid ?? true,
+    className: container?.className ?? undefined,
+  } as ContainerProps
 
   const handleOpenChange = (open: boolean) => {
     setThemeConfig({ sidebar_state: open })
@@ -75,7 +85,13 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             </div>
           </Header>
           <Suspense fallback={<PageLoader />}>
-            <Main fluid className="mx-auto w-full max-w-6xl">
+            <Main
+              {...containerProps}
+              className={cn(
+                "mx-auto w-full max-w-6xl",
+                containerProps.className
+              )}
+            >
               {children ?? <Outlet />}
             </Main>
           </Suspense>
@@ -116,7 +132,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             </div>
           </Header>
           <Suspense fallback={<PageLoader />}>
-            <Main fluid>{children ?? <Outlet />}</Main>
+            <Main {...containerProps}>{children ?? <Outlet />}</Main>
           </Suspense>
         </SidebarInset>
 
