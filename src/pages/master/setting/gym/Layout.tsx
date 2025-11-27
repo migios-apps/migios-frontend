@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const LayoutGymSetting = ({ children }: { children?: React.ReactNode }) => {
@@ -12,6 +13,13 @@ const LayoutGymSetting = ({ children }: { children?: React.ReactNode }) => {
   const routeLocation = "/settings/gym/location"
   const routePayments = "/settings/gym/payments"
   const routePlan = "/settings/gym/plan"
+
+  const tabItems = [
+    { route: aboutGym, label: "Tentang Gym" },
+    { route: routeLocation, label: "Daftar Lokasi" },
+    { route: routePlan, label: "Langganan" },
+    { route: routePayments, label: "Pembayaran" },
+  ]
 
   useEffect(() => {
     if (activeTabRef.current && tabListRef.current) {
@@ -32,50 +40,44 @@ const LayoutGymSetting = ({ children }: { children?: React.ReactNode }) => {
 
   return (
     <div className="h-full">
-      <div className="border-border bg-background sticky top-16 z-10 w-full border-b shadow-sm">
+      <div className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-16 z-10 w-full backdrop-blur">
         <Tabs
           value={pathname}
           onValueChange={(value) => navigate(value)}
           className="w-full"
         >
-          <div className="overflow-x-auto">
+          <div className="scrollbar-hide overflow-x-auto">
             <TabsList
               ref={tabListRef}
-              className="h-auto w-full min-w-fit justify-start rounded-none border-0 bg-transparent p-0"
+              className={cn(
+                "inline-flex h-12 w-full items-center justify-start",
+                "rounded-none border-b-2 bg-transparent p-0",
+                "space-x-0"
+              )}
             >
-              <TabsTrigger
-                ref={pathname === aboutGym ? activeTabRef : undefined}
-                value={aboutGym}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Tentang Gym
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeLocation ? activeTabRef : undefined}
-                value={routeLocation}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Daftar Lokasi
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routePlan ? activeTabRef : undefined}
-                value={routePlan}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Langganan
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routePayments ? activeTabRef : undefined}
-                value={routePayments}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Pembayaran
-              </TabsTrigger>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  key={item.route}
+                  ref={pathname === item.route ? activeTabRef : undefined}
+                  value={item.route}
+                  className={cn(
+                    "relative inline-flex items-center justify-center rounded-none border-t-0 border-r-0 border-b-2 border-l-0 border-transparent whitespace-nowrap",
+                    "px-4 py-3 text-sm font-medium transition-all",
+                    "border-b-2 border-transparent bg-transparent",
+                    "hover:text-foreground focus-visible:outline-none",
+                    "disabled:pointer-events-none disabled:opacity-50",
+                    "data-[state=active]:border-primary! data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:shadow-none",
+                    "text-muted-foreground hover:text-foreground/80"
+                  )}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
         </Tabs>
       </div>
-      <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {children || <Outlet />}
       </div>
     </div>

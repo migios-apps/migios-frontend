@@ -7,7 +7,9 @@ export const gymSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/gym/AboutGym")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -15,7 +17,9 @@ export const gymSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/gym/GymLocation")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -23,7 +27,9 @@ export const gymSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/gym/GymPlan")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -31,7 +37,9 @@ export const gymSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/gym/GymPayments")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
 ]

@@ -7,7 +7,9 @@ export const othersSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/others/taxes")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -17,7 +19,9 @@ export const othersSettingsRoute: Routes = [
     ),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -25,7 +29,9 @@ export const othersSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/others/commission")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -33,7 +39,9 @@ export const othersSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/others/loyaltyPoint")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
   {
@@ -41,7 +49,9 @@ export const othersSettingsRoute: Routes = [
     component: lazy(() => import("@/pages/master/setting/others/membership")),
     authority: [],
     meta: {
-      pageContainerType: "gutterless",
+      container: {
+        className: "p-0",
+      },
     },
   },
 ]

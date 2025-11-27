@@ -35,61 +35,47 @@ const LayoutFinance = ({ children }: { children?: React.ReactNode }) => {
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <h3 className="text-foreground">Finance</h3>
       </div>
-      <div className="border-border bg-background sticky top-16 z-10 w-full border-b shadow-sm">
-        <Tabs
-          value={pathname}
-          onValueChange={(value) => navigate(value)}
-          className="w-full"
-        >
-          <div className="overflow-x-auto">
-            <TabsList
-              ref={tabListRef}
-              className="h-auto w-full min-w-fit justify-start rounded-none border-0 bg-transparent p-0"
-            >
-              <TabsTrigger
-                ref={pathname === routeRekening ? activeTabRef : undefined}
-                value={routeRekening}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                <Wallet1
-                  color="currentColor"
-                  size={20}
-                  variant="Bold"
-                  className="mr-2"
-                />
-                Rekening
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeCategory ? activeTabRef : undefined}
-                value={routeCategory}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                <Moneys
-                  color="currentColor"
-                  size={20}
-                  variant="Bold"
-                  className="mr-2"
-                />
-                Category
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeHistory ? activeTabRef : undefined}
-                value={routeHistory}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                <MoneyArchive
-                  color="currentColor"
-                  size={20}
-                  variant="Bold"
-                  className="mr-2"
-                />
-                History
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </Tabs>
-      </div>
-      <div className="relative">{children || <Outlet />}</div>
+      <Tabs value={pathname} onValueChange={(value) => navigate(value)}>
+        <TabsList>
+          <TabsTrigger
+            ref={pathname === routeRekening ? activeTabRef : undefined}
+            value={routeRekening}
+          >
+            <Wallet1
+              color="currentColor"
+              size={16}
+              variant="Bold"
+              className="mr-2"
+            />
+            Rekening
+          </TabsTrigger>
+          <TabsTrigger
+            ref={pathname === routeCategory ? activeTabRef : undefined}
+            value={routeCategory}
+          >
+            <Moneys
+              color="currentColor"
+              size={16}
+              variant="Bold"
+              className="mr-2"
+            />
+            Category
+          </TabsTrigger>
+          <TabsTrigger
+            ref={pathname === routeHistory ? activeTabRef : undefined}
+            value={routeHistory}
+          >
+            <MoneyArchive
+              color="currentColor"
+              size={16}
+              variant="Bold"
+              className="mr-2"
+            />
+            History
+          </TabsTrigger>
+        </TabsList>
+        {children || <Outlet />}
+      </Tabs>
     </div>
   )
 }

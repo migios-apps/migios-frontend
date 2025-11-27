@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
@@ -31,59 +32,54 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [pathname])
 
+  const tabItems = [
+    { route: routeCommission, label: "Commission" },
+    { route: routeTax, label: "Tax" },
+    { route: routeInvoice, label: "Invoice" },
+    { route: routeLoyaltyPoint, label: "Loyalty Point" },
+    { route: routeMembership, label: "Membership" },
+  ]
+
   return (
     <div className="h-full">
-      <div className="border-border bg-background sticky top-16 z-10 w-full border-b shadow-sm">
+      <div className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-16 z-10 w-full backdrop-blur">
         <Tabs
           value={pathname}
           onValueChange={(value) => navigate(value)}
           className="w-full"
         >
-          <div className="overflow-x-auto">
+          <div className="scrollbar-hide overflow-x-auto">
             <TabsList
               ref={tabListRef}
-              className="h-auto w-full min-w-fit justify-start rounded-none border-0 bg-transparent p-0"
+              className={cn(
+                "inline-flex h-12 w-full items-center justify-start",
+                "rounded-none border-b-2 bg-transparent p-0",
+                "space-x-0"
+              )}
             >
-              <TabsTrigger
-                ref={pathname === routeCommission ? activeTabRef : undefined}
-                value={routeCommission}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Commission
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeTax ? activeTabRef : undefined}
-                value={routeTax}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Tax
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeInvoice ? activeTabRef : undefined}
-                value={routeInvoice}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Invoice
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeLoyaltyPoint ? activeTabRef : undefined}
-                value={routeLoyaltyPoint}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Loyalty Point
-              </TabsTrigger>
-              <TabsTrigger
-                ref={pathname === routeMembership ? activeTabRef : undefined}
-                value={routeMembership}
-                className="data-[state=active]:border-primary min-w-fit rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
-              >
-                Membership
-              </TabsTrigger>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  key={item.route}
+                  ref={pathname === item.route ? activeTabRef : undefined}
+                  value={item.route}
+                  className={cn(
+                    "relative inline-flex items-center justify-center rounded-none border-t-0 border-r-0 border-b-2 border-l-0 border-transparent whitespace-nowrap",
+                    "px-4 py-3 text-sm font-medium transition-all",
+                    "border-b-2 border-transparent bg-transparent",
+                    "hover:text-foreground focus-visible:outline-none",
+                    "disabled:pointer-events-none disabled:opacity-50",
+                    "data-[state=active]:border-primary! data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:shadow-none",
+                    "text-muted-foreground hover:text-foreground/80"
+                  )}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
         </Tabs>
       </div>
-      <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {children || <Outlet />}
       </div>
     </div>
