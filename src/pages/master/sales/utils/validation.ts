@@ -84,8 +84,23 @@ export const transactionItemSchema = Yup.object().shape({
   notes: Yup.string().nullable(),
 
   //   custom
+  source_from: Yup.string()
+    .oneOf(["item", "redeem_item"], "Invalid source from.")
+    .default("item"),
   is_promo: Yup.number().default(0),
-  loyalty_point: Yup.number().default(0),
+  loyalty_reward_id: Yup.number()
+    .nullable()
+    .transform((value) => (isNaN(value) ? null : value)),
+  loyalty_point: Yup.object()
+    .shape({
+      points: Yup.number().min(0).default(0),
+      expired_type: Yup.string()
+        .oneOf(["forever", "day", "week", "month", "year"])
+        .default("forever"),
+      expired_value: Yup.number().min(0).default(0),
+    })
+    .nullable()
+    .default(null),
   allow_all_trainer: Yup.boolean().default(false),
   package_type: Yup.string().when("item_type", {
     is: "package",
@@ -149,6 +164,7 @@ const defaultValueCartItem = {
   discount_type: "percent",
   discount: 0,
   start_date: new Date(),
+  source_from: "item",
 } as any
 
 export const useTransactionItemForm = () => {
@@ -189,6 +205,7 @@ export const validationTransactionSchema = Yup.object().shape({
         otherwise: (schema) => schema.nullable(),
       }),
       photo: Yup.string().nullable(),
+      code: Yup.string().nullable(),
     })
     .test(
       "member-required-if-package",
@@ -271,6 +288,64 @@ export const validationTransactionSchema = Yup.object().shape({
       })
     )
     .min(0, "At least one refund is required."),
+  loyalty_redeem_items: Yup.array()
+    .of(
+      Yup.object().shape({
+        id: Yup.number().required("Loyalty reward ID is required."),
+        name: Yup.string().required("Reward name is required."),
+        type: Yup.string()
+          .oneOf(["discount", "free_item"], "Invalid reward type.")
+          .required("Reward type is required."),
+        points_required: Yup.number()
+          .min(0, "Points required cannot be negative.")
+          .required("Points required is required."),
+        discount_type: Yup.string()
+          .oneOf(["percent", "nominal"])
+          .nullable()
+          .when("type", {
+            is: "discount",
+            then: (schema) =>
+              schema.required("Discount type is required for discount reward."),
+            otherwise: (schema) => schema.nullable(),
+          }),
+        discount_value: Yup.number()
+          .nullable()
+          .when("type", {
+            is: "discount",
+            then: (schema) =>
+              schema
+                .min(0, "Discount value cannot be negative.")
+                .required("Discount value is required for discount reward."),
+            otherwise: (schema) => schema.nullable(),
+          }),
+        items: Yup.array()
+          .of(
+            Yup.object().shape({
+              id: Yup.number(),
+              reward_id: Yup.number().nullable(),
+              package_id: Yup.number().nullable(),
+              product_id: Yup.number().nullable(),
+              quantity: Yup.number().min(1).required(),
+              item_type: Yup.string(),
+              name: Yup.string(),
+              original_price: Yup.number(),
+              price: Yup.number(),
+              discount_type: Yup.string(),
+              discount: Yup.number(),
+            })
+          )
+          .nullable()
+          .when("type", {
+            is: "free_item",
+            then: (schema) =>
+              schema
+                .min(1, "At least one item is required for free item reward.")
+                .required("Items are required for free item reward."),
+            otherwise: (schema) => schema.nullable(),
+          }),
+      })
+    )
+    .default([]),
 })
 
 export const defaultValueTransaction: any = {
@@ -281,6 +356,7 @@ export const defaultValueTransaction: any = {
   items: [],
   payments: [],
   refund_from: [],
+  loyalty_redeem_items: [],
   due_date: new Date(),
 }
 

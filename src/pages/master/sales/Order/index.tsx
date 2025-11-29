@@ -1,4 +1,4 @@
-import React, { Fragment } from "react"
+import React, { Fragment, useEffect } from "react"
 import { useFieldArray } from "react-hook-form"
 import {
   useInfiniteQuery,
@@ -67,8 +67,8 @@ const PointOfSales = () => {
   const formPropsItem = useTransactionItemForm()
   const watchTransaction = transactionSchema.watch()
 
-  // console.log('transactionSchema', transactionSchema.watch())
-  // console.log('error transaction', transactionSchema.formState.errors)
+  // console.log("transactionSchema", transactionSchema.watch())
+  // console.log("error transaction", transactionSchema.formState.errors)
 
   useFormPersist<ValidationTransactionSchema>("item_pos", {
     defaultValue: defaultValueTransaction,
@@ -117,17 +117,29 @@ const PointOfSales = () => {
   //   tax_rate: 0,
   // })
 
-  useQuery({
+  const { data: settingsData } = useQuery({
     queryKey: [QUERY_KEY.settings],
     queryFn: async () => {
       const res = await apiGetSettings()
       const data = res.data
-      transactionSchema.setValue("tax_calculation", data.tax_calculation)
-      transactionSchema.setValue("loyalty_enabled", data.loyalty_enabled)
-      transactionSchema.setValue("taxes", data.taxes)
-      return res
+      return data
     },
   })
+
+  useEffect(() => {
+    if (settingsData) {
+      transactionSchema.setValue(
+        "tax_calculation",
+        settingsData.tax_calculation
+      )
+      transactionSchema.setValue(
+        "loyalty_enabled",
+        settingsData.loyalty_enabled
+      )
+      transactionSchema.setValue("taxes", settingsData.taxes)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsData])
 
   const {
     data: packages,
@@ -528,13 +540,14 @@ const PointOfSales = () => {
               style={{ height: "calc(100vh - 195px)" }}
             >
               {cartDataGenerated.items?.map((item, index) => {
+                const originalItem = watchTransaction.items[index]
                 return (
                   <Fragment key={index}>
                     {item.item_type === "product" ? (
                       <ItemProductCard
                         item={item}
                         onClick={() => {
-                          formPropsItem.reset(item)
+                          formPropsItem.reset(originalItem)
                           setIndexItem(index)
                           setOpenAddItem(true)
                           setFormItemType("update")
@@ -544,7 +557,7 @@ const PointOfSales = () => {
                       <ItemPackageCard
                         item={item}
                         onClick={() => {
-                          formPropsItem.reset(item)
+                          formPropsItem.reset(originalItem)
                           setIndexItem(index)
                           setOpenAddItem(true)
                           setFormItemType("update")

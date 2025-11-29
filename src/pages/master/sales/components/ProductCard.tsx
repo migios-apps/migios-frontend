@@ -34,6 +34,7 @@ const ProductCard = ({
           formProps.setValue("quantity", 1)
           formProps.setValue("price", item.price)
           formProps.setValue("sell_price", item.price)
+          formProps.setValue("loyalty_point", item.loyalty_point)
 
           onClick?.(item)
         }

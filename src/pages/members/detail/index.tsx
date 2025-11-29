@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/tooltip"
 import FreezProgram from "./FreezProgram"
 import InformasiDetail from "./InformasiDetail"
+import LoyaltyPoint from "./LoyaltyPoint"
 import Mesurement from "./Mesurement"
 import Package from "./Package"
 
@@ -449,6 +450,7 @@ const MemberDetail = () => {
                       <TabsTrigger value="tab2">Paket member</TabsTrigger>
                       <TabsTrigger value="tab3">Pengukuran</TabsTrigger>
                       <TabsTrigger value="tab4">Freeze</TabsTrigger>
+                      <TabsTrigger value="tab5">Loyalty Point</TabsTrigger>
                     </TabsList>
                   </div>
                   <TabsContent value="tab1">
@@ -462,6 +464,9 @@ const MemberDetail = () => {
                   </TabsContent>
                   <TabsContent value="tab4">
                     <FreezProgram data={member} />
+                  </TabsContent>
+                  <TabsContent value="tab5">
+                    <LoyaltyPoint member={member} />
                   </TabsContent>
                 </Tabs>
               </CardContent>

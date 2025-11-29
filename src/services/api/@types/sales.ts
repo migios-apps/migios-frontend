@@ -66,6 +66,10 @@ export interface CheckoutRequest {
   due_date?: string
   notes?: string
   items: SalesItem[]
+  loyalty_redeem_items?: Array<{
+    id: number
+    points_required: number
+  }>
   payments: Payment[]
   refund_from: RefundFromItem[]
 }

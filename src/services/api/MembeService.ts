@@ -3,6 +3,9 @@ import { ParamsFilter } from "./@types/api"
 import {
   CreateMemberTypes,
   FreezeProgramListTypesResponse,
+  LoyaltyPointBalanceResponse,
+  LoyaltyPointEarnedListResponse,
+  LoyaltyPointRedeemListResponse,
   MemberDetailListResponse,
   MemberDetailResponse,
   MemberPackageListTypesResponse,
@@ -61,6 +64,35 @@ export async function apiGetMemberPackages(
 export async function apiGetFreezeProgram(code: string, params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<FreezeProgramListTypesResponse>({
     url: `/member/${code}/freeze`,
+    method: "get",
+    params,
+  })
+}
+
+export async function apiGetMemberLoyaltyBalance(code: string) {
+  return ApiService.fetchDataWithAxios<LoyaltyPointBalanceResponse>({
+    url: `/member/${code}/loyalty/balance`,
+    method: "get",
+  })
+}
+
+export async function apiGetMemberLoyaltyEarned(
+  code: string,
+  params?: ParamsFilter
+) {
+  return ApiService.fetchDataWithAxios<LoyaltyPointEarnedListResponse>({
+    url: `/member/${code}/loyalty/earned`,
+    method: "get",
+    params,
+  })
+}
+
+export async function apiGetMemberLoyaltyRedeem(
+  code: string,
+  params?: ParamsFilter
+) {
+  return ApiService.fetchDataWithAxios<LoyaltyPointRedeemListResponse>({
+    url: `/member/${code}/loyalty/redeem`,
     method: "get",
     params,
   })

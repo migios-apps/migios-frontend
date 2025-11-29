@@ -1,6 +1,8 @@
 import React from "react"
 import { SubmitHandler } from "react-hook-form"
+import { EmployeeDetail } from "@/services/api/@types/employee"
 import { TrainerPackageTypes } from "@/services/api/@types/package"
+import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import { apiGetAllTrainerByPackage } from "@/services/api/PackageService"
 import dayjs from "dayjs"
 import { Add, Minus, Trash } from "iconsax-reactjs"
@@ -68,8 +70,9 @@ const FormAddItemSale: React.FC<FormProps> = ({
   } = formProps
   const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const isRedeemItem = watchData.source_from === "redeem_item"
 
-  // console.log('form', {
+  // console.log("form", {
   //   watchData,
   //   errors,
   // })
@@ -138,6 +141,59 @@ const FormAddItemSale: React.FC<FormProps> = ({
       })
     },
     [watchData?.package_id]
+  )
+
+  const getInstructorList = React.useCallback(
+    async (
+      inputValue: string,
+      _: OptionsOrGroups<EmployeeDetail, GroupBase<EmployeeDetail>>,
+      additional?: { page: number }
+    ) => {
+      const classIds =
+        watchData?.classes?.map((cls) => cls.id).filter(Boolean) || []
+      const response = await apiGetEmployeeList({
+        page: additional?.page,
+        per_page: 10,
+        sort_column: "id",
+        sort_type: "desc",
+        show_all: true,
+        search: [
+          (inputValue || "").length > 0
+            ? ({
+                search_column: "name",
+                search_condition: "like",
+                search_text: `${inputValue}`,
+              } as any)
+            : null,
+          {
+            search_operator: "and",
+            search_column: "enabled",
+            search_condition: "=",
+            search_text: "true",
+          },
+          ...(classIds.length > 0
+            ? [
+                {
+                  search_operator: "and",
+                  search_column: "classes.id",
+                  search_condition: "in",
+                  search_text: classIds.join(","),
+                } as any,
+              ]
+            : []),
+        ],
+      })
+      return new Promise<ReturnAsyncSelect>((resolve) => {
+        resolve({
+          options: response.data.data,
+          hasMore: response.data.data.length > 0,
+          additional: {
+            page: additional!.page + 1,
+          },
+        })
+      })
+    },
+    [watchData?.classes]
   )
   return (
     <>
@@ -211,361 +267,528 @@ const FormAddItemSale: React.FC<FormProps> = ({
                   </Card>
                 </div>
                 <div className="flex flex-col gap-3">
-                  {watchData.item_type === "package" && (
+                  {isRedeemItem ? (
+                    // Untuk redeem_item, hanya tampilkan start_date, notes, dan trainer/instructor
                     <>
-                      <FormFieldItem
-                        control={control}
-                        name="start_date"
-                        label="Start Date"
-                        invalid={Boolean(errors.start_date)}
-                        errorMessage={errors.start_date?.message}
-                        render={({ field, fieldState }) => (
-                          <DatePicker
-                            selected={
-                              field.value
-                                ? dayjs(field.value).toDate()
-                                : undefined
-                            }
-                            onSelect={(date) => {
-                              field.onChange(
-                                date ? dayjs(date).format("YYYY-MM-DD") : null
-                              )
-                            }}
-                            placeholder="Start Date"
-                            error={!!fieldState.error}
-                          />
-                        )}
-                      />
-                      {watchData.package_type === PackageType.PT_PROGRAM && (
-                        <FormFieldItem
-                          control={control}
-                          name="trainers"
-                          label={
-                            <div className="flex items-start gap-1">
-                              Trainers{" "}
-                              <span className="text-destructive">*</span>
-                            </div>
-                          }
-                          invalid={Boolean(errors.trainers)}
-                          errorMessage={errors.trainers?.message}
-                          render={({ field, fieldState }) => (
-                            <SelectAsyncPaginate
-                              isClearable
-                              loadOptions={getTrainerList as any}
-                              additional={{ page: 1 }}
-                              placeholder="Select Trainer"
-                              value={field.value}
-                              cacheUniqs={[watchData.trainers]}
-                              getOptionLabel={(option) => option.name!}
-                              getOptionValue={(option) => option.code || ""}
-                              debounceTimeout={500}
-                              error={!!fieldState.error}
-                              formatOptionLabel={({ name, photo }) => {
-                                return (
-                                  <div className="flex items-center justify-start gap-2">
-                                    <Avatar className="size-8">
-                                      {photo ? (
-                                        <AvatarImage src={photo} alt={name} />
-                                      ) : null}
-                                      <AvatarFallback>
-                                        <User className="size-4" />
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm">{name}</span>
-                                  </div>
-                                )
-                              }}
-                              onChange={(option) => field.onChange(option)}
-                            />
-                          )}
-                        />
-                      )}
-                      {watchData.package_type !== PackageType.CLASS && (
-                        <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
-                          {watchData.package_type !== PackageType.MEMBERSHIP ? (
-                            <FormFieldItem
-                              control={control}
-                              name="extra_session"
-                              label="Extra Session"
-                              invalid={Boolean(errors.extra_session)}
-                              errorMessage={errors.extra_session?.message}
-                              render={({ field }) => (
-                                <Input
-                                  type="number"
-                                  autoComplete="off"
-                                  placeholder="0"
-                                  {...field}
-                                  value={field.value ?? undefined}
-                                />
-                              )}
-                            />
-                          ) : null}
+                      {watchData.item_type === "package" && (
+                        <>
                           <FormFieldItem
                             control={control}
-                            name="extra_day"
-                            label="Extra Day"
-                            invalid={Boolean(errors.extra_day)}
-                            errorMessage={errors.extra_day?.message}
-                            render={({ field }) => (
-                              <Input
-                                type="number"
-                                autoComplete="off"
-                                placeholder="0"
-                                {...field}
-                                value={field.value ?? undefined}
+                            name="start_date"
+                            label="Start Date"
+                            invalid={Boolean(errors.start_date)}
+                            errorMessage={errors.start_date?.message}
+                            render={({ field, fieldState }) => (
+                              <DatePicker
+                                selected={
+                                  field.value
+                                    ? dayjs(field.value).toDate()
+                                    : undefined
+                                }
+                                onSelect={(date) => {
+                                  field.onChange(
+                                    date
+                                      ? dayjs(date).format("YYYY-MM-DD")
+                                      : null
+                                  )
+                                }}
+                                placeholder="Start Date"
+                                error={!!fieldState.error}
                               />
                             )}
                           />
-                        </div>
-                      )}
-                    </>
-                  )}
-                  {watchData.item_type === "product" && (
-                    <FormFieldItem
-                      control={control}
-                      name="quantity"
-                      label="Quantity"
-                      invalid={Boolean(errors.quantity)}
-                      errorMessage={errors.quantity?.message}
-                      render={({ field }) => {
-                        return (
-                          <InputGroup>
-                            <InputGroupInput
-                              type="number"
-                              autoComplete="off"
-                              className="text-center"
-                              {...field}
-                              value={field.value === 0 ? "" : field.value}
-                              onChange={(e) => {
-                                const value =
-                                  e.target.value === ""
-                                    ? 0
-                                    : Number(e.target.value)
-                                if (value < 0) {
-                                  field.onChange(0)
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price
-                                  )
-                                  formProps.setValue("discount", 0)
-                                } else if (
-                                  value > (watchData.product_qty as number)
-                                ) {
-                                  field.onChange(watchData.product_qty)
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price *
-                                      (watchData.product_qty || 0)
-                                  )
-                                  formProps.setValue("discount", 0)
-                                } else {
-                                  field.onChange(value)
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price * (value || 0)
-                                  )
-                                  formProps.setValue("discount", 0)
-                                }
-                              }}
-                            />
-                            <InputGroupAddon
-                              align="inline-end"
-                              className="pr-0"
-                            >
-                              <ButtonGroup>
-                                <InputGroupButton
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="bg-accent"
-                                  disabled={field.value <= 0}
-                                  onClick={() => {
-                                    const newValue = Number(field.value) - 1
-                                    if (newValue >= 1) {
-                                      field.onChange(newValue)
-                                      formProps.setValue(
-                                        "sell_price",
-                                        watchData.price * newValue
-                                      )
-                                      formProps.setValue("discount", 0)
-                                    }
+                          {watchData.package_type ===
+                            PackageType.PT_PROGRAM && (
+                            <FormFieldItem
+                              control={control}
+                              name="trainers"
+                              label={
+                                <div className="flex items-start gap-1">
+                                  Trainers{" "}
+                                  <span className="text-destructive">*</span>
+                                </div>
+                              }
+                              invalid={Boolean(errors.trainers)}
+                              errorMessage={errors.trainers?.message}
+                              render={({ field, fieldState }) => (
+                                <SelectAsyncPaginate
+                                  isClearable
+                                  loadOptions={getTrainerList as any}
+                                  additional={{ page: 1 }}
+                                  placeholder="Select Trainer"
+                                  value={field.value}
+                                  cacheUniqs={[watchData.trainers]}
+                                  getOptionLabel={(option) => option.name!}
+                                  getOptionValue={(option) => option.code || ""}
+                                  debounceTimeout={500}
+                                  error={!!fieldState.error}
+                                  formatOptionLabel={({ name, photo }) => {
+                                    return (
+                                      <div className="flex items-center justify-start gap-2">
+                                        <Avatar className="size-8">
+                                          {photo ? (
+                                            <AvatarImage
+                                              src={photo}
+                                              alt={name}
+                                            />
+                                          ) : null}
+                                          <AvatarFallback>
+                                            <User className="size-4" />
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-sm">{name}</span>
+                                      </div>
+                                    )
                                   }}
-                                >
-                                  <Minus color="currentColor" size={16} />
-                                </InputGroupButton>
-                                <InputGroupButton
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  disabled={
-                                    field.value >=
-                                    (watchData.product_qty as number)
-                                  }
-                                  onClick={() => {
-                                    const newValue = Number(field.value) + 1
-                                    if (
-                                      newValue <=
-                                      (watchData.product_qty as number)
-                                    ) {
-                                      field.onChange(newValue)
-                                      formProps.setValue(
-                                        "sell_price",
-                                        watchData.price * newValue
-                                      )
-                                      formProps.setValue("discount", 0)
-                                    }
-                                  }}
-                                >
-                                  <Add color="currentColor" size={16} />
-                                </InputGroupButton>
-                              </ButtonGroup>
-                            </InputGroupAddon>
-                          </InputGroup>
-                        )
-                      }}
-                    />
-                  )}
-                  <FormFieldItem
-                    control={control}
-                    name="discount"
-                    label="Discount"
-                    invalid={Boolean(errors.discount)}
-                    errorMessage={errors.discount?.message}
-                    render={({ field }) => {
-                      return (
-                        <InputGroup>
-                          {watchData.discount_type === "nominal" ? (
-                            <InputCurrency
-                              placeholder="Discount amount"
-                              disabled={
-                                !watchData.discount_type ||
-                                Boolean(watchData.is_promo)
-                              }
-                              customInput={InputGroupInput}
-                              value={field.value || undefined}
-                              onValueChange={(_value, _name, values) => {
-                                const valData = values?.float
-                                field.onChange(valData)
-
-                                if (!valData) {
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price
-                                  )
-                                } else {
-                                  const { amount } = calculateDiscountAmount({
-                                    price: watchData.price,
-                                    discount_type:
-                                      watchData.discount_type as any,
-                                    discount_amount: valData || 0,
-                                  })
-                                  formProps.setValue("sell_price", amount)
-                                }
-                              }}
-                            />
-                          ) : (
-                            <InputGroupInput
-                              type="number"
-                              autoComplete="off"
-                              placeholder="10%"
-                              disabled={
-                                !watchData.discount_type ||
-                                Boolean(watchData.is_promo)
-                              }
-                              {...field}
-                              value={
-                                (field.value === 0 ? undefined : field.value) ||
-                                undefined
-                              }
-                              onChange={(e) => {
-                                const value =
-                                  e.target.value === ""
-                                    ? 0
-                                    : Number(e.target.value)
-                                field.onChange(value)
-
-                                if (value === 0) {
-                                  formProps.setValue(
-                                    "sell_price",
-                                    watchData.price
-                                  )
-                                } else {
-                                  const val = Number(value)
-                                  const { amount } = calculateDiscountAmount({
-                                    price: watchData.price,
-                                    discount_type:
-                                      watchData.discount_type as any,
-                                    discount_amount: val,
-                                  })
-                                  formProps.setValue("sell_price", amount)
-                                }
-                              }}
+                                  onChange={(option) => field.onChange(option)}
+                                />
+                              )}
                             />
                           )}
-                          <InputGroupAddon align="inline-end" className="pr-0">
-                            <ButtonGroup>
-                              <InputGroupButton
-                                type="button"
-                                variant={
-                                  watchData.discount_type === "percent"
-                                    ? "default"
-                                    : "ghost"
-                                }
-                                size="sm"
-                                className={
-                                  watchData.discount_type === "percent"
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : ""
-                                }
-                                disabled={Boolean(watchData.is_promo)}
-                                onClick={() => {
-                                  formProps.setValue("discount_type", "percent")
-                                  formProps.setValue("discount", 0)
-                                }}
-                              >
-                                %
-                              </InputGroupButton>
-                              <InputGroupButton
-                                type="button"
-                                variant={
-                                  watchData.discount_type === "nominal"
-                                    ? "default"
-                                    : "ghost"
-                                }
-                                size="sm"
-                                className={
-                                  watchData.discount_type === "nominal"
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : ""
-                                }
-                                disabled={Boolean(watchData.is_promo)}
-                                onClick={() => {
-                                  formProps.setValue("discount_type", "nominal")
-                                  formProps.setValue("discount", 0)
-                                }}
-                              >
-                                Rp
-                              </InputGroupButton>
-                            </ButtonGroup>
-                          </InputGroupAddon>
-                        </InputGroup>
-                      )
-                    }}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="notes"
-                    label="Notes"
-                    invalid={Boolean(errors.notes)}
-                    errorMessage={errors.notes?.message}
-                    render={({ field }) => (
-                      <Textarea
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="Notes"
+                          {watchData.package_type === PackageType.CLASS && (
+                            <FormFieldItem
+                              control={control}
+                              name="instructors"
+                              label={
+                                <div className="flex items-start gap-1">
+                                  Instructors{" "}
+                                  <span className="text-destructive">*</span>
+                                </div>
+                              }
+                              invalid={Boolean(errors.instructors)}
+                              errorMessage={errors.instructors?.message}
+                              render={({ field, fieldState }) => (
+                                <SelectAsyncPaginate
+                                  isClearable
+                                  isMulti
+                                  loadOptions={getInstructorList as any}
+                                  additional={{ page: 1 }}
+                                  placeholder="Select Instructor"
+                                  value={field.value}
+                                  cacheUniqs={[watchData.instructors]}
+                                  getOptionLabel={(option) => option.name!}
+                                  getOptionValue={(option) => option.code || ""}
+                                  debounceTimeout={500}
+                                  error={!!fieldState.error}
+                                  formatOptionLabel={({ name, photo }) => {
+                                    return (
+                                      <div className="flex items-center justify-start gap-2">
+                                        <Avatar className="size-8">
+                                          {photo ? (
+                                            <AvatarImage
+                                              src={photo}
+                                              alt={name}
+                                            />
+                                          ) : null}
+                                          <AvatarFallback>
+                                            <User className="size-4" />
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-sm">{name}</span>
+                                      </div>
+                                    )
+                                  }}
+                                  onChange={(option) => field.onChange(option)}
+                                />
+                              )}
+                            />
+                          )}
+                        </>
+                      )}
+                      <FormFieldItem
+                        control={control}
+                        name="notes"
+                        label="Notes"
+                        invalid={Boolean(errors.notes)}
+                        errorMessage={errors.notes?.message}
+                        render={({ field }) => (
+                          <Textarea
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="Notes"
+                          />
+                        )}
                       />
-                    )}
-                  />
+                    </>
+                  ) : (
+                    // Untuk item biasa, tampilkan semua field
+                    <>
+                      {watchData.item_type === "package" && (
+                        <>
+                          <FormFieldItem
+                            control={control}
+                            name="start_date"
+                            label="Start Date"
+                            invalid={Boolean(errors.start_date)}
+                            errorMessage={errors.start_date?.message}
+                            render={({ field, fieldState }) => (
+                              <DatePicker
+                                selected={
+                                  field.value
+                                    ? dayjs(field.value).toDate()
+                                    : undefined
+                                }
+                                onSelect={(date) => {
+                                  field.onChange(
+                                    date
+                                      ? dayjs(date).format("YYYY-MM-DD")
+                                      : null
+                                  )
+                                }}
+                                placeholder="Start Date"
+                                error={!!fieldState.error}
+                              />
+                            )}
+                          />
+                          {watchData.package_type ===
+                            PackageType.PT_PROGRAM && (
+                            <FormFieldItem
+                              control={control}
+                              name="trainers"
+                              label={
+                                <div className="flex items-start gap-1">
+                                  Trainers{" "}
+                                  <span className="text-destructive">*</span>
+                                </div>
+                              }
+                              invalid={Boolean(errors.trainers)}
+                              errorMessage={errors.trainers?.message}
+                              render={({ field, fieldState }) => (
+                                <SelectAsyncPaginate
+                                  isClearable
+                                  loadOptions={getTrainerList as any}
+                                  additional={{ page: 1 }}
+                                  placeholder="Select Trainer"
+                                  value={field.value}
+                                  cacheUniqs={[watchData.trainers]}
+                                  getOptionLabel={(option) => option.name!}
+                                  getOptionValue={(option) => option.code || ""}
+                                  debounceTimeout={500}
+                                  error={!!fieldState.error}
+                                  formatOptionLabel={({ name, photo }) => {
+                                    return (
+                                      <div className="flex items-center justify-start gap-2">
+                                        <Avatar className="size-8">
+                                          {photo ? (
+                                            <AvatarImage
+                                              src={photo}
+                                              alt={name}
+                                            />
+                                          ) : null}
+                                          <AvatarFallback>
+                                            <User className="size-4" />
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-sm">{name}</span>
+                                      </div>
+                                    )
+                                  }}
+                                  onChange={(option) => field.onChange(option)}
+                                />
+                              )}
+                            />
+                          )}
+                          {watchData.package_type !== PackageType.CLASS && (
+                            <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                              {watchData.package_type !==
+                              PackageType.MEMBERSHIP ? (
+                                <FormFieldItem
+                                  control={control}
+                                  name="extra_session"
+                                  label="Extra Session"
+                                  invalid={Boolean(errors.extra_session)}
+                                  errorMessage={errors.extra_session?.message}
+                                  render={({ field }) => (
+                                    <Input
+                                      type="number"
+                                      autoComplete="off"
+                                      placeholder="0"
+                                      {...field}
+                                      value={field.value ?? undefined}
+                                    />
+                                  )}
+                                />
+                              ) : null}
+                              <FormFieldItem
+                                control={control}
+                                name="extra_day"
+                                label="Extra Day"
+                                invalid={Boolean(errors.extra_day)}
+                                errorMessage={errors.extra_day?.message}
+                                render={({ field }) => (
+                                  <Input
+                                    type="number"
+                                    autoComplete="off"
+                                    placeholder="0"
+                                    {...field}
+                                    value={field.value ?? undefined}
+                                  />
+                                )}
+                              />
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {watchData.item_type === "product" && (
+                        <FormFieldItem
+                          control={control}
+                          name="quantity"
+                          label="Quantity"
+                          invalid={Boolean(errors.quantity)}
+                          errorMessage={errors.quantity?.message}
+                          render={({ field }) => {
+                            return (
+                              <InputGroup>
+                                <InputGroupInput
+                                  type="number"
+                                  autoComplete="off"
+                                  className="text-center"
+                                  {...field}
+                                  value={field.value === 0 ? "" : field.value}
+                                  onChange={(e) => {
+                                    const value =
+                                      e.target.value === ""
+                                        ? 0
+                                        : Number(e.target.value)
+                                    if (value < 0) {
+                                      field.onChange(0)
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    } else if (
+                                      value > (watchData.product_qty as number)
+                                    ) {
+                                      field.onChange(watchData.product_qty)
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price *
+                                          (watchData.product_qty || 0)
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    } else {
+                                      field.onChange(value)
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price * (value || 0)
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    }
+                                  }}
+                                />
+                                <InputGroupAddon
+                                  align="inline-end"
+                                  className="pr-0"
+                                >
+                                  <ButtonGroup>
+                                    <InputGroupButton
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="bg-accent"
+                                      disabled={field.value <= 0}
+                                      onClick={() => {
+                                        const newValue = Number(field.value) - 1
+                                        if (newValue >= 1) {
+                                          field.onChange(newValue)
+                                          formProps.setValue(
+                                            "sell_price",
+                                            watchData.price * newValue
+                                          )
+                                          formProps.setValue("discount", 0)
+                                        }
+                                      }}
+                                    >
+                                      <Minus color="currentColor" size={16} />
+                                    </InputGroupButton>
+                                    <InputGroupButton
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      disabled={
+                                        field.value >=
+                                        (watchData.product_qty as number)
+                                      }
+                                      onClick={() => {
+                                        const newValue = Number(field.value) + 1
+                                        if (
+                                          newValue <=
+                                          (watchData.product_qty as number)
+                                        ) {
+                                          field.onChange(newValue)
+                                          formProps.setValue(
+                                            "sell_price",
+                                            watchData.price * newValue
+                                          )
+                                          formProps.setValue("discount", 0)
+                                        }
+                                      }}
+                                    >
+                                      <Add color="currentColor" size={16} />
+                                    </InputGroupButton>
+                                  </ButtonGroup>
+                                </InputGroupAddon>
+                              </InputGroup>
+                            )
+                          }}
+                        />
+                      )}
+                      <FormFieldItem
+                        control={control}
+                        name="discount"
+                        label="Discount"
+                        invalid={Boolean(errors.discount)}
+                        errorMessage={errors.discount?.message}
+                        render={({ field }) => {
+                          return (
+                            <InputGroup>
+                              {watchData.discount_type === "nominal" ? (
+                                <InputCurrency
+                                  placeholder="Discount amount"
+                                  disabled={
+                                    !watchData.discount_type ||
+                                    Boolean(watchData.is_promo)
+                                  }
+                                  customInput={InputGroupInput}
+                                  value={field.value || undefined}
+                                  onValueChange={(_value, _name, values) => {
+                                    const valData = values?.float
+                                    field.onChange(valData)
+
+                                    if (!valData) {
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price
+                                      )
+                                    } else {
+                                      const { amount } =
+                                        calculateDiscountAmount({
+                                          price: watchData.price,
+                                          discount_type:
+                                            watchData.discount_type as any,
+                                          discount_amount: valData || 0,
+                                        })
+                                      formProps.setValue("sell_price", amount)
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <InputGroupInput
+                                  type="number"
+                                  autoComplete="off"
+                                  placeholder="10%"
+                                  disabled={
+                                    !watchData.discount_type ||
+                                    Boolean(watchData.is_promo)
+                                  }
+                                  {...field}
+                                  value={
+                                    (field.value === 0
+                                      ? undefined
+                                      : field.value) || undefined
+                                  }
+                                  onChange={(e) => {
+                                    const value =
+                                      e.target.value === ""
+                                        ? 0
+                                        : Number(e.target.value)
+                                    field.onChange(value)
+
+                                    if (value === 0) {
+                                      formProps.setValue(
+                                        "sell_price",
+                                        watchData.price
+                                      )
+                                    } else {
+                                      const val = Number(value)
+                                      const { amount } =
+                                        calculateDiscountAmount({
+                                          price: watchData.price,
+                                          discount_type:
+                                            watchData.discount_type as any,
+                                          discount_amount: val,
+                                        })
+                                      formProps.setValue("sell_price", amount)
+                                    }
+                                  }}
+                                />
+                              )}
+                              <InputGroupAddon
+                                align="inline-end"
+                                className="pr-0"
+                              >
+                                <ButtonGroup>
+                                  <InputGroupButton
+                                    type="button"
+                                    variant={
+                                      watchData.discount_type === "percent"
+                                        ? "default"
+                                        : "ghost"
+                                    }
+                                    size="sm"
+                                    className={
+                                      watchData.discount_type === "percent"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                        : ""
+                                    }
+                                    disabled={Boolean(watchData.is_promo)}
+                                    onClick={() => {
+                                      formProps.setValue(
+                                        "discount_type",
+                                        "percent"
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    }}
+                                  >
+                                    %
+                                  </InputGroupButton>
+                                  <InputGroupButton
+                                    type="button"
+                                    variant={
+                                      watchData.discount_type === "nominal"
+                                        ? "default"
+                                        : "ghost"
+                                    }
+                                    size="sm"
+                                    className={
+                                      watchData.discount_type === "nominal"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                        : ""
+                                    }
+                                    disabled={Boolean(watchData.is_promo)}
+                                    onClick={() => {
+                                      formProps.setValue(
+                                        "discount_type",
+                                        "nominal"
+                                      )
+                                      formProps.setValue("discount", 0)
+                                    }}
+                                  >
+                                    Rp
+                                  </InputGroupButton>
+                                </ButtonGroup>
+                              </InputGroupAddon>
+                            </InputGroup>
+                          )
+                        }}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="notes"
+                        label="Notes"
+                        invalid={Boolean(errors.notes)}
+                        errorMessage={errors.notes?.message}
+                        render={({ field }) => (
+                          <Textarea
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="Notes"
+                          />
+                        )}
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="mt-6 flex items-center justify-between gap-2 text-right">
                   {type === "update" ? (

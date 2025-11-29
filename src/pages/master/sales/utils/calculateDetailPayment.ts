@@ -23,7 +23,13 @@ export function calculateDetailPayment(
     0
   )
   const loyalty_point = data.items?.reduce(
-    (total, item) => total + item.loyalty_point,
+    (total, item) =>
+      total +
+      (typeof item.loyalty_point === "object" && item.loyalty_point !== null
+        ? item.loyalty_point.points
+        : typeof item.loyalty_point === "number"
+          ? item.loyalty_point
+          : 0),
     0
   )
   let totalDiscount = 0

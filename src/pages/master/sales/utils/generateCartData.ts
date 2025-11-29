@@ -137,6 +137,7 @@ export function generateCartData(
     employee,
     payments = [],
     refund_from = [],
+    loyalty_redeem_items = [],
     notes,
   } = watchTransaction
 
@@ -160,8 +161,36 @@ export function generateCartData(
     {} as Record<string, ValidationTransactionSchema["taxes"]>
   )
 
+  // Process loyalty redeem items
+  // Untuk redeem type="discount", kumpulkan discount (tidak menambahkan items)
+  // Untuk redeem type="free_item", items sudah ditambahkan di CartDetail.tsx saat onSelectReward
+  // Jadi tidak perlu menambahkan items lagi di sini
+  const redeemDiscounts: Array<{
+    discount_type: "percent" | "nominal"
+    discount_value: number
+  }> = []
+
+  loyalty_redeem_items.forEach((redeem) => {
+    // Jika type = discount, kumpulkan discount (discount tidak menambahkan items)
+    if (
+      redeem.type === "discount" &&
+      redeem.discount_type &&
+      redeem.discount_value
+    ) {
+      redeemDiscounts.push({
+        discount_type: redeem.discount_type as "percent" | "nominal",
+        discount_value: redeem.discount_value,
+      })
+    }
+    // Jika type = free_item, items sudah ditambahkan di CartDetail.tsx saat onSelectReward
+    // Jadi tidak perlu menambahkan items lagi di sini
+  })
+
+  // Semua items (termasuk redeem_item yang sudah ditambahkan) tetap dikirim ke backend
+  const allItems = [...items]
+
   // Process setiap item dengan logic yang sama seperti backend
-  const processedItems = items
+  const processedItems = allItems
     .map((item): ProcessedItem | null => {
       // Validasi item
       if (!item || typeof item !== "object") {
@@ -322,7 +351,9 @@ export function generateCartData(
         extra_day: item.extra_day || 0,
         name: item.name,
         is_promo: item.is_promo || 0,
-        loyalty_point: item.loyalty_point || 0,
+        loyalty_reward_id: item.loyalty_reward_id || null,
+        loyalty_point: item.loyalty_point || null,
+        source_from: item.source_from || "item",
         duration: item.duration || 0,
         duration_type: item.duration_type || undefined,
         session_duration: item.session_duration || 0,
@@ -373,22 +404,12 @@ export function generateCartData(
       .reduce((total, item) => total + item.total_tax_amount, 0)
       .toFixed(2)
   )
-  const totalItemDiscount = parseFloat(
-    processedItems
-      .reduce((total, item) => total + item.discount_amount, 0)
-      .toFixed(2)
-  )
 
   // ===== BAGIAN 2: PERHITUNGAN TOTAL ORIGINAL (SEBELUM PAJAK) =====
   // Hitung total keseluruhan dari semua item (original sebelum pajak)
   const originalGrandTotal = parseFloat(
     processedItems
       .reduce((total, item) => total + item.original_total_amount, 0)
-      .toFixed(2)
-  )
-  const originalTotalItemDiscount = parseFloat(
-    processedItems
-      .reduce((total, item) => total + item.original_discount_amount, 0)
       .toFixed(2)
   )
 
@@ -404,7 +425,22 @@ export function generateCartData(
     transactionDiscount = Math.min(transactionDiscount, grandTotal)
   }
 
-  // 3.2 Diskon transaksi original (sebelum pajak)
+  // 3.2 Tambahkan discount dari loyalty redeem items
+  if (redeemDiscounts.length > 0) {
+    redeemDiscounts.forEach((redeemDiscount) => {
+      const redeemDiscountAmount = calculateDiscountAmount({
+        price: grandTotal - transactionDiscount,
+        discount_type: redeemDiscount.discount_type,
+        discount_amount: redeemDiscount.discount_value,
+      })
+      transactionDiscount += Math.min(
+        redeemDiscountAmount,
+        grandTotal - transactionDiscount
+      )
+    })
+  }
+
+  // 3.3 Diskon transaksi original (sebelum pajak)
   let originalTransactionDiscount = 0
   if (discount_type && discount && discount > 0) {
     originalTransactionDiscount = calculateDiscountAmount({
@@ -418,11 +454,26 @@ export function generateCartData(
     )
   }
 
-  // 3.3 Total diskon dan grand total akhir
+  // 3.4 Tambahkan discount dari loyalty redeem items (original)
+  if (redeemDiscounts.length > 0) {
+    redeemDiscounts.forEach((redeemDiscount) => {
+      const redeemDiscountAmount = calculateDiscountAmount({
+        price: originalGrandTotal - originalTransactionDiscount,
+        discount_type: redeemDiscount.discount_type,
+        discount_amount: redeemDiscount.discount_value,
+      })
+      originalTransactionDiscount += Math.min(
+        redeemDiscountAmount,
+        originalGrandTotal - originalTransactionDiscount
+      )
+    })
+  }
+
+  // 3.5 Total diskon dan grand total akhir
   const totalDiscount = transactionDiscount
   const finalGrandTotal = grandTotal - transactionDiscount
 
-  // 3.4 Total diskon dan grand total akhir original
+  // 3.6 Total diskon dan grand total akhir original
   const originalTotalDiscount = originalTransactionDiscount
   const originalFinalGrandTotal =
     originalGrandTotal - originalTransactionDiscount

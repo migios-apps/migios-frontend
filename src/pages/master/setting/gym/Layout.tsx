@@ -56,7 +56,7 @@ const LayoutGymSetting = ({ children }: { children?: React.ReactNode }) => {
               )}
             >
               {tabItems.map((item) => (
-                <TabsTrigger
+              <TabsTrigger
                   key={item.route}
                   ref={pathname === item.route ? activeTabRef : undefined}
                   value={item.route}
@@ -71,7 +71,7 @@ const LayoutGymSetting = ({ children }: { children?: React.ReactNode }) => {
                   )}
                 >
                   {item.label}
-                </TabsTrigger>
+              </TabsTrigger>
               ))}
             </TabsList>
           </div>

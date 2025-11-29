@@ -152,3 +152,48 @@ export interface FreezeProgramDetail {
 export type FreezeProgramListTypesResponse = Omit<ApiTypes, "data"> & {
   data: { data: FreezeProgramDetail[]; meta: MetaApi }
 }
+
+export interface LoyaltyPointBalance {
+  balance: number
+}
+
+export interface LoyaltyPointEarned {
+  id: number
+  transaction_id: number | null
+  transaction_code: string | null
+  points: number
+  is_forever: boolean
+  expired_at: string | null
+  description: string | null
+  created_at: string
+}
+
+export interface LoyaltyReward {
+  id: number
+  name: string
+  type: "free_item" | "discount"
+  points_required: number
+}
+
+export interface LoyaltyPointRedeem {
+  id: number
+  loyalty_reward_id: number
+  points_used: number
+  status: "pending" | "completed" | "cancelled"
+  notes: string | null
+  created_at: string
+  updated_at: string
+  reward: LoyaltyReward
+}
+
+export type LoyaltyPointBalanceResponse = Omit<ApiTypes, "data"> & {
+  data: LoyaltyPointBalance
+}
+
+export type LoyaltyPointEarnedListResponse = Omit<ApiTypes, "data"> & {
+  data: { data: LoyaltyPointEarned[]; meta: MetaApi }
+}
+
+export type LoyaltyPointRedeemListResponse = Omit<ApiTypes, "data"> & {
+  data: { data: LoyaltyPointRedeem[]; meta: MetaApi }
+}

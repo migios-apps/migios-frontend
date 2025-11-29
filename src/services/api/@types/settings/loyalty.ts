@@ -1,24 +1,29 @@
 import { ApiTypes, MetaApi } from "../api"
+import { ClassesType } from "../class"
 
 export interface LoyaltyItemType {
-  id?: number
-  reward_id?: number | null
+  id: number
+  reward_id: number
+  loyalty_reward_id: number
   package_id?: number | null
-  quantity: number
-  product_id: number
-  item_type: string
+  product_id?: number | null
+  quantity?: number | null
+  item_type?: string | null
   name: string
-  original_price: number
+  photo?: string | null
+  original_price?: number | null
+  duration?: number | null
+  duration_type?: string | null
+  session_duration?: number | null
+  enabled?: boolean | null
+  allow_all_trainer?: boolean | null
+  type?: string | null
   price: number
   discount_type: string
-  discount: number
-  duration?: number | null
-  duration_type?: string
-  session_duration?: number | null
+  discount?: number | null
   extra_session?: number | null
   extra_day?: number | null
-  start_date?: string
-  notes: string
+  classes: ClassesType[]
   foriginal_price: string
   fprice: string
   fdiscount: string

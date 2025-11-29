@@ -139,7 +139,10 @@ const EditSales = () => {
             start_date: item.start_date ? new Date(item.start_date) : null,
             notes: item.notes,
             is_promo: 0,
-            loyalty_point: 0,
+            loyalty_point:
+              item.item_type === "package"
+                ? item.package?.loyalty_point || null
+                : item.product?.loyalty_point || null,
             allow_all_trainer: item.package?.allow_all_trainer || false,
             package_type: item.package?.type || null,
             trainers: item.trainer || null,

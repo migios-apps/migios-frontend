@@ -1,11 +1,23 @@
 import React, { Fragment } from "react"
+import { useFieldArray } from "react-hook-form"
 import { PaymentStatus, SalesDetailType } from "@/services/api/@types/sales"
+import { LoyaltyType } from "@/services/api/@types/settings/loyalty"
 import dayjs from "dayjs"
-import { Location, SearchNormal1 } from "iconsax-reactjs"
+import { Gift, Location, SearchNormal1, Tag, Trash } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DatePicker } from "@/components/ui/date-picker"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Form, FormFieldItem } from "@/components/ui/form"
+import { currencyFormat } from "@/components/ui/input-currency"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { generateCartData } from "../utils/generateCartData"
@@ -15,6 +27,7 @@ import {
 } from "../utils/validation"
 import CheckoutItemPackageCard from "./CheckoutItemPackageCard"
 import CheckoutItemProductCard from "./CheckoutItemProductCard"
+import DialogLoyaltyPoint from "./DialogLoyaltyPoint"
 import FormPayment from "./FormPayment"
 
 interface CartDetailProps {
@@ -48,15 +61,66 @@ const CartDetail: React.FC<CartDetailProps> = ({
   const {
     watch,
     control,
+    setValue,
     formState: { errors },
   } = formPropsTransaction
   const watchTransaction = watch()
+  console.log("watchTransaction", { watchTransaction, errors })
+
+  const { remove: removeTransactionItem, append: appendTransactionItem } =
+    useFieldArray({
+      control,
+      name: "items",
+    })
 
   const cartDataGenerated = generateCartData(watchTransaction)
+  console.log("cartDataGenerated", cartDataGenerated)
   const loyalty_point = cartDataGenerated.items.reduce(
-    (acc: any, cur: any) => acc + cur.loyalty_point,
+    (acc: number, cur: any) =>
+      acc +
+      (typeof cur.loyalty_point === "object" && cur.loyalty_point !== null
+        ? cur.loyalty_point.points || 0
+        : typeof cur.loyalty_point === "number"
+          ? cur.loyalty_point
+          : 0),
     0
   )
+
+  const memberFromForm = watchTransaction.member
+  const memberCodeFromDetail = detail?.member?.code
+  const [openLoyaltyDialog, setOpenLoyaltyDialog] = React.useState(false)
+  const [openRedeemDetailDialog, setOpenRedeemDetailDialog] =
+    React.useState(false)
+  const [selectedRedeemItem, setSelectedRedeemItem] =
+    React.useState<LoyaltyType | null>(null)
+
+  const memberCode = memberFromForm?.code || memberCodeFromDetail
+  const loyaltyRedeemItems = watchTransaction.loyalty_redeem_items || []
+
+  const handleRemoveRedeemItem = (redeemItemId: number) => {
+    // Hapus dari loyalty_redeem_items
+    const updatedRedeemItems = loyaltyRedeemItems.filter(
+      (item) => item.id !== redeemItemId
+    )
+    setValue("loyalty_redeem_items", updatedRedeemItems, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+
+    // Hapus items yang memiliki loyalty_reward_id yang sama
+    const currentItems = watchTransaction.items || []
+    const itemsToRemove: number[] = []
+    currentItems.forEach((item, index) => {
+      if (item.loyalty_reward_id === redeemItemId) {
+        itemsToRemove.push(index)
+      }
+    })
+
+    // Hapus items dari belakang ke depan untuk menghindari index shift
+    itemsToRemove.reverse().forEach((index) => {
+      removeTransactionItem(index)
+    })
+  }
 
   return (
     <Form {...formPropsTransaction}>
@@ -158,9 +222,111 @@ const CartDetail: React.FC<CartDetailProps> = ({
               <div className="mt-4 flex justify-end">
                 <Card className="w-full max-w-md gap-0 shadow-none">
                   <CardHeader>
-                    <CardTitle>Ringkasan Faktur</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Ringkasan Faktur</CardTitle>
+                      {memberCode && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOpenLoyaltyDialog(true)}
+                          className="gap-2"
+                        >
+                          <Gift size="16" />
+                          Redeem Poin
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Loyalty Redeem Items */}
+                    {loyaltyRedeemItems.length > 0 && (
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          <span className="text-sm font-semibold">
+                            Loyalty Redeem
+                          </span>
+                          {loyaltyRedeemItems.map((redeemItem, index) => (
+                            <Card
+                              key={index}
+                              className="hover:bg-accent relative cursor-pointer p-0 shadow-none transition-colors"
+                              onClick={() => {
+                                setSelectedRedeemItem(redeemItem as any)
+                                setOpenRedeemDetailDialog(true)
+                              }}
+                            >
+                              <CardContent className="p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold">
+                                        {redeemItem.name}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {redeemItem.type === "discount" ? (
+                                          <>
+                                            <Tag className="mr-1 h-3 w-3" />
+                                            Diskon
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Gift className="mr-1 h-3 w-3" />
+                                            Free Item
+                                          </>
+                                        )}
+                                      </Badge>
+                                    </div>
+                                    {redeemItem.type === "discount" && (
+                                      <div className="text-muted-foreground mt-1 text-xs">
+                                        {redeemItem.discount_type === "percent"
+                                          ? `Diskon ${redeemItem.discount_value}%`
+                                          : `Diskon ${currencyFormat(redeemItem.discount_value || 0)}`}
+                                      </div>
+                                    )}
+                                    {redeemItem.type === "free_item" &&
+                                      redeemItem.items && (
+                                        <div className="text-muted-foreground mt-1 text-xs">
+                                          {redeemItem.items.length} item gratis
+                                        </div>
+                                      )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-right">
+                                      <div className="text-muted-foreground text-xs">
+                                        Poin digunakan
+                                      </div>
+                                      <div className="text-sm font-bold">
+                                        {redeemItem.points_required} Pts
+                                      </div>
+                                    </div>
+                                    {isPaid === 0 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleRemoveRedeemItem(redeemItem.id!)
+                                        }}
+                                      >
+                                        <Trash size={16} />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <Separator />
+
                     {/* Subtotal & Tax */}
                     <div className="space-y-2">
                       <div className="m-0 flex justify-between text-sm">
@@ -170,15 +336,18 @@ const CartDetail: React.FC<CartDetailProps> = ({
                         </span>
                       </div>
                       <div className="m-0 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Diskon</span>
+                        <span className="text-card-foreground font-medium">
+                          -{cartDataGenerated.ftotal_discount}
+                        </span>
+                      </div>
+                      <div className="m-0 flex justify-between text-sm">
                         <span className="text-muted-foreground">Pajak</span>
                         <span className="text-card-foreground font-medium">
                           {cartDataGenerated.ftotal_tax}
                         </span>
                       </div>
                     </div>
-
-                    <Separator />
-
                     {/* Total */}
                     <div className="space-y-2">
                       <div className="m-0 flex justify-between">
@@ -252,6 +421,226 @@ const CartDetail: React.FC<CartDetailProps> = ({
           />
         </div>
       </div>
+
+      {/* Dialog Detail Loyalty Redeem */}
+      <Dialog
+        open={openRedeemDetailDialog}
+        onOpenChange={setOpenRedeemDetailDialog}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Detail Loyalty Redeem</DialogTitle>
+            <DialogDescription>
+              Detail reward yang telah di-redeem
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRedeemItem && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold">{selectedRedeemItem.name}</h3>
+                  <Badge variant="outline">
+                    {selectedRedeemItem.type === "discount" ? (
+                      <>
+                        <Tag className="mr-1 h-3 w-3" />
+                        Diskon
+                      </>
+                    ) : (
+                      <>
+                        <Gift className="mr-1 h-3 w-3" />
+                        Free Item
+                      </>
+                    )}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Poin digunakan</span>
+                  <span className="font-semibold">
+                    {selectedRedeemItem.points_required} Pts
+                  </span>
+                </div>
+
+                {selectedRedeemItem.type === "discount" && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Diskon</span>
+                    <span className="font-semibold">
+                      {selectedRedeemItem.discount_type === "percent"
+                        ? `${selectedRedeemItem.discount_value}%`
+                        : currencyFormat(
+                            selectedRedeemItem.discount_value || 0
+                          )}
+                    </span>
+                  </div>
+                )}
+
+                {selectedRedeemItem.type === "free_item" &&
+                  selectedRedeemItem.items &&
+                  selectedRedeemItem.items.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="text-sm font-semibold">
+                        Items Gratis
+                      </span>
+                      <div className="space-y-2">
+                        {selectedRedeemItem.items.map((item, idx) => (
+                          <Card key={idx}>
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-medium">{item.name}</div>
+                                  <div className="text-muted-foreground text-xs">
+                                    Quantity: {item.quantity}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-muted-foreground text-xs line-through">
+                                    {currencyFormat(item.original_price || 0)}
+                                  </div>
+                                  <div className="text-sm font-semibold text-green-600">
+                                    Gratis
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {!selectedRedeemItem.is_forever && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Berlaku hingga
+                    </span>
+                    <span>
+                      {dayjs(selectedRedeemItem.end_date).format("DD MMM YYYY")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <DialogLoyaltyPoint
+        open={openLoyaltyDialog}
+        onClose={() => setOpenLoyaltyDialog(false)}
+        memberCode={memberCode}
+        onSelectReward={(reward: LoyaltyType) => {
+          const currentRedeemItems = watchTransaction.loyalty_redeem_items || []
+
+          // Map items dari LoyaltyItemType ke format validation schema
+          const mappedItems =
+            reward.items && reward.items.length > 0
+              ? reward.items.map((item) => ({
+                  id: item.id,
+                  reward_id:
+                    item.reward_id || item.loyalty_reward_id || undefined,
+                  package_id: item.package_id ?? undefined,
+                  product_id: item.product_id ?? undefined,
+                  quantity: item.quantity || 1,
+                  item_type: item.item_type ?? undefined,
+                  name: item.name || "",
+                  original_price: item.original_price || 0,
+                  price: item.price || 0,
+                  discount_type: item.discount_type || "nominal",
+                  discount: item.discount ?? 0, // Pastikan tidak null
+                }))
+              : null
+
+          // Tambahkan reward ke loyalty_redeem_items
+          const newRedeemItem = {
+            id: reward.id!,
+            name: reward.name,
+            type: reward.type as "discount" | "free_item",
+            points_required: reward.points_required,
+            discount_type:
+              (reward.discount_type as "percent" | "nominal" | null) || null,
+            discount_value: reward.discount_value || null,
+            items: mappedItems,
+          }
+
+          setValue(
+            "loyalty_redeem_items",
+            [...currentRedeemItems, newRedeemItem],
+            {
+              shouldValidate: true,
+              shouldDirty: true,
+            }
+          )
+
+          // Tambahkan free items ke transaction items jika type = free_item
+          if (
+            reward.type === "free_item" &&
+            reward.items &&
+            reward.items.length > 0
+          ) {
+            reward.items.forEach((item) => {
+              if (item.package_id) {
+                appendTransactionItem({
+                  item_type: "package",
+                  package_id: item.package_id,
+                  product_id: null,
+                  name: item.name || "",
+                  quantity: item.quantity || 1,
+                  price: item.price || 0,
+                  sell_price: item.price || 0,
+                  discount_type: item.discount_type || "nominal",
+                  discount: item.discount || 0,
+                  duration: item.duration || null,
+                  duration_type: item.duration_type || null,
+                  session_duration: item.session_duration,
+                  extra_session: item.extra_session || 0,
+                  extra_day: item.extra_day || 0,
+                  start_date: new Date(),
+                  notes: `Free item from loyalty reward: ${reward.name}`,
+                  is_promo: 0,
+                  loyalty_reward_id: item.loyalty_reward_id,
+                  loyalty_point: null,
+                  source_from: "redeem_item",
+                  allow_all_trainer: item.allow_all_trainer || false,
+                  package_type: item.type || null,
+                  classes: item.classes || [],
+                  instructors: [],
+                  trainers: null,
+                  data: item,
+                } as any)
+              } else if (item.product_id) {
+                appendTransactionItem({
+                  item_type: "product",
+                  package_id: null,
+                  product_id: item.product_id,
+                  name: item.name || "",
+                  quantity: item.quantity || 1,
+                  price: item.price || 0,
+                  sell_price: item.price || 0,
+                  discount_type: item.discount_type || "nominal",
+                  discount: item.discount || 0,
+                  duration: null,
+                  duration_type: null,
+                  session_duration: null,
+                  extra_session: null,
+                  extra_day: null,
+                  start_date: null,
+                  notes: `Free item from loyalty reward: ${reward.name}`,
+                  is_promo: 0,
+                  loyalty_reward_id: item.loyalty_reward_id,
+                  loyalty_point: null,
+                  source_from: "redeem_item",
+                  allow_all_trainer: false,
+                  package_type: null,
+                  classes: [],
+                  instructors: [],
+                  trainers: null,
+                  data: item,
+                } as any)
+              }
+            })
+          }
+        }}
+      />
     </Form>
   )
 }

@@ -83,6 +83,10 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   const [openDropdown, setOpenDropdown] = React.useState(false)
   const [confirmPartPaid, setConfirmPartPaid] = React.useState(false)
   const [confirmVoid, setConfirmVoid] = React.useState(false)
+  const [confirmUnpaid, setConfirmUnpaid] = React.useState(false)
+  const [unpaidType, setUnpaidType] = React.useState<"unpaid" | "partial">(
+    "unpaid"
+  )
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {
@@ -353,6 +357,8 @@ const FormPayment: React.FC<FormPaymentProps> = ({
             price: item.price,
             discount_type: item.discount_type || "nominal",
             discount: item.discount || 0,
+            source_from: item.source_from || "item",
+            loyalty_reward_id: item.loyalty_reward_id || null,
           }
 
           // Spesifik payload berdasarkan item_type
@@ -384,6 +390,11 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
           return basePayload
         }) as CheckoutRequest["items"]) || [],
+      loyalty_redeem_items:
+        (data.loyalty_redeem_items?.map((redeemItem) => ({
+          id: redeemItem.id,
+          points_required: redeemItem.points_required,
+        })) as CheckoutRequest["loyalty_redeem_items"]) || [],
       payments: data.payments,
       refund_from: (data.refund_from as CheckoutRequest["refund_from"]) || [],
     }
@@ -401,7 +412,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
       refund_from: (data.refund_from as CheckoutRequest["refund_from"]) || [],
     }
 
-    // console.log('body', body)
+    // console.log("body", body)
 
     if (type === "create") {
       createCheckout.mutate(body)
@@ -751,15 +762,35 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     watch("payments")?.filter(
                       (item) => item.isDefault === false
                     )?.length > 0 ? (
-                      <DropdownMenuItem onClick={handleSubmit(handleCheck)}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const loyaltyRedeemItems =
+                            watchTransaction.loyalty_redeem_items || []
+                          if (loyaltyRedeemItems.length > 0) {
+                            setUnpaidType("partial")
+                            setConfirmUnpaid(true)
+                          } else {
+                            handleSubmit(handleCheck)()
+                          }
+                        }}
+                      >
                         Simpan Dibayar Sebagian
                       </DropdownMenuItem>
                     ) : null}
                     {type === "create" ? (
                       <DropdownMenuItem
-                        onClick={handleSubmit((data) => {
-                          onSubmit({ ...data, isPaid: 0, payments: [] })
-                        })}
+                        onClick={() => {
+                          const loyaltyRedeemItems =
+                            watchTransaction.loyalty_redeem_items || []
+                          if (loyaltyRedeemItems.length > 0) {
+                            setUnpaidType("unpaid")
+                            setConfirmUnpaid(true)
+                          } else {
+                            handleSubmit((data) => {
+                              onSubmit({ ...data, isPaid: 0, payments: [] })
+                            })()
+                          }
+                        }}
                       >
                         Simpan Belum Dibayar
                       </DropdownMenuItem>
@@ -854,6 +885,31 @@ const FormPayment: React.FC<FormPaymentProps> = ({
             voidSales.mutate(detail.id)
           }
         }}
+      />
+
+      <AlertConfirm
+        open={confirmUnpaid}
+        title={
+          unpaidType === "unpaid"
+            ? "Tidak Dapat Simpan Belum Dibayar"
+            : "Tidak Dapat Simpan Dibayar Sebagian"
+        }
+        description={
+          unpaidType === "unpaid"
+            ? "Tidak dapat menyimpan transaksi sebagai belum dibayar jika ada redeem point. Redeem point hanya dapat digunakan untuk transaksi yang sudah dibayar. Harap hapus redeem point terlebih dahulu atau simpan transaksi sebagai sudah dibayar."
+            : "Tidak dapat menyimpan transaksi sebagai dibayar sebagian jika ada redeem point. Redeem point hanya dapat digunakan untuk transaksi yang sudah dibayar penuh. Harap hapus redeem point terlebih dahulu atau simpan transaksi sebagai sudah dibayar penuh."
+        }
+        rightTitle="Mengerti"
+        type="confirm"
+        className="w-auto"
+        icon={
+          <div className="mb-2 rounded-full bg-yellow-100 p-2">
+            <Warning2 size="70" color="#FF8A65" variant="Bulk" />
+          </div>
+        }
+        closable={true}
+        onClose={() => setConfirmUnpaid(false)}
+        onRightClick={() => setConfirmUnpaid(false)}
       />
     </>
   )
