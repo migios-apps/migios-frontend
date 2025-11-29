@@ -12,6 +12,22 @@ export const validationSchemaProduct = yup.object().shape({
   sku: yup.string().optional().nullable(),
   code: yup.string().optional().nullable(),
   hpp: yup.number().optional().nullable(),
+  loyalty_point: yup
+    .object()
+    .shape({
+      points: yup.number().min(0).required(),
+      expired_type: yup
+        .string()
+        .oneOf(["forever", "day", "week", "month", "year"])
+        .required(),
+      expired_value: yup.number().min(0).when("expired_type", {
+        is: (val: string) => val !== "forever",
+        then: (schema) => schema.required().min(1),
+        otherwise: (schema) => schema.optional().default(0),
+      }),
+    })
+    .optional()
+    .nullable(),
 })
 
 export type CreateProductSchema = yup.InferType<typeof validationSchemaProduct>

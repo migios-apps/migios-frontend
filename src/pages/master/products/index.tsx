@@ -4,7 +4,7 @@ import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { ProductDetail } from "@/services/api/@types/product"
 import { apiGetProductList } from "@/services/api/ProductService"
-import { Add, Edit } from "iconsax-reactjs"
+import { Add, Edit, Gift } from "iconsax-reactjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -138,9 +138,31 @@ const Products = () => {
         enableColumnActions: false,
       },
       {
-        accessorKey: "sku",
-        header: "SKU",
-        enableColumnActions: false,
+        accessorKey: "loyalty_point_value",
+        header: "Earn Point",
+        cell: ({ row }) => {
+          const data = row.original
+
+          return (
+            <>
+              <div className="flex items-center gap-2">
+                <Gift className="text-primary size-5" />
+                <div>
+                  <div className="text-foreground text-sm font-medium">
+                    {data.loyalty_point_value} Points
+                  </div>
+                  {!data.loyalty_point_value ? null : (
+                    <div className="text-muted-foreground text-xs">
+                      {data.loyalty_point?.expired_type === "forever"
+                        ? "Forever"
+                        : `For ${data.loyalty_point?.expired_value ?? 0} ${data.loyalty_point?.expired_type}${(data.loyalty_point?.expired_value ?? 0) > 1 ? "s" : ""}`}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )
+        },
       },
       {
         accessorKey: "code",
@@ -172,6 +194,10 @@ const Products = () => {
                     formProps.setValue("sku", row.original.sku)
                     formProps.setValue("code", row.original.code)
                     formProps.setValue("hpp", row.original.hpp)
+                    formProps.setValue(
+                      "loyalty_point",
+                      row.original.loyalty_point
+                    )
                   }}
                 >
                   <Edit color="currentColor" size={20} />

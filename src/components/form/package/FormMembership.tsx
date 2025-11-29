@@ -8,6 +8,7 @@ import {
   apiUpdatePackage,
 } from "@/services/api/PackageService"
 import { Trash2 } from "lucide-react"
+import { Gift } from "lucide-react"
 import { useSessionUser } from "@/stores/auth-store"
 import calculateDiscountAmount from "@/utils/calculateDiscountAmount"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -36,6 +37,12 @@ import {
 } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import DialogFormLoyaltyPoint from "@/components/form/loyalty-point/DialogFormLoyaltyPoint"
+import {
+  useLoyaltyPointForm,
+  resetLoyaltyPointForm,
+  type LoyaltyPointFormSchema,
+} from "@/components/form/loyalty-point/loyaltyPointValidation"
 import {
   MembershipFormSchema,
   ReturnMembershipFormSchema,
@@ -65,6 +72,8 @@ const FormMembership: React.FC<FormProps> = ({
   } = formProps
   const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [openLoyaltyDialog, setOpenLoyaltyDialog] = React.useState(false)
+  const loyaltyPointForm = useLoyaltyPointForm()
 
   const handleClose = () => {
     formProps.reset({})
@@ -103,6 +112,17 @@ const FormMembership: React.FC<FormProps> = ({
   })
 
   const onSubmit: SubmitHandler<MembershipFormSchema> = (data) => {
+    const loyaltyPoint = data.loyalty_point
+      ? {
+          points: data.loyalty_point.points,
+          expired_type: data.loyalty_point.expired_type,
+          expired_value:
+            data.loyalty_point.expired_type === "forever"
+              ? 0
+              : (data.loyalty_point.expired_value ?? 0),
+        }
+      : null
+
     if (type === "update") {
       update.mutate({
         club_id: club?.id as number,
@@ -120,7 +140,7 @@ const FormMembership: React.FC<FormProps> = ({
           (data.discount_type as CreatePackageDto["discount_type"]) ||
           "nominal",
         discount: data.discount || 0,
-        loyalty_point: data.loyalty_point,
+        loyalty_point: loyaltyPoint,
       })
       return
     }
@@ -141,7 +161,7 @@ const FormMembership: React.FC<FormProps> = ({
           (data.discount_type as CreatePackageDto["discount_type"]) ||
           "nominal",
         discount: data.discount || 0,
-        loyalty_point: data.loyalty_point,
+        loyalty_point: loyaltyPoint,
       })
       return
     }
@@ -344,27 +364,75 @@ const FormMembership: React.FC<FormProps> = ({
                   <FormFieldItem
                     control={control}
                     name="loyalty_point"
-                    label={<>Loyalty points earned</>}
+                    label={<>Loyalty Point Earned</>}
                     invalid={Boolean(errors.loyalty_point)}
                     errorMessage={errors.loyalty_point?.message}
                     render={({ field }) => (
-                      <InputGroup>
-                        <InputGroupInput
-                          type="number"
-                          autoComplete="off"
-                          placeholder="1000"
-                          {...field}
-                          value={field.value === 0 ? "" : field.value}
-                          onChange={(e) => {
-                            const value =
-                              e.target.value === "" ? 0 : Number(e.target.value)
-                            field.onChange(value)
-                          }}
-                        />
-                        <InputGroupAddon align="inline-end">
-                          Pts
-                        </InputGroupAddon>
-                      </InputGroup>
+                      <div className="space-y-2">
+                        {watchData.loyalty_point ? (
+                          <div className="border-border flex items-center justify-between rounded-lg border p-3">
+                            <div className="flex items-center gap-2">
+                              <Gift className="text-primary size-5" />
+                              <div>
+                                <div className="text-foreground text-sm font-medium">
+                                  {watchData.loyalty_point.points} Points
+                                </div>
+                                <div className="text-muted-foreground text-xs">
+                                  {watchData.loyalty_point.expired_type ===
+                                  "forever"
+                                    ? "Forever"
+                                    : `For ${watchData.loyalty_point.expired_value ?? 0} ${watchData.loyalty_point.expired_type}${(watchData.loyalty_point.expired_value ?? 0) > 1 ? "s" : ""}`}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (watchData.loyalty_point) {
+                                    loyaltyPointForm.reset({
+                                      points: watchData.loyalty_point.points,
+                                      expired_type:
+                                        watchData.loyalty_point.expired_type,
+                                      expired_value:
+                                        watchData.loyalty_point.expired_value ??
+                                        0,
+                                    })
+                                    setOpenLoyaltyDialog(true)
+                                  }
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange(null)
+                                }}
+                              >
+                                Hapus
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => {
+                              resetLoyaltyPointForm(loyaltyPointForm)
+                              setOpenLoyaltyDialog(true)
+                            }}
+                          >
+                            <Gift className="mr-2 size-4" />
+                            Tambah Loyalty Point
+                          </Button>
+                        )}
+                      </div>
                     )}
                   />
                   <div className="grid gap-4 md:grid-cols-2">
@@ -515,6 +583,16 @@ const FormMembership: React.FC<FormProps> = ({
           </Form>
         </SheetContent>
       </Sheet>
+
+      <DialogFormLoyaltyPoint
+        formProps={loyaltyPointForm}
+        open={openLoyaltyDialog}
+        onClose={() => setOpenLoyaltyDialog(false)}
+        onSave={(data: LoyaltyPointFormSchema) => {
+          formProps.setValue("loyalty_point", data)
+        }}
+        title="Loyalty Point"
+      />
 
       <AlertConfirm
         open={confirmDelete}

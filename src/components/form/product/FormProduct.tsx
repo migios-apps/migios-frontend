@@ -7,7 +7,7 @@ import {
   apiDeleteProduct,
   apiUpdateProduct,
 } from "@/services/api/ProductService"
-import { Trash2 } from "lucide-react"
+import { Gift, Trash2 } from "lucide-react"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -23,6 +23,12 @@ import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
 import { Textarea } from "@/components/ui/textarea"
+import DialogFormLoyaltyPoint from "@/components/form/loyalty-point/DialogFormLoyaltyPoint"
+import {
+  useLoyaltyPointForm,
+  resetLoyaltyPointForm,
+  type LoyaltyPointFormSchema,
+} from "@/components/form/loyalty-point/loyaltyPointValidation"
 import { CreateProductSchema, ReturnProductFormSchema } from "./validation"
 
 type FormProps = {
@@ -48,6 +54,8 @@ const FormProduct: React.FC<FormProps> = ({
   } = formProps
   const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [openLoyaltyDialog, setOpenLoyaltyDialog] = React.useState(false)
+  const loyaltyPointForm = useLoyaltyPointForm()
 
   const handleClose = () => {
     formProps.reset({})
@@ -86,6 +94,17 @@ const FormProduct: React.FC<FormProps> = ({
   })
 
   const onSubmit: SubmitHandler<CreateProductSchema> = (data) => {
+    const loyaltyPoint = data.loyalty_point
+      ? {
+          points: data.loyalty_point.points,
+          expired_type: data.loyalty_point.expired_type,
+          expired_value:
+            data.loyalty_point.expired_type === "forever"
+              ? 0
+              : (data.loyalty_point.expired_value ?? 0),
+        }
+      : null
+
     if (type === "update") {
       update.mutate({
         club_id: club?.id as number,
@@ -97,6 +116,7 @@ const FormProduct: React.FC<FormProps> = ({
         sku: data.sku,
         code: data.code,
         hpp: data.hpp,
+        loyalty_point: loyaltyPoint,
       })
       return
     }
@@ -111,6 +131,7 @@ const FormProduct: React.FC<FormProps> = ({
         sku: data.sku,
         code: data.code,
         hpp: data.hpp,
+        loyalty_point: loyaltyPoint,
       })
       return
     }
@@ -259,6 +280,79 @@ const FormProduct: React.FC<FormProps> = ({
                   />
                 )}
               />
+              <FormFieldItem
+                control={control}
+                name="loyalty_point"
+                label={<>Loyalty Point Earned</>}
+                invalid={Boolean(errors.loyalty_point)}
+                errorMessage={errors.loyalty_point?.message}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    {watchData.loyalty_point ? (
+                      <div className="border-border flex items-center justify-between rounded-lg border p-3">
+                        <div className="flex items-center gap-2">
+                          <Gift className="text-primary size-5" />
+                          <div>
+                            <div className="text-foreground text-sm font-medium">
+                              {watchData.loyalty_point.points} Points
+                            </div>
+                            <div className="text-muted-foreground text-xs">
+                              {watchData.loyalty_point.expired_type ===
+                              "forever"
+                                ? "Forever"
+                                : `For ${watchData.loyalty_point.expired_value ?? 0} ${watchData.loyalty_point.expired_type}${(watchData.loyalty_point.expired_value ?? 0) > 1 ? "s" : ""}`}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (watchData.loyalty_point) {
+                                loyaltyPointForm.reset({
+                                  points: watchData.loyalty_point.points,
+                                  expired_type:
+                                    watchData.loyalty_point.expired_type,
+                                  expired_value:
+                                    watchData.loyalty_point.expired_value ?? 0,
+                                })
+                                setOpenLoyaltyDialog(true)
+                              }
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              field.onChange(null)
+                            }}
+                          >
+                            Hapus
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          resetLoyaltyPointForm(loyaltyPointForm)
+                          setOpenLoyaltyDialog(true)
+                        }}
+                      >
+                        <Gift className="mr-2 size-4" />
+                        Tambah Loyalty Point
+                      </Button>
+                    )}
+                  </div>
+                )}
+              />
               <div className="mt-6 flex items-center justify-between gap-2">
                 {type === "update" ? (
                   <Button
@@ -282,6 +376,16 @@ const FormProduct: React.FC<FormProps> = ({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <DialogFormLoyaltyPoint
+        formProps={loyaltyPointForm}
+        open={openLoyaltyDialog}
+        onClose={() => setOpenLoyaltyDialog(false)}
+        onSave={(data: LoyaltyPointFormSchema) => {
+          formProps.setValue("loyalty_point", data)
+        }}
+        title="Loyalty Point"
+      />
 
       <AlertConfirm
         open={confirmDelete}

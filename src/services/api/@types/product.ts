@@ -1,4 +1,5 @@
 import { ApiTypes, MetaApi } from "./api"
+import { PackageProductLoyaltyPointDto } from "./package"
 
 export interface ProductDetail {
   id: number
@@ -15,6 +16,8 @@ export interface ProductDetail {
   updated_at: string
   fprice: string
   fhpp?: string | null
+  loyalty_point_value: number
+  loyalty_point: PackageProductLoyaltyPointDto | null
 }
 
 export interface CreateProduct {
@@ -27,6 +30,7 @@ export interface CreateProduct {
   sku?: string | null
   code?: string | null
   hpp?: number | null
+  loyalty_point?: PackageProductLoyaltyPointDto | null
 }
 
 export type ProductListResponse = Omit<ApiTypes, "data"> & {

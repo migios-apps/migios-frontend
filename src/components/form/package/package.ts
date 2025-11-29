@@ -44,7 +44,25 @@ export const validationSchemaMembership = yup.object().shape({
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,
   }),
-  loyalty_point: yup.number().optional().default(0),
+  loyalty_point: yup
+    .object()
+    .shape({
+      points: yup.number().min(0).required(),
+      expired_type: yup
+        .string()
+        .oneOf(["forever", "day", "week", "month", "year"])
+        .required(),
+      expired_value: yup
+        .number()
+        .min(0)
+        .when("expired_type", {
+          is: (val: string) => val !== "forever",
+          then: (schema) => schema.required().min(1),
+          otherwise: (schema) => schema.optional().default(0),
+        }),
+    })
+    .optional()
+    .nullable(),
 })
 
 export type MembershipFormSchema = yup.InferType<
@@ -109,7 +127,25 @@ export const validationSchemaPtTrainer = yup.object().shape({
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,
   }),
-  loyalty_point: yup.number().optional().default(0),
+  loyalty_point: yup
+    .object()
+    .shape({
+      points: yup.number().min(0).required(),
+      expired_type: yup
+        .string()
+        .oneOf(["forever", "day", "week", "month", "year"])
+        .required(),
+      expired_value: yup
+        .number()
+        .min(0)
+        .when("expired_type", {
+          is: (val: string) => val !== "forever",
+          then: (schema) => schema.required().min(1),
+          otherwise: (schema) => schema.optional().default(0),
+        }),
+    })
+    .optional()
+    .nullable(),
   trainers: yup
     .array()
     .of(validationSchemaTrainer)
@@ -175,7 +211,25 @@ export const validationSchemaClass = yup.object().shape({
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,
   }),
-  loyalty_point: yup.number().optional().default(0),
+  loyalty_point: yup
+    .object()
+    .shape({
+      points: yup.number().min(0).required(),
+      expired_type: yup
+        .string()
+        .oneOf(["forever", "day", "week", "month", "year"])
+        .required(),
+      expired_value: yup
+        .number()
+        .min(0)
+        .when("expired_type", {
+          is: (val: string) => val !== "forever",
+          then: (schema) => schema.required().min(1),
+          otherwise: (schema) => schema.optional().default(0),
+        }),
+    })
+    .optional()
+    .nullable(),
   classes: yup
     .array()
     .of(

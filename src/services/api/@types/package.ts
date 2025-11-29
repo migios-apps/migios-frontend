@@ -8,7 +8,8 @@ export interface PackageType {
   name: string
   description: string
   price: number
-  loyalty_point: number
+  loyalty_point: PackageProductLoyaltyPointDto
+  loyalty_point_value: number
   sell_price: number
   is_promo: number
   discount_type: "percent" | "nominal"
@@ -47,13 +48,19 @@ export interface PackageDetail extends PackageType {
   classes: ClassesType[]
 }
 
+export interface PackageProductLoyaltyPointDto {
+  points: number
+  expired_type: "forever" | "day" | "week" | "month" | "year"
+  expired_value: number
+}
+
 export interface CreatePackageDto {
   photo?: string | null
   is_promo: number
   discount_type: "percent" | "nominal"
   discount: number
   price: number
-  loyalty_point?: number
+  loyalty_point?: PackageProductLoyaltyPointDto | null
   name: string
   description?: string | null
   max_member?: number | null

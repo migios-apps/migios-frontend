@@ -4,7 +4,7 @@ import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { PackageDetail } from "@/services/api/@types/package"
 import { apiGetPackageList } from "@/services/api/PackageService"
-import { Add, Edit } from "iconsax-reactjs"
+import { Add, Edit, Gift } from "iconsax-reactjs"
 import { PackageType } from "@/constants/packages"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
@@ -122,8 +122,31 @@ const Membership = () => {
         },
       },
       {
-        accessorKey: "loyalty_point",
+        accessorKey: "loyalty_point_value",
         header: "Earn Point",
+        cell: ({ row }) => {
+          const data = row.original
+
+          return (
+            <>
+              <div className="flex items-center gap-2">
+                <Gift className="text-primary size-5" />
+                <div>
+                  <div className="text-foreground text-sm font-medium">
+                    {data.loyalty_point_value} Points
+                  </div>
+                  {!data.loyalty_point_value ? null : (
+                    <div className="text-muted-foreground text-xs">
+                      {data.loyalty_point?.expired_type === "forever"
+                        ? "Forever"
+                        : `For ${data.loyalty_point?.expired_value ?? 0} ${data.loyalty_point?.expired_type}${(data.loyalty_point?.expired_value ?? 0) > 1 ? "s" : ""}`}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )
+        },
       },
       {
         accessorKey: "enabled",
