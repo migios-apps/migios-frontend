@@ -65,7 +65,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
               pathname === item.href
                 ? "bg-muted hover:bg-accent"
                 : "hover:bg-accent hover:underline",
-              "justify-start w-full"
+              "w-full justify-start"
             )}
           >
             <span className="me-2">{item.icon}</span>

@@ -37,6 +37,9 @@ export interface LoyaltyType {
   updated_at: string
   items: LoyaltyItemType[]
   fdiscount_value: string
+  is_forever: boolean
+  start_date: string
+  end_date: string
 }
 
 export type LoyaltyListResponse = Omit<ApiTypes, "data"> & {

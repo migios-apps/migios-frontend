@@ -441,6 +441,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 !watchData.discount_type ||
                                 Boolean(watchData.is_promo)
                               }
+                              customInput={InputGroupInput}
                               value={field.value || undefined}
                               onValueChange={(_value, _name, values) => {
                                 const valData = values?.float

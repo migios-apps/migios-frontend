@@ -13,6 +13,7 @@ import {
 } from "@/services/api/settings/LoyaltyService"
 import { apiGetSettings } from "@/services/api/settings/settings"
 import { ArrowRight, Package, Plus, Search, Ticket } from "lucide-react"
+import { dayjs } from "@/utils/dayjs"
 import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
@@ -117,6 +118,9 @@ const LoyaltyPointSetting = () => {
       enabled: true,
       points_required: 0,
       discount_type: "percent",
+      is_forever: false,
+      start_date: undefined,
+      end_date: undefined,
     })
     setShowDiscountDialog(true)
   }
@@ -134,6 +138,9 @@ const LoyaltyPointSetting = () => {
       enabled: true,
       points_required: 0,
       reward_items: [],
+      is_forever: false,
+      start_date: undefined,
+      end_date: undefined,
     })
     setShowFreeItemDialog(true)
   }
@@ -192,6 +199,19 @@ const LoyaltyPointSetting = () => {
                         )
                         formProps.setValue("enabled", item.enabled)
                         formProps.setValue("reward_items", item.items)
+                        formProps.setValue("is_forever", item.is_forever)
+                        formProps.setValue(
+                          "start_date",
+                          item.start_date
+                            ? dayjs(item.start_date).toDate()
+                            : undefined
+                        )
+                        formProps.setValue(
+                          "end_date",
+                          item.end_date
+                            ? dayjs(item.end_date).toDate()
+                            : undefined
+                        )
 
                         if (item.type === "discount") {
                           setShowDiscountDialog(true)

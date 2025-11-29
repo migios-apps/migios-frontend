@@ -30,6 +30,23 @@ const loyaltyFormSchema = yup.object().shape({
     .required("Jumlah poin diperlukan")
     .min(1, "Minimal 1 poin"),
   enabled: yup.boolean().default(true),
+  is_forever: yup.boolean().default(false),
+  start_date: yup.date().when("is_forever", {
+    is: false,
+    then: (schema) => schema.required("Tanggal mulai harus diisi"),
+    otherwise: (schema) => schema.optional().nullable(),
+  }),
+  end_date: yup.date().when("is_forever", {
+    is: false,
+    then: (schema) =>
+      schema
+        .required("Tanggal berakhir harus diisi")
+        .min(
+          yup.ref("start_date"),
+          "Tanggal berakhir harus setelah tanggal mulai"
+        ),
+    otherwise: (schema) => schema.optional().nullable(),
+  }),
   discount_type: yup.string().when("type", {
     is: "discount",
     then: (schema) =>

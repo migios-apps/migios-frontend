@@ -6,22 +6,30 @@ import {
   apiDeleteLoyalty,
   apiUpdateLoyalty,
 } from "@/services/api/settings/LoyaltyService"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DatePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
-import { InputGroup, InputGroupText } from "@/components/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import {
   CreateLoyaltySchema,
   ReturnLoyaltyFormSchema,
@@ -94,187 +102,246 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
   }
 
   const handleFormSubmit = (data: CreateLoyaltySchema) => {
+    const baseData = {
+      name: "Discount",
+      discount_type: data.discount_type as "percent" | "nominal",
+      discount_value: data.discount_value as number,
+      reward_items: [],
+      type: "discount" as const,
+      points_required: data.points_required,
+      enabled: data.enabled,
+      is_forever: data.is_forever,
+      start_date: data.is_forever ? undefined : data.start_date?.toISOString(),
+      end_date: data.is_forever ? undefined : data.end_date?.toISOString(),
+    }
+
     if (type === "update") {
-      update.mutate({
-        name: "Discount",
-        discount_type: data.discount_type as "percent" | "nominal",
-        discount_value: data.discount_value as number,
-        reward_items: [],
-        type: "discount",
-        points_required: data.points_required,
-        enabled: data.enabled,
-      })
+      update.mutate(baseData)
       return
     }
     if (type === "create") {
-      create.mutate({
-        name: "Discount",
-        discount_type: data.discount_type as "percent" | "nominal",
-        discount_value: data.discount_value as number,
-        reward_items: [],
-        type: "discount",
-        points_required: data.points_required,
-        enabled: data.enabled,
-      })
+      create.mutate(baseData)
       return
     }
   }
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+      <Sheet open={open} onOpenChange={handleClose}>
+        <SheetContent
+          side="right"
+          className="w-full gap-0 sm:max-w-[500px]"
+          floating
+        >
+          <SheetHeader>
+            <SheetTitle>
               {type === "create" ? "Diskon Baru" : "Ubah Diskon"}
-            </DialogTitle>
-            <DialogDescription />
-          </DialogHeader>
+            </SheetTitle>
+            <SheetDescription />
+          </SheetHeader>
 
           <Form {...formProps}>
-            <form
-              onSubmit={handleSubmit(handleFormSubmit)}
-              className="flex flex-col gap-4"
-            >
-              <FormFieldItem
-                control={control}
-                name="points_required"
-                render={({ field }) => (
-                  <div className="flex flex-col gap-2">
-                    <FormLabel>Point yang diperlukan</FormLabel>
-                    <InputGroup>
-                      <Input
-                        type="number"
-                        autoComplete="off"
-                        placeholder="0 Point"
-                        {...field}
-                        value={field.value === 0 ? "" : field.value}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === "" ? 0 : Number(e.target.value)
-                          field.onChange(value)
-                        }}
-                      />
-                      <InputGroupText>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          disabled={field.value <= 0}
-                          onClick={() => {
-                            const newValue = Number(field.value) - 1
-                            if (newValue >= 1) {
-                              field.onChange(newValue)
-                            }
-                          }}
-                        >
-                          <Minus className="size-4" />
-                        </Button>
-                      </InputGroupText>
-                      <InputGroupText>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            const newValue = Number(field.value) + 1
-                            field.onChange(newValue)
-                          }}
-                        >
-                          <Plus className="size-4" />
-                        </Button>
-                      </InputGroupText>
-                    </InputGroup>
-                  </div>
-                )}
-              />
-
-              <FormFieldItem
-                control={control}
-                name="discount_value"
-                render={({ field }) => (
-                  <div className="flex flex-col gap-2">
-                    <FormLabel>Jumlah Diskon</FormLabel>
-                    <InputGroup>
-                      {watchData.discount_type === "nominal" ? (
-                        <InputCurrency
-                          placeholder="0"
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
-                      ) : (
-                        <Input
+            <form onSubmit={handleSubmit(handleFormSubmit)}>
+              <ScrollArea className="h-[calc(100vh-10rem)] px-2">
+                <div className="space-y-4 px-4">
+                  <FormFieldItem
+                    control={control}
+                    name="points_required"
+                    label={<>Point yang diperlukan</>}
+                    render={({ field }) => (
+                      <InputGroup>
+                        <InputGroupInput
                           type="number"
                           autoComplete="off"
-                          placeholder="0"
+                          placeholder="1000"
                           {...field}
+                          value={field.value === 0 ? "" : field.value}
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === "" ? 0 : Number(e.target.value)
+                            field.onChange(value)
+                          }}
                         />
-                      )}
-                      <InputGroupText>
-                        <Button
-                          type="button"
-                          variant={
-                            watchData.discount_type === "percent"
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => {
-                            formProps.setValue("discount_type", "percent")
-                            formProps.setValue("discount_value", undefined)
-                          }}
-                        >
-                          %
-                        </Button>
-                      </InputGroupText>
-                      <InputGroupText>
-                        <Button
-                          type="button"
-                          variant={
-                            watchData.discount_type === "nominal"
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => {
-                            formProps.setValue("discount_type", "nominal")
-                            formProps.setValue("discount_value", undefined)
-                          }}
-                        >
-                          Rp
-                        </Button>
-                      </InputGroupText>
-                    </InputGroup>
-                  </div>
-                )}
-              />
+                        <InputGroupAddon align="inline-end">
+                          Pts
+                        </InputGroupAddon>
+                      </InputGroup>
+                    )}
+                  />
 
-              <DialogFooter>
-                {type === "update" ? (
-                  <Button
-                    variant="destructive"
-                    type="button"
-                    onClick={() => setConfirmDelete(true)}
-                  >
-                    <Trash2 className="mr-2 size-4" />
-                    Hapus
-                  </Button>
-                ) : (
-                  <Button variant="outline" type="button" onClick={handleClose}>
-                    Batal
-                  </Button>
-                )}
-                <Button
-                  type="submit"
-                  disabled={create.isPending || update.isPending}
-                >
-                  {create.isPending || update.isPending
-                    ? "Menyimpan..."
-                    : "Simpan"}
-                </Button>
-              </DialogFooter>
+                  <FormFieldItem
+                    control={control}
+                    name="discount_value"
+                    label={<>Jumlah Diskon</>}
+                    render={({ field }) => (
+                      <InputGroup>
+                        {watchData.discount_type === "nominal" ? (
+                          <InputCurrency
+                            placeholder="Discount amount"
+                            customInput={InputGroupInput}
+                            value={field.value || undefined}
+                            onValueChange={(_value, _name, values) => {
+                              const valData = values?.float
+                              field.onChange(valData)
+                            }}
+                          />
+                        ) : (
+                          <InputGroupInput
+                            type="number"
+                            autoComplete="off"
+                            placeholder="10%"
+                            {...field}
+                            value={
+                              (field.value === 0 ? undefined : field.value) ||
+                              undefined
+                            }
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? 0
+                                  : Number(e.target.value)
+                              field.onChange(value)
+                            }}
+                          />
+                        )}
+                        <InputGroupAddon align="inline-end" className="pr-0">
+                          <ButtonGroup>
+                            <InputGroupButton
+                              type="button"
+                              variant={
+                                watchData.discount_type === "percent"
+                                  ? "default"
+                                  : "ghost"
+                              }
+                              size="sm"
+                              className={
+                                watchData.discount_type === "percent"
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : ""
+                              }
+                              onClick={() => {
+                                formProps.setValue("discount_type", "percent")
+                                formProps.setValue("discount_value", 0)
+                              }}
+                            >
+                              %
+                            </InputGroupButton>
+                            <InputGroupButton
+                              type="button"
+                              variant={
+                                watchData.discount_type === "nominal"
+                                  ? "default"
+                                  : "ghost"
+                              }
+                              size="sm"
+                              className={
+                                watchData.discount_type === "nominal"
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : ""
+                              }
+                              onClick={() => {
+                                formProps.setValue("discount_type", "nominal")
+                                formProps.setValue("discount_value", 0)
+                              }}
+                            >
+                              Rp
+                            </InputGroupButton>
+                          </ButtonGroup>
+                        </InputGroupAddon>
+                      </InputGroup>
+                    )}
+                  />
+
+                  <FormFieldItem
+                    control={control}
+                    name="is_forever"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="is_forever"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <FormLabel
+                          htmlFor="is_forever"
+                          className="text-sm font-normal"
+                        >
+                          Aktif selamanya
+                        </FormLabel>
+                      </div>
+                    )}
+                  />
+
+                  {!watchData.is_forever && (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <FormFieldItem
+                        control={control}
+                        name="start_date"
+                        render={({ field }) => (
+                          <div className="flex flex-col gap-2">
+                            <FormLabel>Tanggal Mulai</FormLabel>
+                            <DatePicker
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              placeholder="Pilih tanggal mulai"
+                            />
+                          </div>
+                        )}
+                      />
+
+                      <FormFieldItem
+                        control={control}
+                        name="end_date"
+                        render={({ field }) => (
+                          <div className="flex flex-col gap-2">
+                            <FormLabel>Tanggal Berakhir</FormLabel>
+                            <DatePicker
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              placeholder="Pilih tanggal berakhir"
+                            />
+                          </div>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+              <SheetFooter>
+                <div className="flex items-center justify-between px-4">
+                  {type === "update" && (
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      type="button"
+                      onClick={() => setConfirmDelete(true)}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
+                  <div className="ml-auto flex gap-2">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={handleClose}
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={create.isPending || update.isPending}
+                    >
+                      {create.isPending || update.isPending
+                        ? "Menyimpan..."
+                        : "Simpan"}
+                    </Button>
+                  </div>
+                </div>
+              </SheetFooter>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       <AlertConfirm
         open={confirmDelete}

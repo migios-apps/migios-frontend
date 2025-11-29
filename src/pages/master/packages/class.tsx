@@ -222,7 +222,7 @@ const Class = () => {
               columns={columns}
               data={listData}
               noData={!isLoading && listData.length === 0}
-              loading={isLoading || isFetchingNextPage}
+              loading={isFetchingNextPage || isLoading}
               pagingData={{
                 total: total as number,
                 pageIndex: tableData.pageIndex as number,
