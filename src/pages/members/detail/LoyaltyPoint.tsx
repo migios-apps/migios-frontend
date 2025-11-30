@@ -51,7 +51,12 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
     enabled: !!member.code,
   })
 
-  const { data: earnedData, isFetchingNextPage: isFetchingEarned, isLoading: isLoadingEarned, error: errorEarned } = useInfiniteQuery({
+  const {
+    data: earnedData,
+    isFetchingNextPage: isFetchingEarned,
+    isLoading: isLoadingEarned,
+    error: errorEarned,
+  } = useInfiniteQuery({
     queryKey: [QUERY_KEY.memberLoyaltyEarned, earnedTableData, member.code],
     initialPageParam: 1,
     queryFn: async () => {
@@ -76,7 +81,12 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         : undefined,
   })
 
-  const { data: redeemData, isFetchingNextPage: isFetchingRedeem, isLoading: isLoadingRedeem, error: errorRedeem } = useInfiniteQuery({
+  const {
+    data: redeemData,
+    isFetchingNextPage: isFetchingRedeem,
+    isLoading: isLoadingRedeem,
+    error: errorRedeem,
+  } = useInfiniteQuery({
     queryKey: [QUERY_KEY.memberLoyaltyRedeem, redeemTableData, member.code],
     initialPageParam: 1,
     queryFn: async () => {
@@ -102,13 +112,15 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
   })
 
   const earnedList = React.useMemo(
-    () => (earnedData ? earnedData.pages.flatMap((page) => page.data.data) : []),
+    () =>
+      earnedData ? earnedData.pages.flatMap((page) => page.data.data) : [],
     [earnedData]
   )
   const earnedTotal = earnedData?.pages[0]?.data.meta.total
 
   const redeemList = React.useMemo(
-    () => (redeemData ? redeemData.pages.flatMap((page) => page.data.data) : []),
+    () =>
+      redeemData ? redeemData.pages.flatMap((page) => page.data.data) : [],
     [redeemData]
   )
   const redeemTotal = redeemData?.pages[0]?.data.meta.total
@@ -166,13 +178,11 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         cell: (props) => {
           const expiredAt = props.row.original.expired_at
           if (props.row.original.is_forever) {
-            return <div className="text-sm text-muted-foreground">-</div>
+            return <div className="text-muted-foreground text-sm">-</div>
           }
           return (
             <div className="text-sm">
-              {expiredAt
-                ? dayjs(expiredAt).format("DD MMM YYYY")
-                : "-"}
+              {expiredAt ? dayjs(expiredAt).format("DD MMM YYYY") : "-"}
             </div>
           )
         },
@@ -182,7 +192,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         header: "Deskripsi",
         cell: (props) => {
           return (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               {props.row.original.description || "-"}
             </div>
           )
@@ -233,7 +243,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         header: "Poin Digunakan",
         cell: (props) => {
           return (
-            <div className="text-sm font-medium text-destructive">
+            <div className="text-destructive text-sm font-medium">
               -{props.row.original.points_used}
             </div>
           )
@@ -261,7 +271,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         header: "Catatan",
         cell: (props) => {
           return (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               {props.row.original.notes || "-"}
             </div>
           )
@@ -295,7 +305,9 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
           <DataTable
             columns={earnedColumns}
             data={earnedList}
-            noData={(!isLoadingEarned && earnedList.length === 0) || !!errorEarned}
+            noData={
+              (!isLoadingEarned && earnedList.length === 0) || !!errorEarned
+            }
             loading={isLoadingEarned || isFetchingEarned}
             pagingData={{
               total: earnedTotal as number,
@@ -327,7 +339,9 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
           <DataTable
             columns={redeemColumns}
             data={redeemList}
-            noData={(!isLoadingRedeem && redeemList.length === 0) || !!errorRedeem}
+            noData={
+              (!isLoadingRedeem && redeemList.length === 0) || !!errorRedeem
+            }
             loading={isLoadingRedeem || isFetchingRedeem}
             pagingData={{
               total: redeemTotal as number,
@@ -361,4 +375,3 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
 }
 
 export default LoyaltyPoint
-

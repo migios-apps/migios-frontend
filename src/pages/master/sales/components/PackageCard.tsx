@@ -1,6 +1,5 @@
 import { PackageDetail } from "@/services/api/@types/package"
-import { Profile, Profile2User } from "iconsax-reactjs"
-import { Users } from "lucide-react"
+import { People, Profile, Profile2User } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
 import {
   PackageType,
@@ -18,16 +17,10 @@ type PackageCardProps = {
   formProps: ReturnTransactionItemFormSchema
 }
 
-const gradientDisabled = {
-  membership: "bg-muted",
-  pt_program: "bg-muted",
-  class: "bg-muted",
-}
-
 const iconPackages = {
   membership: Profile,
   pt_program: Profile2User,
-  class: Users,
+  class: People,
 }
 
 const iconColorPackages = {
@@ -47,13 +40,14 @@ const PackageCard = ({
 
   return (
     <Card
+      data-type={item.type}
+      card-type="card-item-package"
       className={cn(
-        "relative z-10 flex h-full min-h-[120px] transform flex-col justify-between overflow-hidden bg-gradient-to-r p-3 transition-all duration-100",
+        "relative z-10 flex h-full min-h-[120px] transform flex-col justify-between overflow-hidden bg-linear-to-r p-3 transition-all duration-100",
         !disabled && "cursor-pointer hover:shadow-lg active:scale-95",
         disabled
           ? cn(
-              gradientDisabled[item.type as keyof typeof gradientDisabled],
-              "cursor-not-allowed opacity-75"
+              "bg-accent-foreground dark:bg-card cursor-not-allowed opacity-25"
             )
           : cn(
               gradientPackages[item.type as keyof typeof gradientPackages] ||
@@ -92,38 +86,25 @@ const PackageCard = ({
           <div
             className={cn(
               "text-primary-foreground absolute top-4 -right-10 z-10 w-32 rotate-45 py-0.5 text-center text-xs font-semibold shadow-lg",
-              disabled ? "bg-muted" : "bg-destructive"
+              disabled ? "bg-accent-foreground/20" : "bg-destructive"
             )}
           >
             PROMO
           </div>
         )}
         <div className="absolute top-1/2 right-0 -translate-x-2 -translate-y-1/2">
-          {item.type === "class" ? (
-            <IconComponent
-              size={120}
-              className={cn(
-                disabled
-                  ? "text-white/20"
-                  : iconColorPackages[
-                      item.type as keyof typeof iconColorPackages
-                    ] || "text-white/20"
-              )}
-            />
-          ) : (
-            <IconComponent
-              color="currentColor"
-              size={120}
-              variant="Bold"
-              className={cn(
-                disabled
-                  ? "text-white/20"
-                  : iconColorPackages[
-                      item.type as keyof typeof iconColorPackages
-                    ] || "text-white/20"
-              )}
-            />
-          )}
+          <IconComponent
+            color="currentColor"
+            size={120}
+            variant={item.type === "class" ? "Bold" : "Bold"}
+            className={cn(
+              disabled
+                ? "text-white/20"
+                : iconColorPackages[
+                    item.type as keyof typeof iconColorPackages
+                  ] || "text-white/20 dark:text-gray-400/20"
+            )}
+          />
         </div>
         <h6 className="text-lg font-semibold text-white">{item.name}</h6>
         <div className="z-10 flex w-full items-end justify-between gap-4">

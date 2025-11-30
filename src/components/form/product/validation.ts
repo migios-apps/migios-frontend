@@ -20,11 +20,14 @@ export const validationSchemaProduct = yup.object().shape({
         .string()
         .oneOf(["forever", "day", "week", "month", "year"])
         .required(),
-      expired_value: yup.number().min(0).when("expired_type", {
-        is: (val: string) => val !== "forever",
-        then: (schema) => schema.required().min(1),
-        otherwise: (schema) => schema.optional().default(0),
-      }),
+      expired_value: yup
+        .number()
+        .min(0)
+        .when("expired_type", {
+          is: (val: string) => val !== "forever",
+          then: (schema) => schema.required().min(1),
+          otherwise: (schema) => schema.optional().default(0),
+        }),
     })
     .optional()
     .nullable(),

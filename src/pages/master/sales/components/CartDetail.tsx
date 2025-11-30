@@ -217,7 +217,8 @@ const CartDetail: React.FC<CartDetailProps> = ({
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle>Ringkasan Faktur</CardTitle>
-                      {memberCode && (
+                      {(type == "create" && !memberCode) ||
+                      (type === "update" && isPaid !== 0) ? null : (
                         <Button
                           type="button"
                           variant="outline"

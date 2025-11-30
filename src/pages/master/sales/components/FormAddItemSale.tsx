@@ -90,7 +90,9 @@ const FormAddItemSale: React.FC<FormProps> = ({
 
   const handleClose = () => {
     onClose()
-    resetTransactionItemForm(formProps)
+    setTimeout(() => {
+      resetTransactionItemForm(formProps)
+    }, 500)
   }
 
   const onSubmit: SubmitHandler<TransactionItemSchema> = (data) => {
@@ -212,37 +214,39 @@ const FormAddItemSale: React.FC<FormProps> = ({
             <Form {...formProps}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="mb-4 flex w-full flex-col">
-                  <Card className="relative z-10 flex h-full flex-col justify-between p-3">
+                  <Card className="relative z-10 flex h-full flex-col justify-between p-3 shadow-none">
                     <CardContent className="p-0">
-                      <h6 className="font-bold">{watchData.name}</h6>
-                      <div
-                        className={cn("z-10 flex", {
-                          "w-full items-end justify-between":
-                            watchData.item_type === "package",
-                        })}
-                      >
-                        <div className="flex flex-col">
-                          <span>
-                            {
-                              categoryPackage.filter(
-                                (option) =>
-                                  option.value === watchData.package_type
-                              )[0]?.label
-                            }
-                            {watchData.package_type ===
-                              PackageType.PT_PROGRAM &&
-                              ` (${watchData.session_duration} Ss)`}
-                          </span>
-                          <span>
-                            {watchData.duration} {watchData.duration_type}
-                          </span>
+                      <h6 className="font-semibold">{watchData.name}</h6>
+                      {watchData.item_type === "package" ? (
+                        <div
+                          className={cn("z-10 flex", {
+                            "w-full items-end justify-between":
+                              watchData.item_type === "package",
+                          })}
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm">
+                              {
+                                categoryPackage.filter(
+                                  (option) =>
+                                    option.value === watchData.package_type
+                                )[0]?.label
+                              }
+                              {watchData.package_type === PackageType.PT_PROGRAM
+                                ? ` (${watchData.session_duration} Ss)`
+                                : ""}
+                            </span>
+                            <span className="text-sm">
+                              {watchData.duration} {watchData.duration_type}
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : null}
                       {watchData.package_type === PackageType.CLASS ? (
                         <>
                           <div className="mt-1 w-full border-b border-gray-200 dark:border-gray-600"></div>
                           <div className="flex flex-col">
-                            <span className="mt-1 font-bold">Class</span>
+                            <span className="mt-1 font-semibold">Class</span>
                             <span className="text-sm">
                               {watchData.classes
                                 ?.map((item) => item.name)
@@ -250,7 +254,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="mt-1 font-bold">
+                            <span className="mt-1 font-semibold">
                               {watchData.package_type === PackageType.PT_PROGRAM
                                 ? "Trainer"
                                 : "Instructor"}
@@ -270,7 +274,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                   {isRedeemItem ? (
                     // Untuk redeem_item, hanya tampilkan start_date, notes, dan trainer/instructor
                     <>
-                      {watchData.item_type === "package" && (
+                      {watchData.item_type === "package" ? (
                         <>
                           <FormFieldItem
                             control={control}
@@ -297,8 +301,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                               />
                             )}
                           />
-                          {watchData.package_type ===
-                            PackageType.PT_PROGRAM && (
+                          {watchData.package_type === PackageType.PT_PROGRAM ? (
                             <FormFieldItem
                               control={control}
                               name="trainers"
@@ -344,8 +347,8 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 />
                               )}
                             />
-                          )}
-                          {watchData.package_type === PackageType.CLASS && (
+                          ) : null}
+                          {watchData.package_type === PackageType.CLASS ? (
                             <FormFieldItem
                               control={control}
                               name="instructors"
@@ -392,9 +395,9 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 />
                               )}
                             />
-                          )}
+                          ) : null}
                         </>
-                      )}
+                      ) : null}
                       <FormFieldItem
                         control={control}
                         name="notes"
@@ -413,7 +416,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                   ) : (
                     // Untuk item biasa, tampilkan semua field
                     <>
-                      {watchData.item_type === "package" && (
+                      {watchData.item_type === "package" ? (
                         <>
                           <FormFieldItem
                             control={control}
@@ -440,8 +443,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                               />
                             )}
                           />
-                          {watchData.package_type ===
-                            PackageType.PT_PROGRAM && (
+                          {watchData.package_type === PackageType.PT_PROGRAM ? (
                             <FormFieldItem
                               control={control}
                               name="trainers"
@@ -487,8 +489,8 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 />
                               )}
                             />
-                          )}
-                          {watchData.package_type !== PackageType.CLASS && (
+                          ) : null}
+                          {watchData.package_type !== PackageType.CLASS ? (
                             <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
                               {watchData.package_type !==
                               PackageType.MEMBERSHIP ? (
@@ -526,10 +528,10 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                 )}
                               />
                             </div>
-                          )}
+                          ) : null}
                         </>
-                      )}
-                      {watchData.item_type === "product" && (
+                      ) : null}
+                      {watchData.item_type === "product" ? (
                         <FormFieldItem
                           control={control}
                           name="quantity"
@@ -633,7 +635,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                             )
                           }}
                         />
-                      )}
+                      ) : null}
                       <FormFieldItem
                         control={control}
                         name="discount"

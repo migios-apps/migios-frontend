@@ -571,7 +571,7 @@ const PointOfSales = () => {
             <div className="flex h-[110px] flex-col justify-between gap-3 p-4 text-base">
               <div className="flex flex-col">
                 <div className="flex justify-between">
-                  <span className="font-bold">Sub total</span>
+                  <span className="font-semibold">Sub total</span>
                   <span>{cartDataGenerated.foriginal_subtotal}</span>
                 </div>
                 <span className="text-right text-xs italic">

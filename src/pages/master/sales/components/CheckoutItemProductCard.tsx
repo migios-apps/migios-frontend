@@ -1,6 +1,6 @@
 import React from "react"
-import { Edit } from "iconsax-reactjs"
-import { Button } from "@/components/ui/button"
+import { Edit2 } from "iconsax-reactjs"
+import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProcessedItem } from "../utils/generateCartData"
 
@@ -16,30 +16,34 @@ const CheckoutItemProductCard: React.FC<CheckoutItemProductCardProps> = ({
   onClick,
 }) => {
   return (
-    <Card className="relative z-10 p-0 shadow-none">
-      <CardContent className="p-4">
-        {showEdit ? (
-          <div className="bg-muted absolute right-0 bottom-0 z-20 rounded-tl-lg rounded-br-lg">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6"
-              onClick={(e) => {
-                e.stopPropagation()
-                onClick?.(item)
-              }}
-            >
-              <Edit color="currentColor" className="size-4" />
-            </Button>
-          </div>
-        ) : null}
-
+    <Card
+      data-type="product"
+      card-type="checkout-item-product"
+      className={cn(
+        "group relative z-10 p-4 shadow-none",
+        showEdit && "hover:bg-accent cursor-pointer active:scale-95"
+      )}
+      onClick={(e) => {
+        if (showEdit) {
+          e.stopPropagation()
+          onClick?.(item)
+        }
+      }}
+    >
+      <CardContent className="p-0">
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="space-y-3">
             <div className="flex flex-col">
-              <h6 className="text-lg leading-tight font-semibold">
-                {item.name}
-              </h6>
+              <div className="flex items-center gap-2">
+                <h6 className="text-lg leading-tight font-semibold">
+                  {item.name}
+                </h6>
+                {showEdit ? (
+                  <div className="hover:bg-primary-subtle text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                    <Edit2 variant="Bulk" className="size-5" />
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             {/* Product Details */}
