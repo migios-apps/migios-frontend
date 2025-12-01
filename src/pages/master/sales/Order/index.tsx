@@ -374,6 +374,7 @@ const PointOfSales = () => {
           type="create"
           formPropsTransaction={transactionSchema}
           formPropsTransactionItem={formPropsItem}
+          settings={settingsData}
           setIndexItem={setIndexItem}
           setOpenAddItem={setOpenAddItem}
           setFormItemType={setFormItemType}

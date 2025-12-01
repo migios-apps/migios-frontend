@@ -2,6 +2,7 @@ import React, { Fragment } from "react"
 import { useFieldArray } from "react-hook-form"
 import { PaymentStatus, SalesDetailType } from "@/services/api/@types/sales"
 import { LoyaltyType } from "@/services/api/@types/settings/loyalty"
+import { SettingsType } from "@/services/api/@types/settings/settings"
 import dayjs from "dayjs"
 import { Gift, Location, SearchNormal1, Tag, Trash } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
@@ -13,6 +14,7 @@ import { Form, FormFieldItem } from "@/components/ui/form"
 import { currencyFormat } from "@/components/ui/input-currency"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { calculateLoyaltyPoint } from "../utils/calculateLoyaltyPoint"
 import { generateCartData } from "../utils/generateCartData"
 import {
   ReturnTransactionFormSchema,
@@ -31,6 +33,7 @@ interface CartDetailProps {
   transactionId?: number
   formPropsTransaction: ReturnTransactionFormSchema
   formPropsTransactionItem: ReturnTransactionItemFormSchema
+  settings?: SettingsType | null
   onBack: () => void
   setIndexItem: React.Dispatch<React.SetStateAction<number>>
   setOpenAddItem: React.Dispatch<React.SetStateAction<boolean>>
@@ -44,6 +47,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
   transactionId,
   formPropsTransaction,
   formPropsTransactionItem,
+  settings,
   onBack,
   setIndexItem,
   setOpenAddItem,
@@ -79,16 +83,12 @@ const CartDetail: React.FC<CartDetailProps> = ({
 
   const cartDataGenerated = generateCartData(watchTransaction)
   // console.log("cartDataGenerated", cartDataGenerated)
-  const loyalty_point = cartDataGenerated.items.reduce(
-    (acc: number, cur: any) =>
-      acc +
-      (typeof cur.loyalty_point === "object" && cur.loyalty_point !== null
-        ? cur.loyalty_point.points || 0
-        : typeof cur.loyalty_point === "number"
-          ? cur.loyalty_point
-          : 0),
-    0
-  )
+  const loyalty_point = calculateLoyaltyPoint({
+    items: cartDataGenerated.items,
+    total_amount: cartDataGenerated.total_amount,
+    settings: settings || null,
+    hasRedeemItems: loyaltyRedeemItems.length > 0,
+  })
 
   const handleRemoveRedeemItem = (redeemItemId: number) => {
     // Hapus dari loyalty_redeem_items
@@ -350,10 +350,12 @@ const CartDetail: React.FC<CartDetailProps> = ({
                           {cartDataGenerated.ftotal_amount}
                         </span>
                       </div>
-                      <div className="text-muted-foreground flex justify-between text-sm">
-                        <span>Potensi mendapatkan poin</span>
-                        <span>+{loyalty_point} Pts</span>
-                      </div>
+                      {loyalty_point > 0 ? (
+                        <div className="text-muted-foreground flex justify-between text-sm">
+                          <span>Potensi mendapatkan poin</span>
+                          <span>+{loyalty_point} Pts</span>
+                        </div>
+                      ) : null}
                     </div>
 
                     {detail && detail?.payments?.length > 0 ? (

@@ -441,6 +441,7 @@ const EditSales = () => {
               detail={salesData}
               formPropsTransaction={transactionSchema}
               formPropsTransactionItem={formPropsItem}
+              settings={settingsData}
               setIndexItem={setIndexItem}
               setOpenAddItem={setOpenAddItem}
               setFormItemType={setFormItemType}
