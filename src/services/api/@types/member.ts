@@ -157,15 +157,19 @@ export interface LoyaltyPointBalance {
   balance: number
 }
 
-export interface LoyaltyPointEarned {
+export interface LoyaltyPointType {
   id: number
+  member_id: number
+  club_id: number
   transaction_id: number | null
-  transaction_code: string | null
+  loyalty_reward_id: number | null
+  type: "earn" | "redeem" | "expired"
   points: number
   is_forever: boolean
   expired_at: string | null
-  description: string | null
+  description: string
   created_at: string
+  transaction_code: string | null
 }
 
 export interface LoyaltyReward {
@@ -190,8 +194,8 @@ export type LoyaltyPointBalanceResponse = Omit<ApiTypes, "data"> & {
   data: LoyaltyPointBalance
 }
 
-export type LoyaltyPointEarnedListResponse = Omit<ApiTypes, "data"> & {
-  data: { data: LoyaltyPointEarned[]; meta: MetaApi }
+export type LoyaltyPointListResponse = Omit<ApiTypes, "data"> & {
+  data: { data: LoyaltyPointType[]; meta: MetaApi }
 }
 
 export type LoyaltyPointRedeemListResponse = Omit<ApiTypes, "data"> & {

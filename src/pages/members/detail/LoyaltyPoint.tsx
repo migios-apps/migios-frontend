@@ -2,28 +2,32 @@ import React from "react"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import {
-  LoyaltyPointEarned,
+  LoyaltyPointType,
   LoyaltyPointRedeem,
   MemberDetail,
 } from "@/services/api/@types/member"
 import {
   apiGetMemberLoyaltyBalance,
-  apiGetMemberLoyaltyEarned,
+  apiGetMemberLoyaltyList,
   apiGetMemberLoyaltyRedeem,
 } from "@/services/api/MembeService"
 import dayjs from "dayjs"
+import { Edit } from "lucide-react"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import DialogAdjustLoyaltyPoint from "./DialogAdjustLoyaltyPoint"
 
 interface LoyaltyPointProps {
   member: MemberDetail
 }
 
 const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
+  const [openAdjustDialog, setOpenAdjustDialog] = React.useState(false)
   const [earnedTableData, setEarnedTableData] = React.useState<TableQueries>({
     pageIndex: 1,
     pageSize: 10,
@@ -60,7 +64,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
     queryKey: [QUERY_KEY.memberLoyaltyEarned, earnedTableData, member.code],
     initialPageParam: 1,
     queryFn: async () => {
-      const res = await apiGetMemberLoyaltyEarned(member.code, {
+      const res = await apiGetMemberLoyaltyList(member.code, {
         page: earnedTableData.pageIndex,
         per_page: earnedTableData.pageSize,
         ...(earnedTableData.sort?.key !== ""
@@ -125,51 +129,45 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
   )
   const redeemTotal = redeemData?.pages[0]?.data.meta.total
 
-  const earnedColumns = React.useMemo<DataTableColumnDef<LoyaltyPointEarned>[]>(
+  const earnedColumns = React.useMemo<DataTableColumnDef<LoyaltyPointType>[]>(
     () => [
-      {
-        accessorKey: "created_at",
-        header: "Tanggal",
-        cell: (props) => {
-          return (
-            <div className="text-sm">
-              {dayjs(props.row.original.created_at).format("DD MMM YYYY HH:mm")}
-            </div>
-          )
-        },
-      },
-      {
-        accessorKey: "transaction_code",
-        header: "Kode Transaksi",
-        cell: (props) => {
-          return (
-            <div className="text-sm">
-              {props.row.original.transaction_code || "-"}
-            </div>
-          )
-        },
-      },
       {
         accessorKey: "points",
         header: "Poin",
         cell: (props) => {
+          const data = props.row.original
+          const colorClass =
+            data.type === "earn"
+              ? "text-green-700"
+              : data.type === "expired"
+                ? "text-red-700"
+                : "text-orange-700"
           return (
-            <div className="text-sm font-medium">
-              +{props.row.original.points}
+            <div className={`text-sm font-medium ${colorClass}`}>
+              {data.type === "earn" ? "+" : ""}
+              {data.points}
             </div>
           )
         },
       },
       {
-        accessorKey: "is_forever",
-        header: "Status",
+        accessorKey: "type",
+        header: "Tipe",
         cell: (props) => {
-          const isForever = props.row.original.is_forever
-          return (
-            <Badge variant={isForever ? "default" : "secondary"}>
-              {isForever ? "Selamanya" : "Terbatas"}
-            </Badge>
-          )
+          const type = props.row.original.type
+          const colorClass =
+            type === "earn"
+              ? statusColor.active
+              : type === "expired"
+                ? statusColor.expired
+                : statusColor.rejected
+          const typeLabel =
+            type === "earn"
+              ? "Diperoleh"
+              : type === "expired"
+                ? "Kadaluarsa"
+                : "Redeem"
+          return <Badge className={colorClass}>{typeLabel}</Badge>
         },
       },
       {
@@ -194,6 +192,29 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
           return (
             <div className="text-muted-foreground text-sm">
               {props.row.original.description || "-"}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: "transaction_code",
+        header: "Ref",
+        size: 50,
+        cell: (props) => {
+          return (
+            <div className="text-sm">
+              {props.row.original.transaction_code || "-"}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: "created_at",
+        header: "Tanggal",
+        cell: (props) => {
+          return (
+            <div className="text-sm">
+              {dayjs(props.row.original.created_at).format("DD MMM YYYY HH:mm")}
             </div>
           )
         },
@@ -284,7 +305,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
   return (
     <div className="flex flex-col gap-4">
       <Card className="bg-accent py-0 shadow-none">
-        <CardContent className="flex items-center justify-center gap-2 p-4">
+        <CardContent className="flex items-center justify-between gap-2 p-4">
           <div className="flex flex-col items-center gap-1">
             <div className="text-foreground text-2xl font-bold">
               {balanceData?.balance || 0}
@@ -293,6 +314,14 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
               Total Poin Loyalty
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpenAdjustDialog(true)}
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Adjust Poin
+          </Button>
         </CardContent>
       </Card>
 
@@ -370,6 +399,12 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
           />
         </TabsContent>
       </Tabs>
+
+      <DialogAdjustLoyaltyPoint
+        open={openAdjustDialog}
+        onClose={() => setOpenAdjustDialog(false)}
+        memberCode={member.code}
+      />
     </div>
   )
 }

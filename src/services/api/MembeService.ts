@@ -4,7 +4,7 @@ import {
   CreateMemberTypes,
   FreezeProgramListTypesResponse,
   LoyaltyPointBalanceResponse,
-  LoyaltyPointEarnedListResponse,
+  LoyaltyPointListResponse,
   LoyaltyPointRedeemListResponse,
   MemberDetailListResponse,
   MemberDetailResponse,
@@ -76,12 +76,12 @@ export async function apiGetMemberLoyaltyBalance(code: string) {
   })
 }
 
-export async function apiGetMemberLoyaltyEarned(
+export async function apiGetMemberLoyaltyList(
   code: string,
   params?: ParamsFilter
 ) {
-  return ApiService.fetchDataWithAxios<LoyaltyPointEarnedListResponse>({
-    url: `/member/${code}/loyalty/earned`,
+  return ApiService.fetchDataWithAxios<LoyaltyPointListResponse>({
+    url: `/member/${code}/loyalty/list`,
     method: "get",
     params,
   })
@@ -95,5 +95,22 @@ export async function apiGetMemberLoyaltyRedeem(
     url: `/member/${code}/loyalty/redeem`,
     method: "get",
     params,
+  })
+}
+
+export async function apiAdjustMemberLoyaltyPoint(
+  code: string,
+  data: {
+    type: "increase" | "decrease"
+    point: number
+    is_forever?: boolean
+    expired_at?: string
+    description?: string
+  }
+) {
+  return ApiService.fetchDataWithAxios({
+    url: `/member/${code}/loyalty/adjust`,
+    method: "post",
+    data,
   })
 }
