@@ -168,6 +168,12 @@ const Checkout = () => {
             search_condition: "<=",
             search_text: dateRange.end.format("YYYY-MM-DD"),
           },
+          {
+            search_operator: "and",
+            search_column: "status",
+            search_condition: "=",
+            search_text: "checkout",
+          },
           ...(tableDataCheckOut.query === ""
             ? [{}]
             : ([

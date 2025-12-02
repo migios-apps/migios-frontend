@@ -197,6 +197,7 @@ type DataTableProps<T> = {
   getRowCanExpand?: (row: Row<T>) => boolean
   enableColumnResizing?: boolean
   className?: string
+  showPagination?: boolean
 }
 
 interface IndeterminateCheckboxProps {
@@ -300,6 +301,7 @@ function _DataTable<T>(
     getRowCanExpand,
     enableColumnResizing = false,
     className,
+    showPagination = true,
     ...rest
   } = props
 
@@ -871,32 +873,34 @@ function _DataTable<T>(
             )}
           </Table>
         </div>
-        <div className="flex flex-col-reverse gap-4 px-0 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex w-full items-center justify-center gap-2 sm:justify-start">
-            <Select
-              value={pageSize.toString()}
-              onValueChange={handleSelectChange}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={pageSize} />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {pageSizeOption.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="text-muted-foreground text-sm">
-              <span className="inline">
-                {Math.min((pageIndex - 1) * pageSize + 1, total)}-
-                {Math.min(pageIndex * pageSize, total)} dari {total}
-              </span>
+        {showPagination ? (
+          <div className="flex flex-col-reverse gap-4 px-0 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex w-full items-center justify-center gap-2 sm:justify-start">
+              <Select
+                value={pageSize.toString()}
+                onValueChange={handleSelectChange}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue placeholder={pageSize} />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {pageSizeOption.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="text-muted-foreground text-sm">
+                <span className="inline">
+                  {Math.min((pageIndex - 1) * pageSize + 1, total)}-
+                  {Math.min(pageIndex * pageSize, total)} dari {total}
+                </span>
+              </div>
             </div>
+            {renderPagination()}
           </div>
-          {renderPagination()}
-        </div>
+        ) : null}
       </div>
     </Loading>
   )
