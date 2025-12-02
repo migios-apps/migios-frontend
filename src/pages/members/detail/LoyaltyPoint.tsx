@@ -12,6 +12,7 @@ import {
   apiGetMemberLoyaltyRedeem,
 } from "@/services/api/MembeService"
 import dayjs from "dayjs"
+import { MedalStar } from "iconsax-reactjs"
 import { Edit } from "lucide-react"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
@@ -304,14 +305,17 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="bg-accent py-0 shadow-none">
-        <CardContent className="flex items-center justify-between gap-2 p-4">
-          <div className="flex flex-col items-center gap-1">
-            <div className="text-foreground text-2xl font-bold">
-              {balanceData?.balance || 0}
-            </div>
-            <div className="text-muted-foreground text-xs">
-              Total Poin Loyalty
+      <Card className="border-orange-300 bg-orange-100 py-0 text-orange-700 shadow-none dark:bg-orange-500/30 dark:text-orange-300">
+        <CardContent className="flex items-center justify-between gap-2 p-2">
+          <div className="flex items-center gap-2">
+            <MedalStar size="80" variant="Bulk" />
+            <div className="flex flex-col items-start gap-1">
+              <div className="text-foreground text-2xl font-bold">
+                {balanceData?.balance || 0}
+              </div>
+              <div className="text-muted-foreground text-xs">
+                Total Poin Loyalty
+              </div>
             </div>
           </div>
           <Button
