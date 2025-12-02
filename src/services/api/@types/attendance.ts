@@ -32,6 +32,7 @@ export interface MemberAttendanceLogType {
   club_id: number
   date: string
   status: "checkin" | "checkout"
+  attendance_status: "checkin" | "checkout"
   location_type: "in" | "out"
   code: string
   name: string
@@ -42,8 +43,9 @@ export interface MemberAttendanceLogType {
   updated_at: string
   attendance_packages: {
     id: number
-    member_package_id: number
-    member_class_id: number
+    member_package_id: number | null
+    member_class_id: number | null
+    package_id: number
     name: string
     type: string
   }[]
