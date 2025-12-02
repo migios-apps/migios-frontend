@@ -41,7 +41,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   ]
 
   return (
-    <div className="h-full">
+    <>
       <div className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-16 z-10 w-full backdrop-blur">
         <Tabs
           value={pathname}
@@ -82,7 +82,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
       <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {children || <Outlet />}
       </div>
-    </div>
+    </>
   )
 }
 

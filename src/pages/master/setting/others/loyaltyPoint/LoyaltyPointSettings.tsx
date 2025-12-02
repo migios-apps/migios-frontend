@@ -1,10 +1,7 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import {
-  apiGetSettings,
-  apiUpdateSettings,
-} from "@/services/api/settings/settings"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { apiUpdateSettings } from "@/services/api/settings/settings"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AlertCircle, Minus, Plus, Save } from "lucide-react"
 import { toast } from "sonner"
@@ -21,6 +18,14 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Select } from "@/components/ui/react-select"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 
 const expiredTypeOptions = [
@@ -100,7 +105,19 @@ const INITIAL_SETTINGS: LoyaltyPointSettingsFormSchema = {
   loyalty_earn_points_when_using_points: true,
 }
 
-const LoyaltyPointSettings = () => {
+type LoyaltyPointSettingsProps = {
+  open: boolean
+  settingsData?: any
+  isLoadingSettings?: boolean
+  onClose: () => void
+}
+
+const LoyaltyPointSettings = ({
+  open,
+  settingsData,
+  isLoadingSettings = false,
+  onClose,
+}: LoyaltyPointSettingsProps) => {
   const queryClient = useQueryClient()
   const formProps = useForm<LoyaltyPointSettingsFormSchema>({
     resolver: yupResolver(validationSchema) as any,
@@ -109,15 +126,6 @@ const LoyaltyPointSettings = () => {
 
   const { control, handleSubmit, watch, formState, setValue, reset } = formProps
   const watchData = watch()
-
-  // Fetch settings
-  const { data: settingsData, isLoading: isLoadingSettings } = useQuery({
-    queryKey: [QUERY_KEY.settings],
-    queryFn: async () => {
-      const res = await apiGetSettings()
-      return res.data
-    },
-  })
 
   // Set form values when settings data is loaded
   useEffect(() => {
@@ -145,14 +153,21 @@ const LoyaltyPointSettings = () => {
     }
   }, [settingsData, reset])
 
+  const handleClose = () => {
+    onClose()
+  }
+
+  const handlePrefetch = () => {
+    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.settings] })
+    toast.success("Pengaturan loyalty point berhasil disimpan")
+    handleClose()
+  }
+
   // Update settings mutation
   const updateSettingsMutation = useMutation({
     mutationFn: (data: LoyaltyPointSettingsFormSchema) =>
       apiUpdateSettings(data),
-    onSuccess: () => {
-      toast.success("Pengaturan loyalty point berhasil disimpan")
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.settings] })
-    },
+    onSuccess: handlePrefetch,
     onError: (error: any) => {
       toast.error(
         error?.response?.data?.error?.message ||
@@ -178,270 +193,317 @@ const LoyaltyPointSettings = () => {
   }
 
   return (
-    <Form {...formProps}>
-      <form onSubmit={handleSubmit(handleSave)} className="space-y-6">
-        {/* Toggle Switches */}
-        <Card className="gap-3 shadow-none">
-          <CardHeader>
-            <CardTitle>Pengaturan Umum</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <FormLabel htmlFor="loyalty_earn_point_with_multiple">
-                  Berlaku Kelipatan
-                </FormLabel>
-                <Switch
-                  id="loyalty_earn_point_with_multiple"
-                  checked={watchData.loyalty_earn_point_with_multiple}
-                  onCheckedChange={(checked) =>
-                    setValue("loyalty_earn_point_with_multiple", checked)
-                  }
-                />
-              </div>
-              <p className="text-muted-foreground text-sm">
-                Jika diaktifkan, poin yang didapatkan akan dikalikan dengan
-                jumlah item yang dibeli. Contoh: jika membeli 3 item dengan
-                masing-masing 10 poin, maka akan mendapatkan 30 poin (3 × 10).
-                Jika tidak diaktifkan, hanya mendapatkan 10 poin per item
-                terlepas dari jumlah yang dibeli.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <FormLabel
-                  htmlFor="loyalty_earn_points_when_using_points"
-                  className="text-sm"
-                >
-                  Tambahan poin tetap didapat ketika menggunakan poin
-                </FormLabel>
-                <Switch
-                  id="loyalty_earn_points_when_using_points"
-                  checked={watchData.loyalty_earn_points_when_using_points}
-                  onCheckedChange={(checked) =>
-                    setValue("loyalty_earn_points_when_using_points", checked)
-                  }
-                />
-              </div>
-              <p className="text-muted-foreground text-sm">
-                Jika diaktifkan, member tetap mendapatkan poin dari pembelian
-                meskipun mereka menggunakan poin untuk redeem reward. Jika tidak
-                diaktifkan, member tidak akan mendapatkan poin dari pembelian
-                jika mereka menggunakan poin untuk redeem.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Pengaturan Jumlah Dibeli */}
-        <Card className="gap-3 shadow-none">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Jumlah Dibeli</CardTitle>
-              <Switch
-                checked={watchData.loyalty_earn_point_by_total_order}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setValue("loyalty_earn_point_by_total_order", true)
-                  } else {
-                    setValue("loyalty_earn_point_by_total_order", false)
-                  }
-                }}
-              />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Info Box */}
-            <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
-              <AlertCircle className="h-4 w-4 text-orange-500" />
-              <AlertDescription className="text-sm">
-                Pelanggan akan mendapatkan poin setelah membeli pesanan dalam
-                jumlah tertentu sebagai pengaturan berikut. Jika fitur ini
-                diaktifkan, poin yang didapatkan berdasarkan item tidak lagi
-                didapatkan.
-              </AlertDescription>
-            </Alert>
-
-            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Point Diperoleh */}
-              <FormFieldItem
-                control={control}
-                name="loyalty_points_earned_by_total_order"
-                label={<FormLabel>Point Diperoleh</FormLabel>}
-                invalid={Boolean(
-                  formState.errors.loyalty_points_earned_by_total_order
-                )}
-                errorMessage={
-                  formState.errors.loyalty_points_earned_by_total_order?.message
-                }
-                render={({ field }) => (
-                  <div className="flex w-full items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={handlePointsDecrement}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <InputGroup className="flex-1">
-                      <InputGroupInput
-                        type="number"
-                        min="0"
-                        {...field}
-                        value={field.value === 0 ? "" : field.value}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === "" ? 0 : Number(e.target.value)
-                          field.onChange(value)
-                        }}
-                        className="text-center"
-                      />
-                    </InputGroup>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={handlePointsIncrement}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              />
-
-              {/* Min. Total Order */}
-              <FormFieldItem
-                control={control}
-                name="loyalty_min_total_order"
-                label={<FormLabel>Min. Total Order</FormLabel>}
-                invalid={Boolean(formState.errors.loyalty_min_total_order)}
-                errorMessage={formState.errors.loyalty_min_total_order?.message}
-                render={({ field }) => (
-                  <InputCurrency
-                    value={field.value}
-                    onValueChange={(value: string | undefined) =>
-                      field.onChange(parseFloat(value || "0") || 0)
-                    }
-                    placeholder="0"
-                    className="w-full"
-                  />
-                )}
-              />
-            </div>
-
-            {/* Point Kedaluwarsa */}
-            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-              <FormFieldItem
-                control={control}
-                name="loyalty_expired_type_by_total_order"
-                label={
-                  <FormLabel>
-                    Point Kedaluwarsa{" "}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                }
-                invalid={Boolean(
-                  formState.errors.loyalty_expired_type_by_total_order
-                )}
-                errorMessage={
-                  formState.errors.loyalty_expired_type_by_total_order?.message
-                }
-                render={({ field, fieldState }) => (
-                  <Select
-                    isSearchable={false}
-                    placeholder="Pilih masa berlaku"
-                    value={expiredTypeOptions.find(
-                      (opt) => opt.value === field.value
-                    )}
-                    options={expiredTypeOptions}
-                    error={!!fieldState.error}
-                    onChange={(option) => {
-                      field.onChange(option?.value)
-                      // Reset expired_value jika forever
-                      if (option?.value === "forever") {
-                        setValue("loyalty_expired_value_by_total_order", 0)
-                      }
-                    }}
-                    className="w-full"
-                  />
-                )}
-              />
-
-              {watchData.loyalty_expired_type_by_total_order !== "forever" && (
-                <FormFieldItem
-                  control={control}
-                  name="loyalty_expired_value_by_total_order"
-                  label={
-                    <FormLabel>
-                      Nilai Masa Berlaku{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                  }
-                  invalid={Boolean(
-                    formState.errors.loyalty_expired_value_by_total_order
-                  )}
-                  errorMessage={
-                    formState.errors.loyalty_expired_value_by_total_order
-                      ?.message
-                  }
-                  render={({ field }) => (
-                    <InputGroup className="w-full">
-                      <InputGroupInput
-                        type="number"
-                        autoComplete="off"
-                        {...field}
-                        value={field.value === 0 ? "" : field.value}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === "" ? 0 : Number(e.target.value)
-                          field.onChange(value)
-                        }}
-                        className="w-full"
-                      />
-                      <InputGroupAddon align="inline-end">
-                        {watchData.loyalty_expired_type_by_total_order === "day"
-                          ? "Hari"
-                          : watchData.loyalty_expired_type_by_total_order ===
-                              "week"
-                            ? "Minggu"
-                            : watchData.loyalty_expired_type_by_total_order ===
-                                "month"
-                              ? "Bulan"
-                              : "Tahun"}
-                      </InputGroupAddon>
-                    </InputGroup>
-                  )}
-                />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Action Button */}
-        <div className="flex justify-end gap-4">
-          <Button
-            type="submit"
-            disabled={
-              isLoadingSettings ||
-              updateSettingsMutation.isPending ||
-              formState.isSubmitting
-            }
-            className="min-w-[120px]"
+    <Sheet open={open} onOpenChange={handleClose}>
+      <SheetContent
+        side="right"
+        className="w-full gap-0 overflow-y-auto px-3 sm:max-w-2xl"
+        floating
+      >
+        <SheetHeader>
+          <SheetTitle>Pengaturan Loyalty Point</SheetTitle>
+        </SheetHeader>
+        <Form {...formProps}>
+          <form
+            onSubmit={handleSubmit(handleSave)}
+            className="flex h-full flex-col"
           >
-            <Save className="mr-2 size-4" />
-            {isLoadingSettings ||
-            updateSettingsMutation.isPending ||
-            formState.isSubmitting
-              ? "Menyimpan..."
-              : "Simpan Pengaturan"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <ScrollArea className="flex-1 px-2">
+              <div className="space-y-6 pb-4">
+                {/* Toggle Switches */}
+                <Card className="gap-3 shadow-none">
+                  <CardHeader>
+                    <CardTitle>Pengaturan Umum</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel htmlFor="loyalty_earn_point_with_multiple">
+                          Berlaku Kelipatan
+                        </FormLabel>
+                        <Switch
+                          id="loyalty_earn_point_with_multiple"
+                          checked={watchData.loyalty_earn_point_with_multiple}
+                          onCheckedChange={(checked) =>
+                            setValue(
+                              "loyalty_earn_point_with_multiple",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Jika diaktifkan, poin yang didapatkan akan dikalikan
+                        dengan jumlah item yang dibeli. Contoh: jika membeli 3
+                        item dengan masing-masing 10 poin, maka akan mendapatkan
+                        30 poin (3 × 10). Jika tidak diaktifkan, hanya
+                        mendapatkan 10 poin per item terlepas dari jumlah yang
+                        dibeli.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel
+                          htmlFor="loyalty_earn_points_when_using_points"
+                          className="text-sm"
+                        >
+                          Tambahan poin tetap didapat ketika menggunakan poin
+                        </FormLabel>
+                        <Switch
+                          id="loyalty_earn_points_when_using_points"
+                          checked={
+                            watchData.loyalty_earn_points_when_using_points
+                          }
+                          onCheckedChange={(checked) =>
+                            setValue(
+                              "loyalty_earn_points_when_using_points",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Jika diaktifkan, member tetap mendapatkan poin dari
+                        pembelian meskipun mereka menggunakan poin untuk redeem
+                        reward. Jika tidak diaktifkan, member tidak akan
+                        mendapatkan poin dari pembelian jika mereka menggunakan
+                        poin untuk redeem.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Pengaturan Jumlah Dibeli */}
+                <Card className="gap-3 shadow-none">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Jumlah Dibeli</CardTitle>
+                      <Switch
+                        checked={watchData.loyalty_earn_point_by_total_order}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setValue("loyalty_earn_point_by_total_order", true)
+                          } else {
+                            setValue("loyalty_earn_point_by_total_order", false)
+                          }
+                        }}
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Info Box */}
+                    <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
+                      <AlertCircle className="h-4 w-4 text-orange-500" />
+                      <AlertDescription className="text-sm">
+                        Pelanggan akan mendapatkan poin setelah membeli pesanan
+                        dalam jumlah tertentu sebagai pengaturan berikut. Jika
+                        fitur ini diaktifkan, poin yang didapatkan berdasarkan
+                        item tidak lagi didapatkan.
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                      {/* Point Diperoleh */}
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_points_earned_by_total_order"
+                        label={<FormLabel>Point Diperoleh</FormLabel>}
+                        invalid={Boolean(
+                          formState.errors.loyalty_points_earned_by_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_points_earned_by_total_order
+                            ?.message
+                        }
+                        render={({ field }) => (
+                          <div className="flex w-full items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={handlePointsDecrement}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <InputGroup className="flex-1">
+                              <InputGroupInput
+                                type="number"
+                                min="0"
+                                {...field}
+                                value={field.value === 0 ? "" : field.value}
+                                onChange={(e) => {
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value)
+                                  field.onChange(value)
+                                }}
+                                className="text-center"
+                              />
+                            </InputGroup>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={handlePointsIncrement}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      />
+
+                      {/* Min. Total Order */}
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_min_total_order"
+                        label={<FormLabel>Min. Total Order</FormLabel>}
+                        invalid={Boolean(
+                          formState.errors.loyalty_min_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_min_total_order?.message
+                        }
+                        render={({ field }) => (
+                          <InputCurrency
+                            value={field.value}
+                            onValueChange={(value: string | undefined) =>
+                              field.onChange(parseFloat(value || "0") || 0)
+                            }
+                            placeholder="0"
+                            className="w-full"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Point Kedaluwarsa */}
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_expired_type_by_total_order"
+                        label={
+                          <FormLabel>
+                            Point Kedaluwarsa{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        invalid={Boolean(
+                          formState.errors.loyalty_expired_type_by_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_expired_type_by_total_order
+                            ?.message
+                        }
+                        render={({ field, fieldState }) => (
+                          <Select
+                            isSearchable={false}
+                            placeholder="Pilih masa berlaku"
+                            value={expiredTypeOptions.find(
+                              (opt) => opt.value === field.value
+                            )}
+                            options={expiredTypeOptions}
+                            error={!!fieldState.error}
+                            onChange={(option) => {
+                              field.onChange(option?.value)
+                              // Reset expired_value jika forever
+                              if (option?.value === "forever") {
+                                setValue(
+                                  "loyalty_expired_value_by_total_order",
+                                  0
+                                )
+                              }
+                            }}
+                            className="w-full"
+                          />
+                        )}
+                      />
+
+                      {watchData.loyalty_expired_type_by_total_order !==
+                        "forever" && (
+                        <FormFieldItem
+                          control={control}
+                          name="loyalty_expired_value_by_total_order"
+                          label={
+                            <FormLabel>
+                              Nilai Masa Berlaku{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(
+                            formState.errors
+                              .loyalty_expired_value_by_total_order
+                          )}
+                          errorMessage={
+                            formState.errors
+                              .loyalty_expired_value_by_total_order?.message
+                          }
+                          render={({ field }) => (
+                            <InputGroup className="w-full">
+                              <InputGroupInput
+                                type="number"
+                                autoComplete="off"
+                                {...field}
+                                value={field.value === 0 ? "" : field.value}
+                                onChange={(e) => {
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value)
+                                  field.onChange(value)
+                                }}
+                                className="w-full"
+                              />
+                              <InputGroupAddon align="inline-end">
+                                {watchData.loyalty_expired_type_by_total_order ===
+                                "day"
+                                  ? "Hari"
+                                  : watchData.loyalty_expired_type_by_total_order ===
+                                      "week"
+                                    ? "Minggu"
+                                    : watchData.loyalty_expired_type_by_total_order ===
+                                        "month"
+                                      ? "Bulan"
+                                      : "Tahun"}
+                              </InputGroupAddon>
+                            </InputGroup>
+                          )}
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+            <SheetFooter className="px-2">
+              <div className="flex w-full items-center justify-end gap-2">
+                <Button variant="outline" type="button" onClick={handleClose}>
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    isLoadingSettings ||
+                    updateSettingsMutation.isPending ||
+                    formState.isSubmitting
+                  }
+                  className="min-w-[120px]"
+                >
+                  <Save className="mr-2 size-4" />
+                  {isLoadingSettings ||
+                  updateSettingsMutation.isPending ||
+                  formState.isSubmitting
+                    ? "Menyimpan..."
+                    : "Simpan"}
+                </Button>
+              </div>
+            </SheetFooter>
+          </form>
+        </Form>
+      </SheetContent>
+    </Sheet>
   )
 }
 

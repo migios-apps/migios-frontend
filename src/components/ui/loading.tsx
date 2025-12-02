@@ -31,7 +31,7 @@ const DefaultLoading = (props: BaseLoadingProps) => {
   return loading ? (
     <Component
       className={cn(
-        !customLoader && "flex h-full items-center justify-center",
+        !customLoader && "flex h-full w-full items-center justify-center",
         className
       )}
     >
