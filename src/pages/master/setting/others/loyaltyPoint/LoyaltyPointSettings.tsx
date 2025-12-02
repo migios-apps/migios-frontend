@@ -233,11 +233,21 @@ const LoyaltyPointSettings = ({
                       </div>
                       <p className="text-muted-foreground text-sm">
                         Jika diaktifkan, poin yang didapatkan akan dikalikan
-                        dengan jumlah item yang dibeli. Contoh: jika membeli 3
-                        item dengan masing-masing 10 poin, maka akan mendapatkan
-                        30 poin (3 × 10). Jika tidak diaktifkan, hanya
-                        mendapatkan 10 poin per item terlepas dari jumlah yang
-                        dibeli.
+                        berdasarkan kelipatan:
+                      </p>
+                      <ul className="text-muted-foreground ml-4 list-disc space-y-1 text-sm">
+                        <li>
+                          <strong>Untuk Total Order:</strong> Kelipatan
+                          berdasarkan harga. Contoh: min. 100rb dapat 10 poin,
+                          pembelian 250rb = 2x kelipatan = 20 poin.
+                        </li>
+                        <li>
+                          <strong>Untuk Item:</strong> Kelipatan berdasarkan
+                          qty. Contoh: 3 item × 10 poin = 30 poin.
+                        </li>
+                      </ul>
+                      <p className="text-muted-foreground text-sm">
+                        Jika tidak diaktifkan, poin tetap sama tanpa kelipatan.
                       </p>
                     </div>
 
@@ -263,9 +273,9 @@ const LoyaltyPointSettings = ({
                         />
                       </div>
                       <p className="text-muted-foreground text-sm">
-                        Jika diaktifkan, member tetap mendapatkan poin dari
+                        Jika diaktifkan, customer tetap mendapatkan poin dari
                         pembelian meskipun mereka menggunakan poin untuk redeem
-                        reward. Jika tidak diaktifkan, member tidak akan
+                        reward. Jika tidak diaktifkan, customer tidak akan
                         mendapatkan poin dari pembelian jika mereka menggunakan
                         poin untuk redeem.
                       </p>
