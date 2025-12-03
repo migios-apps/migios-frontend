@@ -29,8 +29,9 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({
   children,
   container,
+  themeConfig,
 }: AuthenticatedLayoutProps) {
-  const themeConfig = useThemeConfig((state) => state.themeConfig)
+  const themeConfigState = useThemeConfig((state) => state.themeConfig)
   const setThemeConfig = useThemeConfig((state) => state.setThemeConfig)
   const sidebarData = useSidebarData()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -46,15 +47,55 @@ export function AuthenticatedLayout({
     setThemeConfig({ sidebar_state: open })
   }
 
-  const isHorizontalLayout = themeConfig.layout === "horizontal"
-  const isBlankLayout = themeConfig.layout === "blank"
+  const isHorizontalLayout =
+    themeConfig?.layout === "horizontal" ||
+    themeConfigState.layout === "horizontal"
+  const isBlankLayout =
+    themeConfig?.layout === "blank" || themeConfigState.layout === "blank"
 
   // Blank Layout (no header, no sidebar)
-  if (isBlankLayout) {
+  if (!isBlankLayout) {
     return (
-      <Suspense fallback={<PageLoader />}>
-        <div className="min-h-svh">{children ?? <Outlet />}</div>
-      </Suspense>
+      <SidebarProvider
+        open={themeConfigState.sidebar_state}
+        onOpenChange={handleOpenChange}
+      >
+        <AppSidebar />
+        <SidebarInset
+          className={cn(
+            // Set content container, so we can use container queries
+            "@container/content",
+
+            // If layout is fixed, set the height
+            // to 100svh to prevent overflow
+            "has-data-[layout=fixed]:h-svh",
+
+            // If layout is fixed and sidebar is inset,
+            // set the height to 100svh - spacing (total margins) to prevent overflow
+            "peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]"
+          )}
+        >
+          {/* Global Header untuk semua protected routes */}
+          <Header fixed>
+            <Search />
+            <div className="ms-auto flex items-center space-x-4">
+              <ThemeSwitch />
+              <ConfigDrawer />
+              <ProfileDropdown />
+            </div>
+          </Header>
+          <Suspense fallback={<PageLoader />}>
+            <Main {...containerProps}>{children ?? <Outlet />}</Main>
+          </Suspense>
+        </SidebarInset>
+
+        {/* Theme Customizer */}
+        <ThemeCustomizerTrigger onClick={() => setThemeCustomizerOpen(true)} />
+        <ThemeCustomizer
+          open={themeCustomizerOpen}
+          onOpenChange={setThemeCustomizerOpen}
+        />
+      </SidebarProvider>
     )
   }
 
@@ -102,47 +143,8 @@ export function AuthenticatedLayout({
 
   // Vertical Layout (default)
   return (
-    <SearchProvider>
-      <SidebarProvider
-        open={themeConfig.sidebar_state}
-        onOpenChange={handleOpenChange}
-      >
-        <AppSidebar />
-        <SidebarInset
-          className={cn(
-            // Set content container, so we can use container queries
-            "@container/content",
-
-            // If layout is fixed, set the height
-            // to 100svh to prevent overflow
-            "has-data-[layout=fixed]:h-svh",
-
-            // If layout is fixed and sidebar is inset,
-            // set the height to 100svh - spacing (total margins) to prevent overflow
-            "peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]"
-          )}
-        >
-          {/* Global Header untuk semua protected routes */}
-          <Header fixed>
-            <Search />
-            <div className="ms-auto flex items-center space-x-4">
-              <ThemeSwitch />
-              <ConfigDrawer />
-              <ProfileDropdown />
-            </div>
-          </Header>
-          <Suspense fallback={<PageLoader />}>
-            <Main {...containerProps}>{children ?? <Outlet />}</Main>
-          </Suspense>
-        </SidebarInset>
-
-        {/* Theme Customizer */}
-        <ThemeCustomizerTrigger onClick={() => setThemeCustomizerOpen(true)} />
-        <ThemeCustomizer
-          open={themeCustomizerOpen}
-          onOpenChange={setThemeCustomizerOpen}
-        />
-      </SidebarProvider>
-    </SearchProvider>
+    <Suspense fallback={<PageLoader />}>
+      <div className="min-h-svh">{children ?? <Outlet />}</div>
+    </Suspense>
   )
 }

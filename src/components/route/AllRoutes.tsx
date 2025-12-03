@@ -46,9 +46,9 @@ const AllRoutes = (props: RouteProps["meta"]) => {
             <Navigate
               replace
               to={
-                authenticated && !authDashboard
-                  ? clubsAuthenticatedEntryPath
-                  : authenticatedEntryPath
+                authenticated && authDashboard
+                  ? authenticatedEntryPath
+                  : clubsAuthenticatedEntryPath
               }
             />
           }

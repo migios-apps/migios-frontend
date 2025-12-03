@@ -35,6 +35,8 @@ function AuthProvider({ children }: AuthProviderProps) {
           const res = await apiGetClubDetail(club!.id!)
           setClub(res.data)
           if (res.data.subscription_status === "expired") {
+            // setClub({} as UserClubListData)
+            // setGetDashboard(false)
             setIsExpiredSubscription(true)
           }
           return res

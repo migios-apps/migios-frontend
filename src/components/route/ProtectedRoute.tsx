@@ -5,9 +5,10 @@ import { Navigate, Outlet, useLocation } from "react-router"
 import { REDIRECT_URL_KEY } from "@/constants/app.constant"
 
 const {
-  unAuthenticatedEntryPath,
-  clubsAuthenticatedEntryPath,
-  onBoardingEntryPath,
+  authenticatedEntryPath, // e.g., "/dashboard" (Admin)
+  unAuthenticatedEntryPath, // e.g., "/sign-in"
+  clubsAuthenticatedEntryPath, // e.g., "/clubs" (User Biasa)
+  onBoardingEntryPath, // e.g., "/onboarding"
 } = appConfig
 
 const ProtectedRoute = () => {
@@ -17,32 +18,61 @@ const ProtectedRoute = () => {
 
   const { pathname } = useLocation()
 
-  const getPathName =
-    pathname === "/" ? "" : `?${REDIRECT_URL_KEY}=${location.pathname}`
-
   const onRefresh = async () => {
     await markVersionAsDismissed()
     window.location.reload()
   }
 
-  if (
-    authenticated &&
-    total_user_clubs === 0 &&
-    pathname !== onBoardingEntryPath &&
-    !authDashboard
-  ) {
-    return <Navigate replace to={`${onBoardingEntryPath}`} />
-  } else if (
-    authenticated &&
-    total_user_clubs > 0 &&
-    pathname !== clubsAuthenticatedEntryPath &&
-    !authDashboard
-  ) {
-    return <Navigate replace to={`${clubsAuthenticatedEntryPath}`} />
-  } else if (!authenticated) {
-    return <Navigate replace to={`${unAuthenticatedEntryPath}${getPathName}`} />
+  // --- 1. HANDLING BELUM LOGIN ---
+  if (!authenticated) {
+    const redirectQuery =
+      pathname === "/" ? "" : `?${REDIRECT_URL_KEY}=${pathname}`
+    return (
+      <Navigate replace to={`${unAuthenticatedEntryPath}${redirectQuery}`} />
+    )
   }
 
+  // --- 2. HANDLING ONBOARDING (PRIORITAS TERTINGGI) ---
+  // Jika login, tapi belum punya klub: WAJIB ke Onboarding.
+  if (total_user_clubs === 0) {
+    // Jika user mencoba akses halaman lain selain onboarding, paksa balik ke onboarding
+    if (pathname !== onBoardingEntryPath) {
+      return <Navigate replace to={onBoardingEntryPath} />
+    }
+    // Jika sudah di halaman onboarding, biarkan render (return Outlet di bawah)
+  }
+
+  // --- 3. HANDLING USER SUDAH PUNYA KLUB (total_user_clubs > 0) ---
+  if (total_user_clubs > 0) {
+    // A. Mencegah user yang sudah punya klub kembali ke halaman onboarding
+    if (pathname === onBoardingEntryPath) {
+      // Kembalikan ke path default sesuai role
+      const target = authDashboard
+        ? authenticatedEntryPath
+        : clubsAuthenticatedEntryPath
+      return <Navigate replace to={target} />
+    }
+
+    // B. Logika User Biasa (Bukan AuthDashboard)
+    if (!authDashboard) {
+      // Jika user biasa mencoba akses root "/" atau mencoba maksa masuk ke dashboard admin
+      // Kita arahkan ke halaman List Klub
+      if (pathname === "/" || pathname === authenticatedEntryPath) {
+        return <Navigate replace to={clubsAuthenticatedEntryPath} />
+      }
+    }
+
+    // C. Logika Admin (AuthDashboard)
+    if (authDashboard) {
+      // Jika admin akses root, arahkan ke dashboard admin
+      if (pathname === "/") {
+        return <Navigate replace to={authenticatedEntryPath} />
+      }
+    }
+  }
+
+  // --- 4. RENDER HALAMAN (SUCCESS STATE) ---
+  // Jika kode sampai di sini, berarti User berhak melihat halaman tersebut.
   return (
     <>
       <Outlet />

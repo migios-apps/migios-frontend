@@ -121,7 +121,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
 
       /**
        * Centralized logout handler
-       * Clear tokens, clear state, dan optional redirect
+       * Clear tokens, clear state, clear persisted sessionUser, dan optional redirect
        */
       handleSignOut: (redirectToSignIn: boolean = true) => {
         // Clear tokens dari storage
@@ -131,7 +131,10 @@ export const useSessionUser = create<AuthState & AuthAction>()(
         storage.removeItem(CLIENT_TOKEN_NAME_IN_STORAGE)
         storage.removeItem(CLIENT_REFRESH_TOKEN_NAME_IN_STORAGE)
 
-        // Clear session state
+        // Clear persisted sessionUser state dari storage
+        storage.removeItem("sessionUser")
+
+        // Reset session state ke initialState
         set(() => ({
           ...initialState,
         }))
@@ -302,7 +305,9 @@ export const useAuth = () => {
   const authenticated = Boolean(
     client_access_token && access_token && session.signedIn && user?.id
   )
-  const authDashboard = Boolean(authenticated && club?.id)
+  const authDashboard = Boolean(
+    authenticated && session.getDashboard && club?.id
+  )
 
   return {
     authenticated,
