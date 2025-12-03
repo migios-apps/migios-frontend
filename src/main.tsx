@@ -1,20 +1,8 @@
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import { AxiosError } from "axios"
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { toast } from "sonner"
-import { useSessionUser } from "@/stores/auth-store"
-import { handleServerError } from "@/lib/handle-server-error"
-import cookiesStorage from "@/utils/cookiesStorage"
-import {
-  REFRESH_TOKEN_NAME_IN_STORAGE,
-  TOKEN_NAME_IN_STORAGE,
-} from "@/constants/api.constant"
 import { ThemeConfigProvider } from "@/components/theme-config-provider"
 import App from "./App"
 import { Toaster } from "./components/ui/sonner"
@@ -37,48 +25,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: import.meta.env.PROD,
       // staleTime: 10 * 1000, // 10s
     },
-    mutations: {
-      onError: (error) => {
-        handleServerError(error)
-
-        if (error instanceof AxiosError) {
-          if (error.response?.status === 304) {
-            toast.error("Content not modified!")
-          }
-        }
-      },
-    },
   },
-  queryCache: new QueryCache({
-    onError: (error) => {
-      if (error instanceof AxiosError) {
-        if (error?.code === "ERR_NETWORK") {
-          toast.error("Network error!")
-          return
-        }
-        if (error.response?.status === 401) {
-          toast.error("Session expired!")
-          useSessionUser.getState().setSessionSignedIn(false)
-          useSessionUser.getState().setGetDashboard(false)
-          cookiesStorage.removeItem(TOKEN_NAME_IN_STORAGE)
-          cookiesStorage.removeItem(REFRESH_TOKEN_NAME_IN_STORAGE)
-          const redirect = `${window.location.pathname}${window.location.search}`
-          if (redirect === "/sign-in") {
-            window.location.href = `/sign-in`
-          }
-
-          window.location.href = `/sign-in?redirect=${encodeURIComponent(redirect)}`
-        } else if (error.response?.status === 500) {
-          toast.error("Internal Server Error!")
-          if (import.meta.env.PROD) {
-            window.location.href = "/500"
-          }
-        } else {
-          toast.error("Something went wrong!")
-        }
-      }
-    },
-  }),
 })
 
 // Render the app

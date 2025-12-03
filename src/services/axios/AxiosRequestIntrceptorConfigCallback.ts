@@ -32,7 +32,11 @@ const AxiosRequestIntrceptorConfigCallback = (
     }
 
     if (storage === "cookies") {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       clientToken = cookiesStorage.getItem(CLIENT_TOKEN_NAME_IN_STORAGE) || ""
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       accessToken = cookiesStorage.getItem(TOKEN_NAME_IN_STORAGE) || ""
     }
 

@@ -65,3 +65,14 @@ export async function apiResetPassword<T>(data: ResetPassword) {
     data,
   })
 }
+
+// refresh token
+export async function apiRefreshToken(refreshToken: string) {
+  return ApiService.fetchDataWithAxios<AuthResponse>({
+    url: "/auth/refresh",
+    method: "post",
+    data: {
+      refreshToken,
+    },
+  })
+}
