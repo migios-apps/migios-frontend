@@ -9,8 +9,6 @@ import {
   TOKEN_NAME_IN_STORAGE,
 } from "@/constants/api.constant"
 import { ErrorApi } from "../api/@types/api"
-import { UserClubListData } from "../api/@types/club"
-import { MeData } from "../api/@types/user"
 
 const unauthorizedCode = [401, 419, 440]
 
@@ -33,24 +31,9 @@ const processQueue = (error: AxiosError | null) => {
   failedQueue = []
 }
 
+// Gunakan handleSignOut dari store
 const logout = () => {
-  const { setAccessToken, setRefreshToken } = useToken()
-  setAccessToken("")
-  setRefreshToken("")
-  cookiesStorage.removeItem(TOKEN_NAME_IN_STORAGE)
-  cookiesStorage.removeItem(REFRESH_TOKEN_NAME_IN_STORAGE)
-  useSessionUser.getState().setClub({} as UserClubListData)
-  useSessionUser.getState().setUser({} as MeData)
-  useSessionUser.getState().setSessionSignedIn(false)
-  useSessionUser.getState().setGetDashboard(false)
-
-  // Redirect ke sign-in
-  const redirect = `${window.location.pathname}${window.location.search}`
-  if (redirect !== "/sign-in") {
-    window.location.href = `/sign-in?redirect=${encodeURIComponent(redirect)}`
-  } else {
-    window.location.href = "/sign-in"
-  }
+  useSessionUser.getState().handleSignOut(true) // true = redirect ke sign-in
 }
 
 const AxiosResponseIntrceptorErrorCallback = async (error: AxiosError) => {
