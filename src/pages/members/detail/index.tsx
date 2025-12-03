@@ -34,6 +34,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useMember } from "../store/useMember"
 import FreezProgram from "./FreezProgram"
 import InformasiDetail from "./InformasiDetail"
 import LoyaltyPoint from "./LoyaltyPoint"
@@ -50,6 +51,7 @@ const MemberDetail = () => {
   const navigate = useNavigate()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const { copy } = useCopyToClipboard()
+  const { setMember } = useMember()
 
   const {
     data: member,
@@ -57,7 +59,11 @@ const MemberDetail = () => {
     error: errorMember,
   } = useQuery({
     queryKey: [QUERY_KEY.members, id],
-    queryFn: () => apiGetMember(id as string),
+    queryFn: async () => {
+      const res = await apiGetMember(id as string)
+      setMember(res.data)
+      return res
+    },
     select: (res) => res.data,
     enabled: !!id,
   })

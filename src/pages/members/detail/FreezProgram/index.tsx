@@ -142,7 +142,8 @@ const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
       />
 
       <Button
-        className="fixed right-10 bottom-4 h-16 w-fit max-w-fit rounded-full px-4 py-4"
+        size="icon"
+        className="fixed right-6 bottom-6 z-50 size-14 rounded-full shadow-lg"
         onClick={() => setOpen(true)}
       >
         <Add size="32" color="currentColor" variant="Outline" />
