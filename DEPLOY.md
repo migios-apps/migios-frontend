@@ -29,11 +29,17 @@ Configure environment variables in Coolify or create `.env` file:
 
 ```env
 NODE_ENV=production
-VITE_API_URL=https://your-api-url.com
-# Add other Vite environment variables (must start with VITE_)
+VITE_PUBLIC_API_URL_V1=https://your-api-url.com
+VITE_APP_CLIENT_ID=your-client-id
+VITE_APP_CLIENT_SECRET=your-client-secret
+VITE_BASENAME=  # Optional, for subdirectory deployment
 ```
 
-**Note**: Vite environment variables must be prefixed with `VITE_` to be accessible in the browser.
+**Note**:
+
+- Vite environment variables must be prefixed with `VITE_` to be accessible in the browser.
+- These variables are used at **build time** (not runtime), so they must be set as build arguments in docker-compose.yml.
+- In Coolify, set these as environment variables and they will be automatically passed as build arguments.
 
 ### 3. Deploy in Coolify
 
@@ -92,18 +98,18 @@ Edit `nginx.conf` to customize:
 
 ### Port Configuration
 
-Default port is 5173. Change in `docker-compose.yml`:
+Default port is 5737. Change in `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "${PORT:-5173}:80"
+  - "${PORT:-5737}:5737"
 ```
 
 ## Troubleshooting
 
 - **Build fails**: Check Node.js version compatibility
 - **404 on routes**: Ensure nginx.conf has SPA routing configured
-- **API not connecting**: Verify `VITE_API_URL` is set correctly
+- **API not connecting**: Verify `VITE_PUBLIC_API_URL_V1` is set correctly as build argument
 - **Static assets not loading**: Check nginx.conf cache settings
 
 ## Health Check

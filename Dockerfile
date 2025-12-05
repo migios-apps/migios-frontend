@@ -12,6 +12,18 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Build arguments for Vite environment variables
+ARG VITE_PUBLIC_API_URL_V1
+ARG VITE_APP_CLIENT_ID
+ARG VITE_APP_CLIENT_SECRET
+ARG VITE_BASENAME
+
+# Set environment variables for build
+ENV VITE_PUBLIC_API_URL_V1=${VITE_PUBLIC_API_URL_V1}
+ENV VITE_APP_CLIENT_ID=${VITE_APP_CLIENT_ID}
+ENV VITE_APP_CLIENT_SECRET=${VITE_APP_CLIENT_SECRET}
+ENV VITE_BASENAME=${VITE_BASENAME}
+
 # Build the application
 # Change build:prod to build:staging or build:dev as needed
 RUN npm run build:prod

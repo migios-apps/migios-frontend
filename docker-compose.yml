@@ -5,6 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_PUBLIC_API_URL_V1: ${VITE_PUBLIC_API_URL_V1}
+        VITE_APP_CLIENT_ID: ${VITE_APP_CLIENT_ID}
+        VITE_APP_CLIENT_SECRET: ${VITE_APP_CLIENT_SECRET}
+        VITE_BASENAME: ${VITE_BASENAME:-}
     container_name: migios-shadcn
     restart: unless-stopped
     ports:
