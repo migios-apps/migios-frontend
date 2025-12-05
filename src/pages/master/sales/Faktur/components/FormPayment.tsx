@@ -36,6 +36,7 @@ import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { statusPaymentColor } from "@/constants/utils"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -62,7 +63,7 @@ import {
 } from "../utils/validation"
 
 type FormPaymentProps = {
-  type: "create" | "update"
+  detailType: "create" | "update" | "refund"
   detail?: SalesDetailType | null
   formPropsTransaction: ReturnTransactionFormSchema
   transactionId?: number
@@ -71,7 +72,7 @@ type FormPaymentProps = {
 }
 
 const FormPayment: React.FC<FormPaymentProps> = ({
-  type,
+  detailType,
   detail = null,
   formPropsTransaction,
   transactionId,
@@ -414,7 +415,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
     // console.log("body", body)
 
-    if (type === "create") {
+    if (detailType === "create") {
       createCheckout.mutate(body)
     } else {
       if (isPaid === 0) {
@@ -455,7 +456,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   additional={{ page: 1 }}
                   placeholder="Select member"
                   value={field.value}
-                  isDisabled={isPaid !== 0}
+                  isDisabled={isPaid !== 0 || detailType === "refund"}
                   cacheUniqs={[watchTransaction.member]}
                   getOptionLabel={(option) => option.name!}
                   getOptionValue={(option) => `${option.id}`}
@@ -493,7 +494,11 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   additional={{ page: 1 }}
                   placeholder="Select Employee"
                   value={field.value as any}
-                  isDisabled={detail?.employee !== null ? isPaid !== 0 : false}
+                  isDisabled={
+                    detailType === "refund" || detail?.employee !== null
+                      ? isPaid !== 0
+                      : false
+                  }
                   cacheUniqs={[watchTransaction.employee]}
                   getOptionLabel={(option: any) => option.name || ""}
                   getOptionValue={(option: any) => option.id?.toString() || ""}
@@ -554,23 +559,60 @@ const FormPayment: React.FC<FormPaymentProps> = ({
             {/* Payment Method grid */}
             <div className="mt-4">
               {isPaid === 1 && detail?.is_void === 0 ? (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                  <div className="mb-2 text-gray-400 dark:text-gray-500">
-                    <WalletCheck color="currentColor" size="50" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
-                    {detail?.status?.split("_").join(" ")}
-                  </h1>
-                </div>
+                (() => {
+                  // Tentukan status berdasarkan kondisi
+                  let statusKey = "paid"
+                  if (detail?.is_refunded === 1) {
+                    statusKey = "refunded"
+                  } else if (detail?.status) {
+                    statusKey = detail.status.toLowerCase().replace(/\s+/g, "_")
+                  }
+                  const colorClass =
+                    statusPaymentColor[statusKey] ||
+                    statusPaymentColor.paid ||
+                    statusPaymentColor.unpaid
+                  const statusDisplay =
+                    detail?.status?.split("_").join(" ") ||
+                    statusKey.split("_").join(" ").toUpperCase() ||
+                    "PAID"
+                  return (
+                    <div
+                      className={cn(
+                        "col-span-2 flex flex-col items-center justify-center rounded-xl border px-4 py-8",
+                        colorClass
+                      )}
+                    >
+                      <div className="mb-2">
+                        <WalletCheck color="currentColor" size="50" />
+                      </div>
+                      <h1 className="text-3xl font-bold uppercase">
+                        {statusDisplay}
+                      </h1>
+                    </div>
+                  )
+                })()
               ) : detail?.is_void === 1 ? (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                  <div className="mb-2 text-gray-400 dark:text-gray-500">
-                    <WalletCheck color="currentColor" size="50" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-400 uppercase dark:text-gray-500">
-                    {detail?.status?.split("_").join(" ")}
-                  </h1>
-                </div>
+                (() => {
+                  const colorClass =
+                    statusPaymentColor.void || statusPaymentColor.unpaid
+                  const statusDisplay =
+                    detail?.status?.split("_").join(" ") || "VOID"
+                  return (
+                    <div
+                      className={cn(
+                        "col-span-2 flex flex-col items-center justify-center rounded-xl border px-4 py-8",
+                        colorClass
+                      )}
+                    >
+                      <div className="mb-2">
+                        <WalletCheck color="currentColor" size="50" />
+                      </div>
+                      <h1 className="text-3xl font-bold uppercase">
+                        {statusDisplay}
+                      </h1>
+                    </div>
+                  )
+                })()
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   {isLoadingRekenings ? (
@@ -579,7 +621,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                       {[...Array(6)].map((_, index) => (
                         <div
                           key={index}
-                          className="h-14 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700"
+                          className="border-border bg-accent h-14 animate-pulse rounded-xl"
                         />
                       ))}
                     </>
@@ -643,14 +685,14 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     })
                   ) : (
                     // Tampilan ketika tidak ada rekening
-                    <div className="col-span-2 flex flex-col items-center justify-center rounded-xl bg-gray-50 px-4 py-8 dark:bg-gray-800">
-                      <div className="mb-2 text-gray-400 dark:text-gray-500">
+                    <div className="border-border bg-accent col-span-2 flex flex-col items-center justify-center rounded-xl px-4 py-8">
+                      <div className="text-muted-foreground mb-2">
                         <EmptyWalletRemove color="currentColor" size="50" />
                       </div>
-                      <h3 className="text-base font-medium text-gray-700 dark:text-gray-300">
+                      <h3 className="text-base font-medium">
                         Belum ada metode pembayaran
                       </h3>
-                      <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-muted-foreground mt-1 text-center text-sm">
                         Silakan tambahkan metode pembayaran terlebih dahulu di
                         menu pengaturan
                       </p>
@@ -661,7 +703,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
             </div>
           </div>
         </ScrollArea>
-        <div className="flex flex-col gap-2.5 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="border-border bg-card flex flex-col gap-2.5 border-t p-4">
           {/* Payment Details */}
           {cartDataGenerated?.payments &&
           cartDataGenerated.payments.length > 0 ? (
@@ -685,7 +727,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                       </span>
                       {!item.isDefault && (
                         <span
-                          className="cursor-pointer p-1 text-red-500 hover:text-red-700"
+                          className="text-destructive hover:text-destructive-hover cursor-pointer p-1"
                           onClick={() => {
                             formPropsTransaction.setValue("payments", [
                               ...watch("payments").filter(
@@ -741,15 +783,18 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {type === "update" && [1].includes(isPaid) ? (
+                    {detailType === "update" && [1].includes(isPaid) ? (
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => navigate(`/sales/${detail?.id}/refund`)}
+                        onClick={() =>
+                          navigate(`/sales/${detail?.code}/refund`)
+                        }
                       >
                         Pengembalian
                       </DropdownMenuItem>
                     ) : null}
-                    {(type === "update" && [0, 1, 2, 3].includes(isPaid)) ||
+                    {(detailType === "update" &&
+                      [0, 1, 2, 3].includes(isPaid)) ||
                     detail?.is_refunded ? (
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
@@ -777,7 +822,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                         Simpan Dibayar Sebagian
                       </DropdownMenuItem>
                     ) : null}
-                    {type === "create" ? (
+                    {detailType === "create" ? (
                       <DropdownMenuItem
                         onClick={() => {
                           const loyaltyRedeemItems =
@@ -824,7 +869,11 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     updateSalesPayment.isPending ? (
                       <Spinner className="mr-2" />
                     ) : null}
-                    {type === "create" ? "Bayar sekarang" : "Perbarui pesanan"}
+                    {detailType === "create"
+                      ? "Bayar sekarang"
+                      : detailType === "update"
+                        ? "Perbarui pesanan"
+                        : "Pengembalian"}
                   </Button>
                 )}
               </>

@@ -73,6 +73,7 @@ const PackageCard = ({
           formProps.setValue("trainers", null)
           formProps.setValue("instructors", item.instructors)
           formProps.setValue("allow_all_trainer", item.allow_all_trainer)
+          formProps.setValue("source_from", "item")
           if (item.is_promo) {
             formProps.setValue("discount_type", item.discount_type)
             formProps.setValue("discount", item.discount)

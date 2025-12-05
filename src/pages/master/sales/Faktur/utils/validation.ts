@@ -91,6 +91,18 @@ export const transactionItemSchema = Yup.object().shape({
   loyalty_reward_id: Yup.number()
     .nullable()
     .transform((value) => (isNaN(value) ? null : value)),
+  loyalty_reward_name: Yup.string()
+    .nullable()
+    .when(["loyalty_reward_id", "source_from"], {
+      is: (loyalty_reward_id: number | null, source_from: string) =>
+        (loyalty_reward_id !== null && loyalty_reward_id !== undefined) ||
+        source_from === "redeem_item",
+      then: (schema) =>
+        schema.required(
+          "Loyalty reward name is required when loyalty reward ID is set or source is redeem_item."
+        ),
+      otherwise: (schema) => schema.nullable(),
+    }),
   loyalty_point: Yup.object()
     .shape({
       points: Yup.number().min(0).default(0),

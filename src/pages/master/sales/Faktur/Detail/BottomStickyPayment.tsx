@@ -65,7 +65,7 @@ const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
 
   return (
     <>
-      <div className="fixed right-0 bottom-0 left-0 w-full border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="border-border bg-card fixed right-0 bottom-0 left-0 w-full border-t p-4">
         <div className="flex items-center justify-between px-8">
           <div></div>
           <div className="flex flex-col items-start gap-2 md:flex-row md:justify-between">
@@ -99,7 +99,9 @@ const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
                     <DropdownMenuContent>
                       <DropdownMenuItem
                         className="text-red-500"
-                        onClick={() => navigate(`/sales/${detail?.id}/refund`)}
+                        onClick={() =>
+                          navigate(`/sales/${detail?.code}/refund`)
+                        }
                       >
                         Pengembalian
                       </DropdownMenuItem>

@@ -793,7 +793,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                   )}
                 </div>
                 <div className="mt-6 flex items-center justify-between gap-2 text-right">
-                  {type === "update" ? (
+                  {type === "update" && !isRedeemItem ? (
                     <Button
                       className="flex items-center gap-1 bg-red-500 text-white hover:bg-red-600 ltr:mr-2 rtl:ml-2"
                       variant="default"

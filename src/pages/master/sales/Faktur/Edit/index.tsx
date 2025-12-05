@@ -140,6 +140,9 @@ const EditSales = () => {
             start_date: item.start_date ? new Date(item.start_date) : null,
             notes: item.notes,
             is_promo: 0,
+            source_from: item.source_from || "item",
+            loyalty_reward_id: item.loyalty_reward_id || null,
+            loyalty_reward_name: item.loyalty_reward_name || null,
             loyalty_point:
               item.item_type === "package"
                 ? item.package?.loyalty_point || null
@@ -412,7 +415,7 @@ const EditSales = () => {
 
   return (
     <>
-      <div className="flex w-full items-center justify-between gap-4 border-b border-gray-300 p-4 shadow-sm dark:border-gray-700">
+      <div className="border-border flex w-full items-center justify-between gap-4 border-b p-4">
         <div className="flex items-center gap-4">
           <h5>Edit Pesanan #{id}</h5>
           <Badge
@@ -450,7 +453,7 @@ const EditSales = () => {
         <>
           {showCartDetail ? (
             <CartDetail
-              type="update"
+              detailType="update"
               detail={salesData}
               formPropsTransaction={transactionSchema}
               formPropsTransactionItem={formPropsItem}
@@ -535,9 +538,12 @@ const EditSales = () => {
                           {page.data.data.map((item, index: number) => (
                             <PackageCard
                               key={index}
-                              disabled={watchTransaction.items
-                                ?.map((trx) => trx.package_id)
-                                ?.includes(item.id)}
+                              disabled={
+                                watchTransaction.items
+                                  ?.filter((trx) => trx.source_from === "item")
+                                  ?.map((trx) => trx.package_id)
+                                  ?.includes(item.id) || false
+                              }
                               item={item}
                               formProps={formPropsItem}
                               onClick={() => {
@@ -559,7 +565,7 @@ const EditSales = () => {
                         )}
                     </div>
                     {totalPackage === listPackages.length && (
-                      <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
+                      <p className="text-muted-foreground col-span-full text-center">
                         No more items to load
                       </p>
                     )}
@@ -599,8 +605,10 @@ const EditSales = () => {
                               disabled={
                                 item.quantity === 0 ||
                                 watchTransaction.items
+                                  ?.filter((trx) => trx.source_from === "item")
                                   ?.map((trx) => trx.product_id)
-                                  ?.includes(item.id)
+                                  ?.includes(item.id) ||
+                                false
                               }
                               formProps={formPropsItem}
                               onClick={() => {
@@ -622,45 +630,48 @@ const EditSales = () => {
                         )}
                     </div>
                     {totalProduct === listProducts.length && (
-                      <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
+                      <p className="text-muted-foreground col-span-full text-center">
                         No more items to load
                       </p>
                     )}
                   </div>
                 </TabsContent>
               </Tabs>
-              <div className="h-full border-l border-gray-200 dark:border-gray-700">
+              <div className="border-border h-full border-l">
                 <div
                   className="flex flex-col gap-3 overflow-y-auto p-4"
                   style={{ height: "calc(100vh - 190px)" }}
                 >
-                  {cartDataGenerated.items?.map((item, index) => {
-                    return (
-                      <Fragment key={index}>
-                        {item.item_type === "product" ? (
-                          <ItemProductCard
-                            item={item}
-                            onClick={() => {
-                              formPropsItem.reset(item)
-                              setIndexItem(index)
-                              setOpenAddItem(true)
-                              setFormItemType("update")
-                            }}
-                          />
-                        ) : (
-                          <ItemPackageCard
-                            item={item}
-                            onClick={() => {
-                              formPropsItem.reset(item)
-                              setIndexItem(index)
-                              setOpenAddItem(true)
-                              setFormItemType("update")
-                            }}
-                          />
-                        )}
-                      </Fragment>
-                    )
-                  })}
+                  {cartDataGenerated.items
+                    .filter((item) => item.source_from === "item")
+                    .map((item, index) => {
+                      const originalItem = watchTransaction.items[index]
+                      return (
+                        <Fragment key={index}>
+                          {item.item_type === "product" ? (
+                            <ItemProductCard
+                              item={item}
+                              onClick={() => {
+                                formPropsItem.reset(originalItem)
+                                setIndexItem(index)
+                                setOpenAddItem(true)
+                                setFormItemType("update")
+                              }}
+                            />
+                          ) : (
+                            <ItemPackageCard
+                              item={item}
+                              onClick={() => {
+                                formPropsItem.reset(originalItem)
+                                setIndexItem(index)
+                                setOpenAddItem(true)
+                                setFormItemType("update")
+                              }}
+                            />
+                          )}
+                        </Fragment>
+                      )
+                    })}
                 </div>
                 <div className="flex flex-col gap-3 p-4 text-base">
                   <div className="flex flex-col gap-2">
@@ -701,7 +712,14 @@ const EditSales = () => {
         index={indexItem}
         onChange={(item, type) => {
           if (type === "create") {
-            appendTransactionItem(item)
+            // Pastikan source_from sudah diset untuk item baru
+            const newItem = {
+              ...item,
+              source_from: item.source_from || "item",
+            }
+            // Append selalu menambahkan item baru, tidak merge quantity
+            // Item dengan source_from berbeda akan selalu menjadi item terpisah
+            appendTransactionItem(newItem)
           } else if (type === "update") {
             updateTransactionItem(indexItem, item)
           }

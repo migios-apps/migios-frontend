@@ -363,7 +363,7 @@ const PointOfSales = () => {
       </div>
       {showCartDetail ? (
         <CartDetail
-          type="create"
+          detailType="create"
           formPropsTransaction={transactionSchema}
           formPropsTransactionItem={formPropsItem}
           settings={settingsData}
@@ -439,9 +439,12 @@ const PointOfSales = () => {
                       {page.data.data.map((item, index: number) => (
                         <PackageCard
                           key={index}
-                          disabled={watchTransaction.items
-                            ?.map((trx) => trx.package_id)
-                            ?.includes(item.id)}
+                          disabled={
+                            watchTransaction.items
+                              ?.filter((trx) => trx.source_from === "item")
+                              ?.map((trx) => trx.package_id)
+                              ?.includes(item.id) || false
+                          }
                           item={item}
                           formProps={formPropsItem}
                           onClick={() => {
@@ -499,8 +502,10 @@ const PointOfSales = () => {
                           disabled={
                             item.quantity === 0 ||
                             watchTransaction.items
+                              ?.filter((trx) => trx.source_from === "item")
                               ?.map((trx) => trx.product_id)
-                              ?.includes(item.id)
+                              ?.includes(item.id) ||
+                            false
                           }
                           formProps={formPropsItem}
                           onClick={() => {
@@ -532,34 +537,36 @@ const PointOfSales = () => {
               className="flex flex-col gap-3 overflow-y-auto p-2"
               style={{ height: "calc(100vh - 195px)" }}
             >
-              {cartDataGenerated.items?.map((item, index) => {
-                const originalItem = watchTransaction.items[index]
-                return (
-                  <Fragment key={index}>
-                    {item.item_type === "product" ? (
-                      <ItemProductCard
-                        item={item}
-                        onClick={() => {
-                          formPropsItem.reset(originalItem)
-                          setIndexItem(index)
-                          setOpenAddItem(true)
-                          setFormItemType("update")
-                        }}
-                      />
-                    ) : (
-                      <ItemPackageCard
-                        item={item}
-                        onClick={() => {
-                          formPropsItem.reset(originalItem)
-                          setIndexItem(index)
-                          setOpenAddItem(true)
-                          setFormItemType("update")
-                        }}
-                      />
-                    )}
-                  </Fragment>
-                )
-              })}
+              {cartDataGenerated.items
+                .filter((item) => item.source_from === "item")
+                .map((item, index) => {
+                  const originalItem = watchTransaction.items[index]
+                  return (
+                    <Fragment key={index}>
+                      {item.item_type === "product" ? (
+                        <ItemProductCard
+                          item={item}
+                          onClick={() => {
+                            formPropsItem.reset(originalItem)
+                            setIndexItem(index)
+                            setOpenAddItem(true)
+                            setFormItemType("update")
+                          }}
+                        />
+                      ) : (
+                        <ItemPackageCard
+                          item={item}
+                          onClick={() => {
+                            formPropsItem.reset(originalItem)
+                            setIndexItem(index)
+                            setOpenAddItem(true)
+                            setFormItemType("update")
+                          }}
+                        />
+                      )}
+                    </Fragment>
+                  )
+                })}
             </div>
             <div className="flex h-[110px] flex-col justify-between gap-3 p-4 text-base">
               <div className="flex flex-col">
@@ -592,7 +599,14 @@ const PointOfSales = () => {
         index={indexItem}
         onChange={(item, type) => {
           if (type === "create") {
-            appendTransactionItem(item)
+            // Pastikan source_from sudah diset untuk item baru
+            const newItem = {
+              ...item,
+              source_from: item.source_from || "item",
+            }
+            // Append selalu menambahkan item baru, tidak merge quantity
+            // Item dengan source_from berbeda akan selalu menjadi item terpisah
+            appendTransactionItem(newItem)
           } else if (type === "update") {
             updateTransactionItem(indexItem, item)
           }

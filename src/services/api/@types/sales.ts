@@ -203,6 +203,8 @@ export interface SalesDetailType {
   refund_processed_by: number | null
   refund_processed_at: string | null
   point_earned: number
+  point_cancelled: number
+  point_returned: number
   point_redeemed: number
   fstatus: string
   fdiscount: string
@@ -237,6 +239,9 @@ export interface SalesDetailType {
     package_id: number | null
     freeze_id: number | null
     item_type: "package" | "product"
+    source_from: "redeem_item" | "item"
+    loyalty_reward_id: number | null
+    loyalty_reward_name: string | null
     name: string
     description: string | null
     quantity: number

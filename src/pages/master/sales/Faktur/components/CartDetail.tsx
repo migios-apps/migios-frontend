@@ -17,31 +17,36 @@ import { Separator } from "@/components/ui/separator"
 import { calculateLoyaltyPoint } from "../utils/calculateLoyaltyPoint"
 import { generateCartData } from "../utils/generateCartData"
 import {
+  groupItemsByRedeem,
+  GroupedDisplayItem,
+} from "../utils/groupItemsByRedeem"
+import {
   ReturnTransactionFormSchema,
   ReturnTransactionItemFormSchema,
 } from "../utils/validation"
 import CheckoutItemPackageCard from "./CheckoutItemPackageCard"
 import CheckoutItemProductCard from "./CheckoutItemProductCard"
+import CheckoutItemRedeemCollectionCard from "./CheckoutItemRedeemCollectionCard"
 import DialogDetailLoyaltyRedeem from "./DialogDetailLoyaltyRedeem"
 import DialogLoyaltyPoint from "./DialogLoyaltyPoint"
 import FormPayment from "./FormPayment"
 
 interface CartDetailProps {
-  type: "create" | "update"
+  detailType: "create" | "update" | "refund"
   detail?: SalesDetailType | null
   isPaid?: PaymentStatus
   transactionId?: number
   formPropsTransaction: ReturnTransactionFormSchema
   formPropsTransactionItem: ReturnTransactionItemFormSchema
   settings?: SettingsType | null
-  onBack: () => void
+  onBack?: () => void
   setIndexItem: React.Dispatch<React.SetStateAction<number>>
   setOpenAddItem: React.Dispatch<React.SetStateAction<boolean>>
   setFormItemType: React.Dispatch<React.SetStateAction<"create" | "update">>
 }
 
 const CartDetail: React.FC<CartDetailProps> = ({
-  type,
+  detailType,
   detail = null,
   isPaid = 0,
   transactionId,
@@ -74,7 +79,10 @@ const CartDetail: React.FC<CartDetailProps> = ({
     React.useState<LoyaltyType | null>(null)
 
   const memberCode = memberFromForm?.code || memberCodeFromDetail
-  const loyaltyRedeemItems = watchTransaction.loyalty_redeem_items || []
+  const loyaltyRedeemItems = React.useMemo(
+    () => watchTransaction.loyalty_redeem_items || [],
+    [watchTransaction.loyalty_redeem_items]
+  )
 
   const { remove: removeTransactionItem } = useFieldArray({
     control,
@@ -93,6 +101,11 @@ const CartDetail: React.FC<CartDetailProps> = ({
         hasRedeemItems: loyaltyRedeemItems.length > 0,
       })
     : 0
+
+  // Group redeem items by loyalty_reward_id
+  const groupedItems: GroupedDisplayItem[] = React.useMemo(() => {
+    return groupItemsByRedeem(cartDataGenerated.items || [])
+  }, [cartDataGenerated.items])
 
   const handleRemoveRedeemItem = (redeemItemId: number) => {
     // Hapus dari loyalty_redeem_items
@@ -127,7 +140,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
             {/* Bagian atas: Lokasi & Tanggal */}
             <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-0">
               {/* Lokasi */}
-              <div className="flex w-full items-center gap-2 font-medium text-gray-800 dark:text-gray-200">
+              <div className="flex w-full items-center gap-2 font-medium">
                 <Location size="20" color="currentColor" variant="Outline" />
                 <span className="text-sm font-semibold sm:text-base">
                   {club?.name}
@@ -135,39 +148,41 @@ const CartDetail: React.FC<CartDetailProps> = ({
               </div>
 
               {/* Tanggal */}
-              <FormFieldItem
-                control={control}
-                name="due_date"
-                invalid={Boolean(errors.due_date)}
-                errorMessage={errors.due_date?.message}
-                render={({ field, fieldState }) => (
-                  <DatePicker
-                    selected={
-                      field.value ? dayjs(field.value).toDate() : undefined
-                    }
-                    onSelect={(date) => {
-                      field.onChange(
-                        date ? dayjs(date).format("YYYY-MM-DD") : null
-                      )
-                    }}
-                    placeholder="Start Date"
-                    error={!!fieldState.error}
-                    classNameBtn="w-fit justify-end"
-                    disabled={
-                      isPaid !== 0
-                        ? () => true
-                        : (date: Date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                    }
-                  />
-                )}
-              />
+              {detailType === "refund" ? null : (
+                <FormFieldItem
+                  control={control}
+                  name="due_date"
+                  invalid={Boolean(errors.due_date)}
+                  errorMessage={errors.due_date?.message}
+                  render={({ field, fieldState }) => (
+                    <DatePicker
+                      selected={
+                        field.value ? dayjs(field.value).toDate() : undefined
+                      }
+                      onSelect={(date) => {
+                        field.onChange(
+                          date ? dayjs(date).format("YYYY-MM-DD") : null
+                        )
+                      }}
+                      placeholder="Start Date"
+                      error={!!fieldState.error}
+                      classNameBtn="w-fit justify-end"
+                      disabled={
+                        isPaid !== 0
+                          ? () => true
+                          : (date: Date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                      }
+                    />
+                  )}
+                />
+              )}
             </div>
 
             {/* Search Bar */}
             {isPaid === 0 ? (
               <div
-                className="relative w-full cursor-pointer rounded-md bg-gray-100 py-2.5 pr-10 pl-4 text-sm text-gray-500 hover:bg-gray-200 sm:py-3 sm:text-base dark:bg-gray-800 dark:text-gray-200 hover:dark:bg-gray-700"
+                className="border-border bg-card hover:bg-accent relative w-full cursor-pointer rounded-md border py-2.5 pr-10 pl-4 text-sm text-gray-500 sm:py-3 sm:text-base"
                 onClick={onBack}
               >
                 Cari item untuk di jual
@@ -186,16 +201,46 @@ const CartDetail: React.FC<CartDetailProps> = ({
             }
           >
             <div className="flex flex-col gap-3 overflow-y-auto p-4">
-              {cartDataGenerated.items?.map((item, index) => {
+              {groupedItems.map((groupedItem, groupIndex) => {
+                if (groupedItem.type === "redeem_collection") {
+                  return (
+                    <CheckoutItemRedeemCollectionCard
+                      key={`redeem-${groupedItem.rewardId}-${groupIndex}`}
+                      rewardId={groupedItem.rewardId}
+                      rewardName={groupedItem.rewardName}
+                      items={groupedItem.items}
+                      showEditProduct={isPaid === 0}
+                      showEditPackage={isPaid === 0}
+                      showDelete={isPaid === 0}
+                      onClickProduct={(item, originalIndex) => {
+                        formPropsItem.reset(item)
+                        setIndexItem(originalIndex)
+                        setOpenAddItem(true)
+                        setFormItemType("update")
+                      }}
+                      onClickPackage={(item, originalIndex) => {
+                        formPropsItem.reset(item)
+                        setIndexItem(originalIndex)
+                        setOpenAddItem(true)
+                        setFormItemType("update")
+                      }}
+                      onDelete={handleRemoveRedeemItem}
+                      originalIndices={groupedItem.originalIndices}
+                    />
+                  )
+                }
+
+                // Regular item (source_from = 'item')
+                const { item, originalIndex } = groupedItem
                 return (
-                  <Fragment key={index}>
+                  <Fragment key={`item-${originalIndex}-${groupIndex}`}>
                     {item.item_type === "product" ? (
                       <CheckoutItemProductCard
                         item={item}
                         showEdit={isPaid === 0}
                         onClick={() => {
                           formPropsItem.reset(item)
-                          setIndexItem(index)
+                          setIndexItem(originalIndex)
                           setOpenAddItem(true)
                           setFormItemType("update")
                         }}
@@ -206,7 +251,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
                         showEdit={isPaid === 0}
                         onClick={() => {
                           formPropsItem.reset(item)
-                          setIndexItem(index)
+                          setIndexItem(originalIndex)
                           setOpenAddItem(true)
                           setFormItemType("update")
                         }}
@@ -221,8 +266,9 @@ const CartDetail: React.FC<CartDetailProps> = ({
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle>Ringkasan Faktur</CardTitle>
-                      {(type == "create" && !memberCode) ||
-                      (type === "update" && !isUnpaid) ? null : (
+                      {(detailType == "create" && !memberCode) ||
+                      (detailType === "update" && !isUnpaid) ||
+                      detailType === "refund" ? null : (
                         <Button
                           type="button"
                           variant="outline"
@@ -411,9 +457,9 @@ const CartDetail: React.FC<CartDetailProps> = ({
             </div>
           </ScrollArea>
         </div>
-        <div className="flex h-full flex-col border-l border-gray-200 dark:border-gray-700">
+        <div className="border-border flex h-full flex-col border-l">
           <FormPayment
-            type={type}
+            detailType={detailType}
             detail={detail}
             formPropsTransaction={formPropsTransaction}
             transactionId={transactionId}
