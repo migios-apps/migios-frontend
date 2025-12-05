@@ -19,4 +19,3 @@ const TransferMember = () => {
 }
 
 export default TransferMember
-
