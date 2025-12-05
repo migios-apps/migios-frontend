@@ -7,7 +7,8 @@ import {
   Printer,
   ReceiptText,
 } from "iconsax-reactjs"
-import { useNavigate, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
+import { useNavigateBack } from "@/utils/hooks/useNavigateBack"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusPaymentColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +23,7 @@ import InvoiceReceipt from "./InvoiceReceipt"
 
 const SaleDetail = () => {
   const { id } = useParams()
-  const navigate = useNavigate()
+  const navigateBack = useNavigateBack()
   const [tab, setTab] = React.useState("a5")
 
   const {
@@ -69,11 +70,7 @@ const SaleDetail = () => {
           </Button>
 
           <ThemeSwitch />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/sales")}
-          >
+          <Button variant="ghost" size="icon" onClick={navigateBack}>
             <CloseCircle size={20} />
           </Button>
         </div>

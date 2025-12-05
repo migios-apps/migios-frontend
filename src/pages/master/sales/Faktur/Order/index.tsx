@@ -13,11 +13,11 @@ import { apiGetPackageList } from "@/services/api/PackageService"
 import { apiGetProductList } from "@/services/api/ProductService"
 import { apiGetSettings } from "@/services/api/settings/settings"
 import { Box, CloseCircle, DocumentFilter, Warning2 } from "iconsax-reactjs"
-import { useNavigate } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import useFormPersist from "@/utils/hooks/useFormPersist"
 import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
+import { useNavigateBack } from "@/utils/hooks/useNavigateBack"
 import { categoryPackage } from "@/constants/packages"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -48,7 +48,7 @@ import {
 
 const PointOfSales = () => {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const navigateBack = useNavigateBack()
   const club = useSessionUser((state) => state.club)
   const [tab, setTab] = React.useState("package")
   const [searchPackage, setSearchPackage] = React.useState("")
@@ -338,14 +338,6 @@ const PointOfSales = () => {
     []
   )
 
-  const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-      navigate(-1) // Kembali jika ada riwayat
-    } else {
-      navigate("/") // Fallback ke halaman tertentu
-    }
-  }
-
   return (
     <>
       <div className="flex w-full items-center justify-between gap-4 border-b border-gray-300 p-4 shadow-sm dark:border-gray-700">
@@ -360,7 +352,7 @@ const PointOfSales = () => {
                 if (watchTransaction.items.length > 0) {
                   setConfirmClose(true)
                 } else {
-                  handleBack()
+                  navigateBack()
                 }
               }}
             >
@@ -626,7 +618,7 @@ const PointOfSales = () => {
         onClose={() => setConfirmClose(false)}
         onLeftClick={() => {
           setConfirmClose(false)
-          handleBack()
+          navigateBack()
         }}
         onRightClick={() => {
           resetTransactionForm(transactionSchema)
@@ -637,7 +629,7 @@ const PointOfSales = () => {
               _timestamp: Date.now(),
             })
           )
-          handleBack()
+          navigateBack()
           setConfirmClose(false)
         }}
       />

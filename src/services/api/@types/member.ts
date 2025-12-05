@@ -133,19 +133,20 @@ export type MemberPackageListTypesResponse = Omit<ApiTypes, "data"> & {
 
 export interface FreezeProgramDetail {
   id: number
-  club_id: number
   member_id: number
+  transaction_id: number
   start_date: string
   end_date: string
   notes: string
-  height_cm: number
-  created_at: string
-  updated_at: string
   status: "active" | "inactive" | "pending" | "cancelled"
-  transaction_id: number
+  member_name: string
+  member_code: string
+  member_photo: string
   transaction_code: string
   transaction_status: string
   transaction_amount: number
+  created_at: string
+  updated_at: string
   ftransaction_amount: string
 }
 

@@ -61,9 +61,9 @@ export async function apiGetMemberPackages(
   })
 }
 
-export async function apiGetFreezeProgram(code: string, params?: ParamsFilter) {
+export async function apiGetMemberFreezeList(params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<FreezeProgramListTypesResponse>({
-    url: `/member/${code}/freeze`,
+    url: `/member/freeze-list`,
     method: "get",
     params,
   })

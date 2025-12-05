@@ -2,7 +2,7 @@ import React from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import { FreezeProgramDetail, MemberDetail } from "@/services/api/@types/member"
-import { apiGetFreezeProgram } from "@/services/api/MembeService"
+import { apiGetMemberFreezeList } from "@/services/api/MembeService"
 import { Add } from "iconsax-reactjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
@@ -34,9 +34,16 @@ const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
     queryKey: [QUERY_KEY.freezeProgram, tableData, member.code],
     initialPageParam: 1,
     queryFn: async () => {
-      const res = await apiGetFreezeProgram(`${member.code}`, {
+      const res = await apiGetMemberFreezeList({
         page: tableData.pageIndex,
         per_page: tableData.pageSize,
+        search: [
+          {
+            search_column: "member_code",
+            search_condition: "=",
+            search_text: member.code,
+          },
+        ],
         ...(tableData.sort?.key !== ""
           ? {
               sort_column: tableData.sort?.key as string,
