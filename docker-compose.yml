@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  migios-shadcn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: migios-shadcn
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5737}:5737"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    networks:
+      - migios-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5737/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  migios-network:
+    driver: bridge
