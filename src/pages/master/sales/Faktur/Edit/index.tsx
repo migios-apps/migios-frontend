@@ -41,6 +41,7 @@ import ItemPackageCard from "../components/ItemPackageCard"
 import ItemProductCard from "../components/ItemProductCard"
 import PackageCard from "../components/PackageCard"
 import ProductCard from "../components/ProductCard"
+import { calculateLoyaltyPoint } from "../utils/calculateLoyaltyPoint"
 import { generateCartData } from "../utils/generateCartData"
 import {
   ValidationTransactionSchema,
@@ -182,6 +183,18 @@ const EditSales = () => {
 
   // Generate cart data untuk API
   const cartDataGenerated = generateCartData(watchTransaction)
+
+  // Calculate loyalty point - hanya jika transaksi belum dibayar
+  const loyaltyRedeemItems = watchTransaction.loyalty_redeem_items || []
+  const isUnpaid = salesData?.is_paid === 0 || salesData?.status === "unpaid"
+  const loyalty_point = isUnpaid
+    ? calculateLoyaltyPoint({
+        items: cartDataGenerated.items,
+        total_amount: cartDataGenerated.total_amount,
+        settings: settingsData || null,
+        hasRedeemItems: loyaltyRedeemItems.length > 0,
+      })
+    : 0
 
   const {
     append: appendTransactionItem,
@@ -649,8 +662,8 @@ const EditSales = () => {
                     )
                   })}
                 </div>
-                <div className="flex h-[110px] flex-col justify-between gap-3 p-4 text-base">
-                  <div className="flex flex-col">
+                <div className="flex flex-col gap-3 p-4 text-base">
+                  <div className="flex flex-col gap-2">
                     <div className="flex justify-between">
                       <span className="font-bold">Sub total</span>
                       <span>{cartDataGenerated.foriginal_subtotal}</span>
@@ -658,6 +671,12 @@ const EditSales = () => {
                     <span className="text-right text-xs italic">
                       Sub total belum dikenakan tarif
                     </span>
+                    {loyalty_point > 0 ? (
+                      <div className="text-muted-foreground flex justify-between text-sm">
+                        <span>Potensi mendapatkan poin</span>
+                        <span>+{loyalty_point} Pts</span>
+                      </div>
+                    ) : null}
                   </div>
 
                   <Button

@@ -1,4 +1,5 @@
 import { ApiTypes, MetaApi } from "./api"
+import { PackageProductLoyaltyPointDto } from "./package"
 
 export type ItemType = "package" | "product" | "freeze"
 export type DurationType = "day" | "month" | "year"
@@ -201,6 +202,8 @@ export interface SalesDetailType {
   refund_notes: string | null
   refund_processed_by: number | null
   refund_processed_at: string | null
+  point_earned: number
+  point_redeemed: number
   fstatus: string
   fdiscount: string
   fsubtotal: string
@@ -282,6 +285,8 @@ export interface SalesDetailType {
       price: number
       photo: string
       quantity: number
+      loyalty_point: PackageProductLoyaltyPointDto | null
+      loyalty_point_value: number
     } | null
     package?: {
       id: number
@@ -298,6 +303,8 @@ export interface SalesDetailType {
       sell_price: number
       max_member: any
       allow_all_trainer: boolean
+      loyalty_point: PackageProductLoyaltyPointDto | null
+      loyalty_point_value: number
     } | null
     trainer?: {
       id: number

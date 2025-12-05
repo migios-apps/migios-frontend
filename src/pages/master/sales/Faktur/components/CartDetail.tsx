@@ -83,12 +83,16 @@ const CartDetail: React.FC<CartDetailProps> = ({
 
   const cartDataGenerated = generateCartData(watchTransaction)
   // console.log("cartDataGenerated", cartDataGenerated)
-  const loyalty_point = calculateLoyaltyPoint({
-    items: cartDataGenerated.items,
-    total_amount: cartDataGenerated.total_amount,
-    settings: settings || null,
-    hasRedeemItems: loyaltyRedeemItems.length > 0,
-  })
+  // Calculate loyalty point - hanya jika transaksi belum dibayar
+  const isUnpaid = isPaid === 0 || detail?.status === "unpaid"
+  const loyalty_point = isUnpaid
+    ? calculateLoyaltyPoint({
+        items: cartDataGenerated.items,
+        total_amount: cartDataGenerated.total_amount,
+        settings: settings || null,
+        hasRedeemItems: loyaltyRedeemItems.length > 0,
+      })
+    : 0
 
   const handleRemoveRedeemItem = (redeemItemId: number) => {
     // Hapus dari loyalty_redeem_items
@@ -218,7 +222,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
                     <div className="flex items-center justify-between">
                       <CardTitle>Ringkasan Faktur</CardTitle>
                       {(type == "create" && !memberCode) ||
-                      (type === "update" && isPaid !== 0) ? null : (
+                      (type === "update" && !isUnpaid) ? null : (
                         <Button
                           type="button"
                           variant="outline"

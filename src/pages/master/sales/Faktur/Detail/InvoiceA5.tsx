@@ -268,6 +268,14 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                       </span>
                     </div>
                   ) : null}
+                  {detail?.point_earned && detail.point_earned > 0 ? (
+                    <div className="flex justify-between text-green-600 dark:text-green-400">
+                      <span>Point Diperoleh:</span>
+                      <span className="font-medium">
+                        +{detail.point_earned} Pts
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>

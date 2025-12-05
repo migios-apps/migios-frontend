@@ -1,8 +1,12 @@
 import React from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { SalesDetailType } from "@/services/api/@types/sales"
-import { ArrowDown2 } from "iconsax-reactjs"
+import { apiVoidSales } from "@/services/api/SalesService"
+import { ArrowDown2, Warning2 } from "iconsax-reactjs"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
+import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -19,8 +23,10 @@ interface BottomStickyPaymentProps {
 const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
   detail,
 }) => {
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [openDropdown, setOpenDropdown] = React.useState(false)
+  const [confirmVoid, setConfirmVoid] = React.useState(false)
 
   // Menggunakan form validasi payment
   const { setValue } = usePaymentForm()
@@ -41,6 +47,21 @@ const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
       setValue("isPaid", detail.is_paid || 0)
     }
   }, [detail, setValue])
+
+  const handlePrefecth = (res?: any) => {
+    const data = res?.data?.data
+    console.log("refetch", data)
+    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sales] })
+    navigate("/sales")
+  }
+
+  const voidSales = useMutation({
+    mutationFn: (id: number | string) => apiVoidSales(id),
+    onError: (error) => {
+      console.log("error update", error)
+    },
+    onSuccess: handlePrefecth,
+  })
 
   return (
     <>
@@ -82,6 +103,15 @@ const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
                       >
                         Pengembalian
                       </DropdownMenuItem>
+                      {[0, 1, 2, 3].includes(detail?.is_paid) ||
+                      detail?.is_refunded ? (
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setConfirmVoid(true)}
+                        >
+                          Dibatalkan
+                        </DropdownMenuItem>
+                      ) : null}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : null}
@@ -101,6 +131,28 @@ const BottomStickyPayment: React.FC<BottomStickyPaymentProps> = ({
           </div>
         </div>
       </div>
+
+      <AlertConfirm
+        open={confirmVoid}
+        title="Batalkan Pesanan"
+        description="Apakah Anda yakin ingin membatalkan pesanan ini?"
+        rightTitle="Batalkan"
+        type="delete"
+        className="w-auto"
+        icon={
+          <div className="mb-2 rounded-full bg-red-100 p-2">
+            <Warning2 size="70" color="#FF8A65" variant="Bulk" />
+          </div>
+        }
+        loading={voidSales.isPending}
+        onClose={() => setConfirmVoid(false)}
+        onLeftClick={() => setConfirmVoid(false)}
+        onRightClick={() => {
+          if (detail) {
+            voidSales.mutate(detail.id)
+          }
+        }}
+      />
     </>
   )
 }

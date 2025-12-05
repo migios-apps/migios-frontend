@@ -124,7 +124,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
             </div>
             <div className="flex justify-between">
               <span>Point Diperoleh</span>
-              <span>0.00</span>
+              <span>{detail?.point_earned || 0}</span>
             </div>
             <div className="flex justify-between">
               <span>Digunakan</span>

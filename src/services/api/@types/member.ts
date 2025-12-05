@@ -164,7 +164,7 @@ export interface LoyaltyPointType {
   club_id: number
   transaction_id: number | null
   loyalty_reward_id: number | null
-  type: "earn" | "redeem" | "expired"
+  type: "earn" | "redeem" | "expired" | "cancelled" | "return"
   points: number
   is_forever: boolean
   expired_at: string | null

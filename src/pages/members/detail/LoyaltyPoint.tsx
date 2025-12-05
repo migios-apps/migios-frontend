@@ -35,7 +35,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
     query: "",
     sort: {
       order: "desc",
-      key: "created_at",
+      key: "id",
     },
   })
 
@@ -45,7 +45,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
     query: "",
     sort: {
       order: "desc",
-      key: "created_at",
+      key: "id",
     },
   })
 
@@ -74,7 +74,7 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
               sort_type: earnedTableData.sort?.order as "asc" | "desc",
             }
           : {
-              sort_column: "created_at",
+              sort_column: "id",
               sort_type: "desc",
             }),
       })
@@ -137,15 +137,17 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         header: "Poin",
         cell: (props) => {
           const data = props.row.original
-          const colorClass =
-            data.type === "earn"
-              ? "text-green-700"
-              : data.type === "expired"
-                ? "text-red-700"
-                : "text-orange-700"
+          const isPositive = data.type === "earn" || data.type === "return"
+          const isNegative =
+            data.type === "expired" || data.type === "cancelled"
+          const colorClass = isPositive
+            ? "text-green-700"
+            : isNegative
+              ? "text-red-700"
+              : "text-orange-700"
           return (
             <div className={`text-sm font-medium ${colorClass}`}>
-              {data.type === "earn" ? "+" : ""}
+              {isPositive ? "+" : ""}
               {data.points}
             </div>
           )
@@ -156,19 +158,21 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
         header: "Tipe",
         cell: (props) => {
           const type = props.row.original.type
-          const colorClass =
-            type === "earn"
-              ? statusColor.active
-              : type === "expired"
-                ? statusColor.expired
-                : statusColor.rejected
-          const typeLabel =
-            type === "earn"
-              ? "Diperoleh"
-              : type === "expired"
-                ? "Kadaluarsa"
-                : "Redeem"
-          return <Badge className={colorClass}>{typeLabel}</Badge>
+          const typeMap: Record<
+            "earn" | "redeem" | "expired" | "cancelled" | "return",
+            { label: string; color: string }
+          > = {
+            earn: { label: "Diperoleh", color: statusColor.active },
+            expired: { label: "Kadaluarsa", color: statusColor.expired },
+            cancelled: { label: "Dibatalkan", color: statusColor.expired },
+            return: { label: "Dikembalikan", color: statusColor.active },
+            redeem: { label: "Redeem", color: statusColor.rejected },
+          }
+          const typeInfo = typeMap[type] || {
+            label: type,
+            color: statusColor.rejected,
+          }
+          return <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
         },
       },
       {
