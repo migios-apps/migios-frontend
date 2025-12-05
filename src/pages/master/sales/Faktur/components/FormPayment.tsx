@@ -10,6 +10,7 @@ import { MemberDetail } from "@/services/api/@types/member"
 import {
   CheckoutRequest,
   PaymentStatus,
+  RefundRequest,
   SalesDetailType,
   UpdateSalesPaymentDto,
 } from "@/services/api/@types/sales"
@@ -18,6 +19,7 @@ import { apiGetRekeningList } from "@/services/api/FinancialService"
 import { apiGetMemberList } from "@/services/api/MembeService"
 import {
   apiCreateCheckout,
+  apiRefundSales,
   apiUpdateSales,
   apiUpdateSalesPayment,
   apiVoidSales,
@@ -132,13 +134,30 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, [calculate.totalAmount])
 
-  const getTotal =
-    cartDataGenerated.total_amount -
-    (cartDataGenerated.payments?.reduce(
-      (acc: any, cur: any) => acc + cur.amount,
-      0
-    ) || 0)
-  const isPaidOf = cartDataGenerated.balance_amount === 0
+  // Untuk refund mode, balance_amount dan total_amount sudah negatif
+  const isRefundMode = detailType === "refund"
+  const getTotal = isRefundMode
+    ? Math.abs(cartDataGenerated.total_amount) -
+      (cartDataGenerated.payments?.reduce(
+        (acc: any, cur: any) => acc + Math.abs(cur.amount),
+        0
+      ) || 0)
+    : cartDataGenerated.total_amount -
+      (cartDataGenerated.payments?.reduce(
+        (acc: any, cur: any) => acc + cur.amount,
+        0
+      ) || 0)
+  const isPaidOf = isRefundMode
+    ? Math.abs(cartDataGenerated.balance_amount) === 0
+    : cartDataGenerated.balance_amount === 0
+
+  // Cek apakah ada payment method yang sudah ditambahkan (untuk refund mode)
+  const hasPaymentMethod = React.useMemo(() => {
+    if (!isRefundMode) return true // Untuk mode normal, tidak perlu cek
+    const payments = watchTransaction.payments || []
+    return payments.some((payment) => payment.isDefault === false)
+  }, [watchTransaction.payments, isRefundMode])
+
   //   const isPaidOf =
   //     (cartDataGenerated.payments?.reduce(
   //       (acc: any, cur: any) => acc + cur.amount,
@@ -235,7 +254,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   } = useInfiniteQuery({
     queryKey: [QUERY_KEY.packages, club.id],
     initialPageParam: 1,
-    enabled: isPaid !== 1,
+    enabled: isRefundMode || isPaid !== 1, // Untuk refund mode, selalu load rekening
     queryFn: async ({ pageParam }) => {
       const res = await apiGetRekeningList({
         page: pageParam,
@@ -321,6 +340,14 @@ const FormPayment: React.FC<FormPaymentProps> = ({
     mutationFn: (data: UpdateSalesPaymentDto) => apiUpdateSalesPayment(data),
     onError: (error) => {
       console.log("error update", error)
+    },
+    onSuccess: handlePrefecth,
+  })
+
+  const createRefund = useMutation({
+    mutationFn: (data: RefundRequest) => apiRefundSales(data),
+    onError: (error) => {
+      console.log("error refund", error)
     },
     onSuccess: handlePrefecth,
   })
@@ -415,7 +442,58 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
     // console.log("body", body)
 
-    if (detailType === "create") {
+    if (detailType === "refund") {
+      // Submit refund
+      const refundBody: RefundRequest = {
+        transaction_id: Number(transactionId || detail?.id),
+        club_id: club?.id as number,
+        member_id: data.member?.id as number,
+        employee_id: data.employee?.id as number,
+        is_paid: data.isPaid,
+        due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
+        notes: data.notes || undefined,
+        items: data.items.map((item) => {
+          const { trainers } = item
+          const baseItem = {
+            item_type: item.item_type,
+            quantity: item.quantity, // Sudah negatif dari transformedData
+            price: Math.abs(item.price), // Price harus positif
+          }
+
+          if (item.item_type === "package") {
+            return {
+              ...baseItem,
+              package_id: item.package_id as number,
+              trainer_id: trainers?.id,
+            }
+          }
+
+          if (item.item_type === "product") {
+            return {
+              ...baseItem,
+              product_id: item.product_id as number,
+            }
+          }
+
+          return baseItem
+        }),
+        payments: data.payments
+          .filter((payment) => payment.isDefault === false)
+          .map((payment) => ({
+            id: payment.id,
+            // Pastikan amount negatif untuk refund
+            amount:
+              payment.amount < 0 ? payment.amount : -Math.abs(payment.amount),
+            payment_date: dayjs(payment.date || new Date()).format(
+              "YYYY-MM-DD"
+            ),
+          })),
+      }
+
+      // console.log("refundBody", refundBody)
+
+      createRefund.mutate(refundBody)
+    } else if (detailType === "create") {
       createCheckout.mutate(body)
     } else {
       if (isPaid === 0) {
@@ -524,19 +602,22 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                 />
               )}
             />
-            {isPaid === 1 || detail?.is_void === 1 ? null : (
+            {(isPaid === 1 || detail?.is_void === 1) && !isRefundMode ? null : (
               <FormFieldItem
                 control={control}
                 name="balance_amount"
                 label={
                   <div className="flex w-full items-center gap-2">
-                    Payment <span className="text-destructive">*</span>
+                    {isRefundMode ? "Pengembalian" : "Payment"}{" "}
+                    <span className="text-destructive">*</span>
                   </div>
                 }
                 invalid={Boolean(errors.balance_amount)}
                 errorMessage={errors.balance_amount?.message}
                 render={({ field }) => {
                   React.useEffect(() => {
+                    // Set balance_amount dari cartDataGenerated
+                    // Untuk refund mode, balance_amount sudah negatif dari generateCartData
                     if (field.value !== cartDataGenerated.balance_amount) {
                       field.onChange(cartDataGenerated.balance_amount)
                     }
@@ -558,7 +639,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
             {/* Payment Method grid */}
             <div className="mt-4">
-              {isPaid === 1 && detail?.is_void === 0 ? (
+              {!isRefundMode && isPaid === 1 && detail?.is_void === 0 ? (
                 (() => {
                   // Tentukan status berdasarkan kondisi
                   let statusKey = "paid"
@@ -591,7 +672,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     </div>
                   )
                 })()
-              ) : detail?.is_void === 1 ? (
+              ) : !isRefundMode && detail?.is_void === 1 ? (
                 (() => {
                   const colorClass =
                     statusPaymentColor.void || statusPaymentColor.unpaid
@@ -633,14 +714,20 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                           key={rekening.id}
                           variant="default"
                           disabled={
-                            isPaidOf || watchTransaction.balance_amount <= 0
+                            isPaidOf ||
+                            (isRefundMode
+                              ? watchTransaction.balance_amount >= 0
+                              : watchTransaction.balance_amount <= 0)
                           }
                           type="button"
                           onClick={() => {
-                            if (
-                              !isPaidOf &&
-                              watchTransaction.balance_amount > 0
-                            ) {
+                            const currentBalance =
+                              watchTransaction.balance_amount
+                            const balanceCheck = isRefundMode
+                              ? currentBalance < 0
+                              : currentBalance > 0
+
+                            if (!isPaidOf && balanceCheck) {
                               const updatedPayments = [...watch("payments")]
                               const existingPaymentIndex =
                                 updatedPayments.findIndex(
@@ -649,16 +736,21 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                                     item.isDefault === false
                                 )
 
+                              // Untuk refund mode, amount harus negatif
+                              const paymentAmount = isRefundMode
+                                ? -Math.abs(Number(currentBalance))
+                                : Number(currentBalance)
+
                               if (existingPaymentIndex !== -1) {
                                 // Gabungkan dengan payment yang sudah ada
                                 updatedPayments[existingPaymentIndex].amount +=
-                                  Number(watch("balance_amount"))
+                                  paymentAmount
                               } else {
                                 // Tambahkan payment baru
                                 updatedPayments.push({
                                   id: rekening.id,
                                   name: rekening.name,
-                                  amount: Number(watch("balance_amount")),
+                                  amount: paymentAmount,
                                   isDefault: false,
                                 })
                               }
@@ -667,13 +759,19 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                                 "payments",
                                 updatedPayments
                               )
+                              // Hitung balance_amount
+                              const totalPaymentsAmount =
+                                updatedPayments.reduce(
+                                  (acc, curr) => acc + curr.amount,
+                                  0
+                                )
+                              const newBalanceAmount =
+                                cartDataGenerated.total_amount -
+                                totalPaymentsAmount
+
                               formPropsTransaction.setValue(
                                 "balance_amount",
-                                cartDataGenerated.total_amount -
-                                  updatedPayments.reduce(
-                                    (acc, curr) => acc + curr.amount,
-                                    0
-                                  )
+                                newBalanceAmount
                               )
                               formPropsTransaction.clearErrors("payments")
                             }
@@ -758,91 +856,95 @@ const FormPayment: React.FC<FormPaymentProps> = ({
           <div className="grid w-full grid-cols-2 gap-2">
             {detail?.status !== "void" ? (
               <>
-                <DropdownMenu
-                  open={openDropdown}
-                  onOpenChange={setOpenDropdown}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn("w-full", {
-                        "border-primary text-primary": openDropdown,
-                      })}
-                    >
-                      Lainnya
-                      <ArrowDown2
-                        color="currentColor"
-                        size={16}
-                        className={cn(
-                          "ml-1 transition-transform duration-200",
-                          {
-                            "rotate-180": openDropdown,
+                {isRefundMode ? (
+                  <div> </div>
+                ) : (
+                  <DropdownMenu
+                    open={openDropdown}
+                    onOpenChange={setOpenDropdown}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn("w-full", {
+                          "border-primary text-primary": openDropdown,
+                        })}
+                      >
+                        Lainnya
+                        <ArrowDown2
+                          color="currentColor"
+                          size={16}
+                          className={cn(
+                            "ml-1 transition-transform duration-200",
+                            {
+                              "rotate-180": openDropdown,
+                            }
+                          )}
+                        />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {detailType === "update" && [1].includes(isPaid) ? (
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() =>
+                            navigate(`/sales/${detail?.code}/refund`)
                           }
-                        )}
-                      />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {detailType === "update" && [1].includes(isPaid) ? (
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() =>
-                          navigate(`/sales/${detail?.code}/refund`)
-                        }
-                      >
-                        Pengembalian
-                      </DropdownMenuItem>
-                    ) : null}
-                    {(detailType === "update" &&
-                      [0, 1, 2, 3].includes(isPaid)) ||
-                    detail?.is_refunded ? (
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => setConfirmVoid(true)}
-                      >
-                        Dibatalkan
-                      </DropdownMenuItem>
-                    ) : null}
-                    {!isPaidOf &&
-                    watch("payments")?.filter(
-                      (item) => item.isDefault === false
-                    )?.length > 0 ? (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          const loyaltyRedeemItems =
-                            watchTransaction.loyalty_redeem_items || []
-                          if (loyaltyRedeemItems.length > 0) {
-                            setUnpaidType("partial")
-                            setConfirmUnpaid(true)
-                          } else {
-                            handleSubmit(handleCheck)()
-                          }
-                        }}
-                      >
-                        Simpan Dibayar Sebagian
-                      </DropdownMenuItem>
-                    ) : null}
-                    {detailType === "create" ? (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          const loyaltyRedeemItems =
-                            watchTransaction.loyalty_redeem_items || []
-                          if (loyaltyRedeemItems.length > 0) {
-                            setUnpaidType("unpaid")
-                            setConfirmUnpaid(true)
-                          } else {
-                            handleSubmit((data) => {
-                              onSubmit({ ...data, isPaid: 0, payments: [] })
-                            })()
-                          }
-                        }}
-                      >
-                        Simpan Belum Dibayar
-                      </DropdownMenuItem>
-                    ) : null}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                {isPaid === 1 ? (
+                        >
+                          Pengembalian
+                        </DropdownMenuItem>
+                      ) : null}
+                      {(detailType === "update" &&
+                        [0, 1, 2, 3].includes(isPaid)) ||
+                      detail?.is_refunded ? (
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setConfirmVoid(true)}
+                        >
+                          Dibatalkan
+                        </DropdownMenuItem>
+                      ) : null}
+                      {!isPaidOf &&
+                      watch("payments")?.filter(
+                        (item) => item.isDefault === false
+                      )?.length > 0 ? (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const loyaltyRedeemItems =
+                              watchTransaction.loyalty_redeem_items || []
+                            if (loyaltyRedeemItems.length > 0) {
+                              setUnpaidType("partial")
+                              setConfirmUnpaid(true)
+                            } else {
+                              handleSubmit(handleCheck)()
+                            }
+                          }}
+                        >
+                          Simpan Dibayar Sebagian
+                        </DropdownMenuItem>
+                      ) : null}
+                      {detailType === "create" ? (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const loyaltyRedeemItems =
+                              watchTransaction.loyalty_redeem_items || []
+                            if (loyaltyRedeemItems.length > 0) {
+                              setUnpaidType("unpaid")
+                              setConfirmUnpaid(true)
+                            } else {
+                              handleSubmit((data) => {
+                                onSubmit({ ...data, isPaid: 0, payments: [] })
+                              })()
+                            }
+                          }}
+                        >
+                          Simpan Belum Dibayar
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                {isPaid === 1 && !isRefundMode ? (
                   <Button
                     variant="default"
                     className="w-full"
@@ -855,10 +957,13 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     variant="default"
                     className="w-full"
                     disabled={
-                      getTotal > 0 ||
+                      (isRefundMode
+                        ? !hasPaymentMethod || getTotal > 0 // Untuk refund: harus ada payment method DAN total payment sudah sesuai (getTotal = 0)
+                        : getTotal > 0) || // Untuk normal: disabled jika total > 0
                       createCheckout.isPending ||
                       updateSales.isPending ||
-                      updateSalesPayment.isPending
+                      updateSalesPayment.isPending ||
+                      createRefund.isPending
                     }
                     onClick={handleSubmit((data) =>
                       onSubmit({ ...data, isPaid: 1 })
@@ -866,14 +971,15 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   >
                     {createCheckout.isPending ||
                     updateSales.isPending ||
-                    updateSalesPayment.isPending ? (
+                    updateSalesPayment.isPending ||
+                    createRefund.isPending ? (
                       <Spinner className="mr-2" />
                     ) : null}
                     {detailType === "create"
                       ? "Bayar sekarang"
                       : detailType === "update"
                         ? "Perbarui pesanan"
-                        : "Pengembalian"}
+                        : "Bayar Pengembalian"}
                   </Button>
                 )}
               </>

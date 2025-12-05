@@ -76,61 +76,60 @@ const RefundSales = () => {
           ? dayjs(salesData.due_date).toDate()
           : new Date(),
         notes: salesData.notes,
-        balance_amount: salesData.ballance_amount || 0,
+        balance_amount: 0, // Akan dihitung otomatis oleh generateCartData dari items
         items:
           salesData.items
             ?.filter((item) => item.source_from === "item")
-            .map((item) => ({
-              item_type: item.item_type,
-              package_id: item.package_id,
-              product_id: item.product_id,
-              name: item.name,
-              product_qty: item.product?.quantity || null,
-              quantity: item.quantity,
-              price:
-                item.item_type === "package" ? item.package?.price : item.price,
-              sell_price:
+            .filter((item) => -Math.abs(item.quantity + item.qty_refund) !== 0)
+            .map((item) => {
+              // Untuk refund, quantity harus negatif
+              const negativeQuantity = -Math.abs(
+                item.quantity + item.qty_refund
+              )
+              const originalPrice =
                 item.item_type === "package"
-                  ? item.package?.sell_price
-                  : item.price,
-              discount_type: item.discount_type,
-              discount: item.discount,
-              duration: item.duration,
-              duration_type: item.duration_type,
-              session_duration: item.session_duration,
-              extra_session: item.extra_session,
-              extra_day: item.extra_day,
-              start_date: item.start_date ? new Date(item.start_date) : null,
-              notes: item.notes,
-              is_promo: 0,
-              source_from: item.source_from || "item",
-              loyalty_reward_id: item.loyalty_reward_id || null,
-              loyalty_reward_name: item.loyalty_reward_name || null,
-              loyalty_point:
+                  ? item.package?.price || 0
+                  : item.price || 0
+              // Gunakan sell_price yang sudah ada (untuk package) atau price (untuk product)
+              const originalSellPrice =
                 item.item_type === "package"
-                  ? item.package?.loyalty_point || null
-                  : item.product?.loyalty_point || null,
-              allow_all_trainer: item.package?.allow_all_trainer || false,
-              package_type: item.package?.type || null,
-              trainers: item.trainer || null,
-              data: item,
-            })) || [],
-        payments:
-          salesData.payments?.map((item) => ({
-            id: item.rekening_id,
-            name: item.rekening_name,
-            amount: item.amount,
-            date: item.date,
-            isDefault: true,
-          })) || [],
-        refund_from:
-          salesData.refunds?.map((item) => ({
-            id: item.rekening_id,
-            amount: item.amount,
-            notes: item.notes,
-            date: item.date,
-            isDefault: true,
-          })) || [],
+                  ? item.package?.sell_price || originalPrice
+                  : item.price || 0
+
+              return {
+                item_type: item.item_type,
+                package_id: item.package_id,
+                product_id: item.product_id,
+                name: item.name,
+                product_qty: item.product?.quantity || null,
+                quantity: negativeQuantity,
+                price: originalPrice,
+                sell_price: originalSellPrice * negativeQuantity,
+                discount_type: item.discount_type,
+                discount: item.discount,
+                duration: item.duration,
+                duration_type: item.duration_type,
+                session_duration: item.session_duration,
+                extra_session: item.extra_session,
+                extra_day: item.extra_day,
+                start_date: item.start_date ? new Date(item.start_date) : null,
+                notes: item.notes,
+                is_promo: 0,
+                source_from: item.source_from || "item",
+                loyalty_reward_id: item.loyalty_reward_id,
+                loyalty_reward_name: item.loyalty_reward_name,
+                loyalty_point:
+                  item.item_type === "package"
+                    ? item.package?.loyalty_point
+                    : item.product?.loyalty_point,
+                allow_all_trainer: item.package?.allow_all_trainer,
+                package_type: item.package?.type,
+                trainers: item.trainer,
+                data: item,
+              }
+            }) || [],
+        payments: [], // Untuk refund baru, payments kosong - akan diisi saat user klik payment method
+        refund_from: [], // Untuk refund baru, refund_from kosong
       }
 
       // Set form values
@@ -213,6 +212,7 @@ const RefundSales = () => {
         type={formItemType}
         formProps={formPropsItem}
         index={indexItem}
+        allowNegativeQuantity={true}
         onChange={(item, type) => {
           if (type === "create") {
             // Pastikan source_from sudah diset untuk item baru

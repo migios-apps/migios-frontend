@@ -4,8 +4,17 @@ import { PaymentStatus, SalesDetailType } from "@/services/api/@types/sales"
 import { LoyaltyType } from "@/services/api/@types/settings/loyalty"
 import { SettingsType } from "@/services/api/@types/settings/settings"
 import dayjs from "dayjs"
-import { Gift, Location, SearchNormal1, Tag, Trash } from "iconsax-reactjs"
+import {
+  Gift,
+  Location,
+  SearchNormal1,
+  Tag,
+  Trash,
+  Warning2,
+} from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
+import { cn } from "@/lib/utils"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -107,6 +116,41 @@ const CartDetail: React.FC<CartDetailProps> = ({
     return groupItemsByRedeem(cartDataGenerated.items || [])
   }, [cartDataGenerated.items])
 
+  // Cek status item untuk refund mode
+  const refundEmptyState = React.useMemo(() => {
+    if (detailType !== "refund") return null
+
+    // Cek apakah ada item yang masih bisa di-refund
+    const hasRefundableItems =
+      detail?.items?.some(
+        (item) =>
+          item.source_from === "item" && item.quantity + item.qty_refund !== 0
+      ) || false
+
+    // Cek apakah ada item sama sekali
+    const hasItems = detail?.items && detail.items.length > 0
+
+    if (!hasItems) {
+      return {
+        title: "Tidak ada item",
+        description: "Transaksi ini tidak memiliki item yang dapat di-refund.",
+      }
+    }
+
+    if (!hasRefundableItems) {
+      return {
+        title: "Semua item sudah di-refund",
+        description:
+          "Semua item pada transaksi ini sudah di-refund sebelumnya. Tidak ada item lagi yang dapat di-refund.",
+      }
+    }
+
+    return {
+      title: "Tidak ada item yang dipilih untuk di-refund",
+      description: "Pilih item yang ingin di-refund dari daftar item di atas.",
+    }
+  }, [detailType, detail?.items])
+
   const handleRemoveRedeemItem = (redeemItemId: number) => {
     // Hapus dari loyalty_redeem_items
     const updatedRedeemItems = loyaltyRedeemItems.filter(
@@ -137,6 +181,21 @@ const CartDetail: React.FC<CartDetailProps> = ({
       <div className="grid h-full grid-cols-1 items-start lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_500px]">
         <div className="flex w-full flex-col">
           <div className="flex flex-col gap-3 p-4 pb-0">
+            {/* alert refund mode */}
+            {detailType === "refund" ? (
+              <Alert className="border-amber-300 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+                <Warning2
+                  className="h-8! w-8! text-amber-600 dark:text-amber-400"
+                  variant="Bulk"
+                  color="currentColor"
+                />
+                <AlertDescription className="ml-2 text-amber-800 dark:text-amber-200">
+                  Loyalty point, poin redeem, voucher yang dipakai, dan komisi
+                  penjualan tidak dapat dikembalikan setelah refund. Untuk
+                  pembatalan, silahkan gunakan fitur Pembatalan.
+                </AlertDescription>
+              </Alert>
+            ) : null}
             {/* Bagian atas: Lokasi & Tanggal */}
             <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-0">
               {/* Lokasi */}
@@ -195,267 +254,297 @@ const CartDetail: React.FC<CartDetailProps> = ({
               </div>
             ) : null}
           </div>
-          <ScrollArea
-            className={
-              isPaid === 0 ? "h-[calc(100vh-200px)]" : "h-[calc(100vh-145px)]"
-            }
-          >
-            <div className="flex flex-col gap-3 overflow-y-auto p-4">
-              {groupedItems.map((groupedItem, groupIndex) => {
-                if (groupedItem.type === "redeem_collection") {
+          {groupedItems.length > 0 ? (
+            <ScrollArea
+              className={cn(
+                detailType === "refund"
+                  ? "h-[calc(100vh-190px)]"
+                  : "h-[calc(100vh-185px)]"
+              )}
+            >
+              <div className="flex flex-col gap-3 overflow-y-auto p-4">
+                {groupedItems.map((groupedItem, groupIndex) => {
+                  if (groupedItem.type === "redeem_collection") {
+                    return (
+                      <CheckoutItemRedeemCollectionCard
+                        key={`redeem-${groupedItem.rewardId}-${groupIndex}`}
+                        rewardId={groupedItem.rewardId}
+                        rewardName={groupedItem.rewardName}
+                        items={groupedItem.items}
+                        showEditProduct={isPaid === 0}
+                        showEditPackage={isPaid === 0}
+                        showDelete={isPaid === 0}
+                        onClickProduct={(item, originalIndex) => {
+                          formPropsItem.reset(item)
+                          setIndexItem(originalIndex)
+                          setOpenAddItem(true)
+                          setFormItemType("update")
+                        }}
+                        onClickPackage={(item, originalIndex) => {
+                          formPropsItem.reset(item)
+                          setIndexItem(originalIndex)
+                          setOpenAddItem(true)
+                          setFormItemType("update")
+                        }}
+                        onDelete={handleRemoveRedeemItem}
+                        originalIndices={groupedItem.originalIndices}
+                      />
+                    )
+                  }
+
+                  // Regular item (source_from = 'item')
+                  const { item, originalIndex } = groupedItem
                   return (
-                    <CheckoutItemRedeemCollectionCard
-                      key={`redeem-${groupedItem.rewardId}-${groupIndex}`}
-                      rewardId={groupedItem.rewardId}
-                      rewardName={groupedItem.rewardName}
-                      items={groupedItem.items}
-                      showEditProduct={isPaid === 0}
-                      showEditPackage={isPaid === 0}
-                      showDelete={isPaid === 0}
-                      onClickProduct={(item, originalIndex) => {
-                        formPropsItem.reset(item)
-                        setIndexItem(originalIndex)
-                        setOpenAddItem(true)
-                        setFormItemType("update")
-                      }}
-                      onClickPackage={(item, originalIndex) => {
-                        formPropsItem.reset(item)
-                        setIndexItem(originalIndex)
-                        setOpenAddItem(true)
-                        setFormItemType("update")
-                      }}
-                      onDelete={handleRemoveRedeemItem}
-                      originalIndices={groupedItem.originalIndices}
-                    />
-                  )
-                }
-
-                // Regular item (source_from = 'item')
-                const { item, originalIndex } = groupedItem
-                return (
-                  <Fragment key={`item-${originalIndex}-${groupIndex}`}>
-                    {item.item_type === "product" ? (
-                      <CheckoutItemProductCard
-                        item={item}
-                        showEdit={isPaid === 0}
-                        onClick={() => {
-                          formPropsItem.reset(item)
-                          setIndexItem(originalIndex)
-                          setOpenAddItem(true)
-                          setFormItemType("update")
-                        }}
-                      />
-                    ) : (
-                      <CheckoutItemPackageCard
-                        item={item}
-                        showEdit={isPaid === 0}
-                        onClick={() => {
-                          formPropsItem.reset(item)
-                          setIndexItem(originalIndex)
-                          setOpenAddItem(true)
-                          setFormItemType("update")
-                        }}
-                      />
-                    )}
-                  </Fragment>
-                )
-              })}
-
-              <div className="mt-4 flex justify-end">
-                <Card className="w-full max-w-md gap-0 shadow-none">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Ringkasan Faktur</CardTitle>
-                      {(detailType == "create" && !memberCode) ||
-                      (detailType === "update" && !isUnpaid) ||
-                      detailType === "refund" ? null : (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setOpenLoyaltyDialog(true)}
-                          className="gap-2"
-                        >
-                          <Gift size="16" />
-                          Redeem Poin
-                        </Button>
+                    <Fragment key={`item-${originalIndex}-${groupIndex}`}>
+                      {item.item_type === "product" ? (
+                        <CheckoutItemProductCard
+                          item={item}
+                          showEdit={isPaid === 0}
+                          onClick={() => {
+                            formPropsItem.reset(item)
+                            setIndexItem(originalIndex)
+                            setOpenAddItem(true)
+                            setFormItemType("update")
+                          }}
+                        />
+                      ) : (
+                        <CheckoutItemPackageCard
+                          item={item}
+                          showEdit={isPaid === 0}
+                          onClick={() => {
+                            formPropsItem.reset(item)
+                            setIndexItem(originalIndex)
+                            setOpenAddItem(true)
+                            setFormItemType("update")
+                          }}
+                        />
                       )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Loyalty Redeem Items */}
-                    {loyaltyRedeemItems.length > 0 && (
-                      <>
-                        <Separator />
-                        <div className="flex flex-col gap-2">
-                          <span className="text-sm font-semibold">
-                            Loyalty Redeem
-                          </span>
-                          {loyaltyRedeemItems.map((redeemItem, index) => (
-                            <Card
-                              key={index}
-                              className="hover:bg-accent relative cursor-pointer p-0 shadow-none transition-colors"
-                              onClick={() => {
-                                setSelectedRedeemItem(redeemItem as any)
-                                setOpenRedeemDetailDialog(true)
-                              }}
-                            >
-                              <CardContent className="p-3">
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-semibold">
-                                        {redeemItem.name}
-                                      </span>
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        {redeemItem.type === "discount" ? (
-                                          <>
-                                            <Tag className="mr-1 h-3 w-3" />
-                                            Diskon
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Gift className="mr-1 h-3 w-3" />
-                                            Free Item
-                                          </>
-                                        )}
-                                      </Badge>
-                                    </div>
-                                    {redeemItem.type === "discount" && (
-                                      <div className="text-muted-foreground mt-1 text-xs">
-                                        {redeemItem.discount_type === "percent"
-                                          ? `Diskon ${redeemItem.discount_value}%`
-                                          : `Diskon ${currencyFormat(redeemItem.discount_value || 0)}`}
+                    </Fragment>
+                  )
+                })}
+
+                <div className="mt-4 flex justify-end">
+                  <Card className="w-full max-w-md gap-0 shadow-none">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>Ringkasan Faktur</CardTitle>
+                        {(detailType == "create" && !memberCode) ||
+                        (detailType === "update" && !isUnpaid) ||
+                        detailType === "refund" ? null : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setOpenLoyaltyDialog(true)}
+                            className="gap-2"
+                          >
+                            <Gift size="16" />
+                            Redeem Poin
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Loyalty Redeem Items */}
+                      {loyaltyRedeemItems.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="flex flex-col gap-2">
+                            <span className="text-sm font-semibold">
+                              Loyalty Redeem
+                            </span>
+                            {loyaltyRedeemItems.map((redeemItem, index) => (
+                              <Card
+                                key={index}
+                                className="hover:bg-accent relative cursor-pointer p-0 shadow-none transition-colors"
+                                onClick={() => {
+                                  setSelectedRedeemItem(redeemItem as any)
+                                  setOpenRedeemDetailDialog(true)
+                                }}
+                              >
+                                <CardContent className="p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-semibold">
+                                          {redeemItem.name}
+                                        </span>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          {redeemItem.type === "discount" ? (
+                                            <>
+                                              <Tag className="mr-1 h-3 w-3" />
+                                              Diskon
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Gift className="mr-1 h-3 w-3" />
+                                              Free Item
+                                            </>
+                                          )}
+                                        </Badge>
                                       </div>
-                                    )}
-                                    {redeemItem.type === "free_item" &&
-                                      redeemItem.items && (
+                                      {redeemItem.type === "discount" && (
                                         <div className="text-muted-foreground mt-1 text-xs">
-                                          {redeemItem.items.length} item gratis
+                                          {redeemItem.discount_type ===
+                                          "percent"
+                                            ? `Diskon ${redeemItem.discount_value}%`
+                                            : `Diskon ${currencyFormat(redeemItem.discount_value || 0)}`}
                                         </div>
                                       )}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="text-right">
-                                      <div className="text-muted-foreground text-xs">
-                                        Poin digunakan
-                                      </div>
-                                      <div className="text-sm font-bold">
-                                        {redeemItem.points_required} Pts
-                                      </div>
+                                      {redeemItem.type === "free_item" &&
+                                        redeemItem.items && (
+                                          <div className="text-muted-foreground mt-1 text-xs">
+                                            {redeemItem.items.length} item
+                                            gratis
+                                          </div>
+                                        )}
                                     </div>
-                                    {isPaid === 0 && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleRemoveRedeemItem(redeemItem.id!)
-                                        }}
-                                      >
-                                        <Trash size={16} />
-                                      </Button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                      <div className="text-right">
+                                        <div className="text-muted-foreground text-xs">
+                                          Poin digunakan
+                                        </div>
+                                        <div className="text-sm font-bold">
+                                          {redeemItem.points_required} Pts
+                                        </div>
+                                      </div>
+                                      {isPaid === 0 && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleRemoveRedeemItem(
+                                              redeemItem.id!
+                                            )
+                                          }}
+                                        >
+                                          <Trash size={16} />
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </>
+                      )}
 
-                    <Separator />
+                      <Separator />
 
-                    {/* Subtotal & Tax */}
-                    <div className="space-y-2">
-                      <div className="m-0 flex justify-between text-sm">
-                        <span className="text-muted-foreground">Sub total</span>
-                        <span className="text-card-foreground font-medium">
-                          {cartDataGenerated.fsubtotal}
-                        </span>
-                      </div>
-                      <div className="m-0 flex justify-between text-sm">
-                        <span className="text-muted-foreground">Diskon</span>
-                        <span className="text-card-foreground font-medium">
-                          -{cartDataGenerated.ftotal_discount}
-                        </span>
-                      </div>
-                      <div className="m-0 flex justify-between text-sm">
-                        <span className="text-muted-foreground">Pajak</span>
-                        <span className="text-card-foreground font-medium">
-                          {cartDataGenerated.ftotal_tax}
-                        </span>
-                      </div>
-                    </div>
-                    {/* Total */}
-                    <div className="space-y-2">
-                      <div className="m-0 flex justify-between">
-                        <span className="text-base font-semibold">Total</span>
-                        <span className="text-base font-semibold">
-                          {cartDataGenerated.ftotal_amount}
-                        </span>
-                      </div>
-                      {loyalty_point > 0 ? (
-                        <div className="text-muted-foreground flex justify-between text-sm">
-                          <span>Potensi mendapatkan poin</span>
-                          <span>+{loyalty_point} Pts</span>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {detail && detail?.payments?.length > 0 ? (
-                      <>
-                        <Separator />
-                        <div className="space-y-2">
-                          <span className="text-sm font-semibold">
-                            Pembayaran
+                      {/* Subtotal & Tax */}
+                      <div className="space-y-2">
+                        <div className="m-0 flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Sub total
                           </span>
-                          {detail?.payments?.map((payment) => (
-                            <div
-                              key={payment.id}
-                              className="flex justify-between text-sm"
-                            >
-                              <div className="flex items-center gap-1.5">
+                          <span className="text-card-foreground font-medium">
+                            {cartDataGenerated.fsubtotal}
+                          </span>
+                        </div>
+                        <div className="m-0 flex justify-between text-sm">
+                          <span className="text-muted-foreground">Diskon</span>
+                          <span className="text-card-foreground font-medium">
+                            -{cartDataGenerated.ftotal_discount}
+                          </span>
+                        </div>
+                        <div className="m-0 flex justify-between text-sm">
+                          <span className="text-muted-foreground">Pajak</span>
+                          <span className="text-card-foreground font-medium">
+                            {cartDataGenerated.ftotal_tax}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Total */}
+                      <div className="space-y-2">
+                        <div className="m-0 flex justify-between">
+                          <span className="text-base font-semibold">Total</span>
+                          <span className="text-base font-semibold">
+                            {cartDataGenerated.ftotal_amount}
+                          </span>
+                        </div>
+                        {loyalty_point > 0 ? (
+                          <div className="text-muted-foreground flex justify-between text-sm">
+                            <span>Potensi mendapatkan poin</span>
+                            <span>+{loyalty_point} Pts</span>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {detail && detail?.payments?.length > 0 ? (
+                        <>
+                          <Separator />
+                          <div className="space-y-2">
+                            <span className="text-sm font-semibold">
+                              Pembayaran
+                            </span>
+                            {detail?.payments?.map((payment) => (
+                              <div
+                                key={payment.id}
+                                className="flex justify-between text-sm"
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-medium">
+                                    {payment.rekening_name},
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {dayjs(payment.date).format("DD MMM YYYY")}
+                                  </span>
+                                </div>
                                 <span className="font-medium">
-                                  {payment.rekening_name},
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {dayjs(payment.date).format("DD MMM YYYY")}
+                                  {payment.famount}
                                 </span>
                               </div>
-                              <span className="font-medium">
-                                {payment.famount}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : null}
+                            ))}
+                          </div>
+                        </>
+                      ) : null}
 
-                    {/* Remaining Payment */}
-                    {cartDataGenerated.balance_amount > 0 && (
-                      <>
-                        <Separator />
-                        <div className="flex justify-between">
-                          <span className="text-destructive text-sm font-semibold">
-                            Sisa pembayaran
-                          </span>
-                          <span className="text-destructive text-sm font-semibold">
-                            {cartDataGenerated.fbalance_amount}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
+                      {/* Remaining Payment */}
+                      {cartDataGenerated.balance_amount > 0 && (
+                        <>
+                          <Separator />
+                          <div className="flex justify-between">
+                            <span className="text-destructive text-sm font-semibold">
+                              Sisa pembayaran
+                            </span>
+                            <span className="text-destructive text-sm font-semibold">
+                              {cartDataGenerated.fbalance_amount}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
+            </ScrollArea>
+          ) : (
+            <div className="flex h-[calc(100vh-110px)] flex-col gap-3 overflow-y-auto p-4">
+              {refundEmptyState ? (
+                <div className="border-border bg-muted/50 flex flex-col items-center justify-center gap-3 rounded-lg border p-8 text-center">
+                  <div className="text-muted-foreground mb-2">
+                    <Tag size="48" variant="Outline" className="opacity-50" />
+                  </div>
+                  <h3 className="text-base font-semibold">
+                    {refundEmptyState.title}
+                  </h3>
+                  <p className="text-muted-foreground max-w-sm text-sm">
+                    {refundEmptyState.description}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  Tidak ada item di faktur
+                </div>
+              )}
             </div>
-          </ScrollArea>
+          )}
         </div>
         <div className="border-border flex h-full flex-col border-l">
           <FormPayment

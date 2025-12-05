@@ -28,16 +28,14 @@ export const transactionItemSchema = Yup.object().shape({
     .nullable(),
   quantity: Yup.number()
     .transform((value) => (isNaN(value) ? undefined : value))
-    .required("Quantity is required.")
-    .min(1, "Quantity must be at least 1."),
+    .required("Quantity is required."),
   price: Yup.number()
     .transform((value) => (isNaN(value) ? undefined : value))
     .required("Price is required.")
     .min(0, "Price cannot be negative."),
   sell_price: Yup.number()
     .transform((value) => (isNaN(value) ? undefined : value))
-    .required("Sell Price is required.")
-    .min(0, "Price cannot be negative."),
+    .required("Sell Price is required."),
   discount_type: Yup.string()
     .oneOf(["percent", "nominal"] as DiscountType[], "Invalid discount type.")
     .optional()
@@ -275,7 +273,11 @@ export const validationTransactionSchema = Yup.object().shape({
         amount: Yup.number()
           .transform((value) => (isNaN(value) ? undefined : value))
           .required("Payment amount is required.")
-          .min(1, "Payment amount must be at least 1."),
+          .test("not-zero", "Payment amount cannot be zero.", (value) => {
+            // Izinkan nilai negatif untuk refund mode
+            // Hanya cek bahwa value tidak undefined, null, atau 0
+            return value !== undefined && value !== null && value !== 0
+          }),
         date: Yup.string().optional(),
         isDefault: Yup.boolean().optional().default(false),
         // reference_no: Yup.string().required('Reference number is required.'),

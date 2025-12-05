@@ -86,29 +86,6 @@ export interface UpdateSalesPaymentDto {
   }[]
 }
 
-export interface RefundSalesDto {
-  transaction_id: number
-  club_id: number
-  member_id: number
-  employee_id: number
-  is_paid: number
-  due_date: string
-  notes: string
-  items: {
-    trainer_id: number
-    item_type: string
-    package_id?: number
-    product_id?: number
-    quantity: number
-    price: number
-  }[]
-  payments: {
-    id: number
-    amount: number
-    payment_date: string
-  }[]
-}
-
 export interface SalesType {
   id: number
   code: string
@@ -372,23 +349,6 @@ export type SalesDetailResponse = Omit<ApiTypes, "data"> & {
 }
 
 // Refund types
-export interface RefundItem {
-  trainer_id?: number
-  item_type: ItemType
-  package_id?: number
-  product_id?: number
-  quantity: number
-  price: number
-}
-
-export interface RefundPayment {
-  amount: number
-  id: number
-  reference_no: string
-  notes?: string
-  payment_date: string
-}
-
 export interface RefundRequest {
   transaction_id: number
   club_id: number
@@ -397,6 +357,19 @@ export interface RefundRequest {
   is_paid: PaymentStatus
   due_date: string
   notes?: string
-  items: RefundItem[]
-  payments: RefundPayment[]
+  items: {
+    trainer_id?: number
+    item_type: ItemType
+    package_id?: number
+    product_id?: number
+    quantity: number
+    price: number
+  }[]
+  payments: {
+    id: number
+    amount: number
+    payment_date: string
+    reference_no?: string
+    notes?: string
+  }[]
 }

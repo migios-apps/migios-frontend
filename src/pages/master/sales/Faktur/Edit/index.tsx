@@ -710,6 +710,7 @@ const EditSales = () => {
         type={formItemType}
         formProps={formPropsItem}
         index={indexItem}
+        // allowNegativeQuantity={true}
         onChange={(item, type) => {
           if (type === "create") {
             // Pastikan source_from sudah diset untuk item baru

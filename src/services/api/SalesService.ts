@@ -3,7 +3,6 @@ import { ParamsFilter } from "./@types/api"
 import {
   CheckoutRequest,
   RefundRequest,
-  RefundSalesDto,
   SalesDetailResponse,
   SalesTypeListResponse,
   UpdateSalesPaymentDto,
@@ -32,7 +31,7 @@ export async function apiGetSales(id: number | string) {
   })
 }
 
-export async function apiCreateRefund(data: RefundRequest) {
+export async function apiRefundSales(data: RefundRequest) {
   return ApiService.fetchDataWithAxios({
     url: `/sales/refund`,
     method: "POST",
@@ -60,13 +59,5 @@ export async function apiVoidSales(id: number | string) {
   return ApiService.fetchDataWithAxios({
     url: `/sales/void/${id}`,
     method: "DELETE",
-  })
-}
-
-export async function apiRefundSales(data: RefundSalesDto) {
-  return ApiService.fetchDataWithAxios({
-    url: `/sales/refund`,
-    method: "POST",
-    data: data as unknown as Record<string, unknown>,
   })
 }

@@ -214,21 +214,23 @@ export function generateCartData(
       )
 
       // Hitung original gross amount (harga asli sebelum pajak)
-      const quantity = Math.max(0, item.quantity || 1)
+      // Izinkan qty negatif untuk refund/edit mode
+      const quantity = item.quantity || 0
       const original_gross_amount = original_price * quantity
 
       // Hitung original discount amount (diskon dari harga asli sebelum pajak)
       const discountType = item.discount_type || "nominal"
       const discountValue = item.discount || 0
       const original_discount_amount = calculateDiscountAmount({
-        price: original_gross_amount,
+        price: Math.abs(original_gross_amount),
         discount_type: discountType,
         discount_amount: discountValue,
       })
-      const final_original_discount = Math.min(
-        original_discount_amount,
-        original_gross_amount
-      )
+      // Jika qty negatif, discount juga harus negatif
+      const final_original_discount =
+        quantity < 0
+          ? -Math.min(original_discount_amount, Math.abs(original_gross_amount))
+          : Math.min(original_discount_amount, original_gross_amount)
 
       // Original net amount (net amount sebelum pajak)
       const original_net_amount =
@@ -258,12 +260,17 @@ export function generateCartData(
       const gross_amount = base_price * quantity
 
       // Hitung diskon dari gross amount
+      // Untuk qty negatif, diskon tetap mengurangi (diskon positif mengurangi gross negatif)
       const discount_amount = calculateDiscountAmount({
-        price: gross_amount,
+        price: Math.abs(gross_amount),
         discount_type: discountType,
         discount_amount: discountValue,
       })
-      const final_discount = Math.min(discount_amount, gross_amount)
+      // Jika qty negatif, diskon juga harus negatif untuk mengurangi gross_amount negatif
+      const final_discount =
+        quantity < 0
+          ? -Math.min(discount_amount, Math.abs(gross_amount))
+          : Math.min(discount_amount, gross_amount)
 
       // Net amount setelah diskon
       const net_amount = gross_amount - final_discount
@@ -276,6 +283,7 @@ export function generateCartData(
         const taxRate = tax.rate || 0
 
         // Perhitungan pajak berdasarkan pengaturan pajak
+        // Jika qty negatif, pajak juga akan negatif karena net_amount sudah negatif
         if (tax_calculation === 1) {
           // Harga Retail Termasuk Pajak
           // Pajak = (Tarif Pajak * net_amount) / 100 (karena net_amount sudah harga tanpa pajak)
@@ -484,15 +492,26 @@ export function generateCartData(
     0
   )
 
-  // Hitung balance_amount jika total pembayaran kurang dari total_amount
-  const balance_amount =
-    totalPayments < finalGrandTotal
-      ? parseFloat((finalGrandTotal - totalPayments).toFixed(2))
-      : 0
+  // Deteksi apakah ini refund mode (total_amount negatif)
+  const isRefundMode = finalGrandTotal < 0
 
-  // Hitung kembalian jika ada
+  // Hitung balance_amount
+  let balance_amount = 0
+  if (isRefundMode) {
+    // Untuk refund mode: balance_amount = total_amount - totalPayments
+    // total_amount negatif, totalPayments juga negatif, hasil tetap negatif
+    balance_amount = parseFloat((finalGrandTotal - totalPayments).toFixed(2))
+  } else {
+    // Untuk normal mode: balance_amount jika total pembayaran kurang dari total_amount
+    balance_amount =
+      totalPayments < finalGrandTotal
+        ? parseFloat((finalGrandTotal - totalPayments).toFixed(2))
+        : 0
+  }
+
+  // Hitung kembalian jika ada (hanya untuk normal mode)
   const return_amount =
-    totalPayments > finalGrandTotal
+    !isRefundMode && totalPayments > finalGrandTotal
       ? parseFloat((totalPayments - finalGrandTotal).toFixed(2))
       : 0
 

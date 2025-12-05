@@ -51,6 +51,7 @@ type FormProps = {
   onClose: () => void
   onChange: (item: TransactionItemSchema, type: "create" | "update") => void
   onDelete: (index: number) => void
+  allowNegativeQuantity?: boolean
 }
 
 const FormAddItemSale: React.FC<FormProps> = ({
@@ -61,6 +62,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
   onClose,
   onChange,
   onDelete,
+  allowNegativeQuantity = false,
 }) => {
   const {
     watch,
@@ -546,13 +548,14 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                   autoComplete="off"
                                   className="text-center"
                                   {...field}
-                                  value={field.value === 0 ? "" : field.value}
+                                  value={field.value ?? 0}
                                   onChange={(e) => {
                                     const value =
                                       e.target.value === ""
                                         ? 0
                                         : Number(e.target.value)
-                                    if (value < 0) {
+                                    // Jika allowNegativeQuantity = true, izinkan nilai negatif
+                                    if (!allowNegativeQuantity && value < 0) {
                                       field.onChange(0)
                                       formProps.setValue(
                                         "sell_price",
@@ -560,6 +563,7 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                       )
                                       formProps.setValue("discount", 0)
                                     } else if (
+                                      !allowNegativeQuantity &&
                                       value > (watchData.product_qty as number)
                                     ) {
                                       field.onChange(watchData.product_qty)
@@ -571,9 +575,14 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                       formProps.setValue("discount", 0)
                                     } else {
                                       field.onChange(value)
+                                      // Jika qty negatif, harga juga jadi negatif
+                                      const calculatedPrice =
+                                        allowNegativeQuantity
+                                          ? watchData.price * value
+                                          : watchData.price * (value || 0)
                                       formProps.setValue(
                                         "sell_price",
-                                        watchData.price * (value || 0)
+                                        calculatedPrice
                                       )
                                       formProps.setValue("discount", 0)
                                     }
@@ -589,14 +598,23 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                       variant="ghost"
                                       size="sm"
                                       className="bg-accent"
-                                      disabled={field.value <= 0}
+                                      disabled={
+                                        allowNegativeQuantity
+                                          ? false
+                                          : field.value <= 0
+                                      }
                                       onClick={() => {
                                         const newValue = Number(field.value) - 1
-                                        if (newValue >= 1) {
+                                        if (
+                                          allowNegativeQuantity ||
+                                          newValue >= 1
+                                        ) {
                                           field.onChange(newValue)
+                                          const calculatedPrice =
+                                            watchData.price * newValue
                                           formProps.setValue(
                                             "sell_price",
-                                            watchData.price * newValue
+                                            calculatedPrice
                                           )
                                           formProps.setValue("discount", 0)
                                         }
@@ -609,19 +627,24 @@ const FormAddItemSale: React.FC<FormProps> = ({
                                       variant="ghost"
                                       size="sm"
                                       disabled={
-                                        field.value >=
-                                        (watchData.product_qty as number)
+                                        allowNegativeQuantity
+                                          ? false
+                                          : field.value >=
+                                            (watchData.product_qty as number)
                                       }
                                       onClick={() => {
                                         const newValue = Number(field.value) + 1
                                         if (
+                                          allowNegativeQuantity ||
                                           newValue <=
-                                          (watchData.product_qty as number)
+                                            (watchData.product_qty as number)
                                         ) {
                                           field.onChange(newValue)
+                                          const calculatedPrice =
+                                            watchData.price * newValue
                                           formProps.setValue(
                                             "sell_price",
-                                            watchData.price * newValue
+                                            calculatedPrice
                                           )
                                           formProps.setValue("discount", 0)
                                         }
