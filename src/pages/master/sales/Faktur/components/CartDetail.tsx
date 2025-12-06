@@ -192,7 +192,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
                 <AlertDescription className="ml-2 text-amber-800 dark:text-amber-200">
                   Loyalty point, poin redeem, voucher yang dipakai, dan komisi
                   penjualan tidak dapat dikembalikan setelah refund. Untuk
-                  pembatalan, silahkan gunakan fitur Pembatalan.
+                  pembatalan, silahkan gunakan fitur Dibatalkan.
                 </AlertDescription>
               </Alert>
             ) : null}
