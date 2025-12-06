@@ -13,14 +13,15 @@ const {
 
 const ProtectedRoute = () => {
   const { authenticated, authDashboard, user } = useAuth()
-  const { isUpdateAvailable, markVersionAsDismissed } = useUpdateNotification()
+  const { isUpdateAvailable, markVersionAsDismissed, clearCacheBrowser } =
+    useUpdateNotification()
   const total_user_clubs = user?.total_user_clubs ?? 0
 
   const { pathname } = useLocation()
 
   const onRefresh = async () => {
     await markVersionAsDismissed()
-    window.location.reload()
+    await clearCacheBrowser()
   }
 
   // --- 1. HANDLING BELUM LOGIN ---

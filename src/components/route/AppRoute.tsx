@@ -1,5 +1,4 @@
 import { type ComponentType, useCallback, useEffect } from "react"
-import { UpdateNotificationDialog, useUpdateNotification } from "@/buildVersion"
 import { useLocation } from "react-router"
 import { type ThemeConfig, useThemeConfig } from "@/stores/theme-config-store"
 
@@ -20,12 +19,6 @@ const AppRoute = <T extends Record<string, unknown>>({
     setThemeConfig,
     setPreviousThemeConfig,
   } = useThemeConfig()
-  const { isUpdateAvailable, markVersionAsDismissed } = useUpdateNotification()
-
-  const onRefresh = async () => {
-    await markVersionAsDismissed()
-    window.location.reload()
-  }
 
   const handleThemeConfigChange = useCallback(() => {
     // Jika route punya meta themeConfig
@@ -59,11 +52,6 @@ const AppRoute = <T extends Record<string, unknown>>({
   return (
     <>
       <Component {...(props as T)} />
-      <UpdateNotificationDialog
-        isOpen={isUpdateAvailable}
-        onClose={() => markVersionAsDismissed()}
-        onRefresh={onRefresh}
-      />
     </>
   )
 }

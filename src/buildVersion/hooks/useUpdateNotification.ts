@@ -7,6 +7,7 @@ export interface UseUpdateNotificationReturn {
   checkForUpdates: () => Promise<void>
   markVersionAsDismissed: () => Promise<void>
   forceShowDialog: () => void
+  clearCacheBrowser: () => Promise<void>
 }
 
 export const useUpdateNotification = (
@@ -46,6 +47,40 @@ export const useUpdateNotification = (
 
   const forceShowDialog = (): void => {
     setIsUpdateAvailable(true)
+  }
+
+  const clearCacheBrowser = async (): Promise<void> => {
+    // Bersihkan cache browser dan service worker untuk memastikan update terbaru dimuat
+    try {
+      // 1. Unregister service worker jika ada untuk memastikan cache service worker dibersihkan
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(
+          registrations.map((registration) => registration.unregister())
+        )
+      }
+
+      // 2. Clear cache storage jika tersedia
+      if ("caches" in window) {
+        const cacheNames = await caches.keys()
+        await Promise.all(
+          cacheNames.map((cacheName) => caches.delete(cacheName))
+        )
+      }
+
+      // 3. Reload dengan cache-busting parameter untuk memastikan semua asset dimuat fresh
+      // Tambahkan timestamp ke URL untuk bypass browser cache
+      const url = new URL(window.location.href)
+      url.searchParams.set("_t", Date.now().toString())
+
+      // Reload dengan URL yang sudah ditambahkan cache-busting parameter
+      window.location.href = url.toString()
+    } catch (error) {
+      // Jika ada error, fallback ke reload biasa dengan cache-busting
+      console.warn("Error clearing cache, using fallback reload:", error)
+      window.location.href =
+        window.location.href.split("?")[0] + "?_t=" + Date.now()
+    }
   }
 
   // Service Worker update detection
@@ -126,6 +161,7 @@ export const useUpdateNotification = (
     checkForUpdates,
     markVersionAsDismissed,
     forceShowDialog,
+    clearCacheBrowser,
   }
 }
 
