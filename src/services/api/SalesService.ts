@@ -2,7 +2,10 @@ import ApiService from "../ApiService"
 import { ParamsFilter } from "./@types/api"
 import {
   CheckoutRequest,
+  FilterReportSalesType,
   RefundRequest,
+  ReportSalesResponse,
+  SaleReportByRekeningResponse,
   SalesDetailResponse,
   SalesTypeListResponse,
   UpdateSalesPaymentDto,
@@ -59,5 +62,37 @@ export async function apiVoidSales(id: number | string) {
   return ApiService.fetchDataWithAxios({
     url: `/sales/void/${id}`,
     method: "DELETE",
+  })
+}
+
+export async function apiReportSales({
+  start_date,
+  end_date,
+  use_invoice_date = false,
+}: FilterReportSalesType) {
+  return ApiService.fetchDataWithAxios<ReportSalesResponse>({
+    url: `/sales/report`,
+    method: "GET",
+    params: {
+      start_date,
+      end_date,
+      use_invoice_date,
+    },
+  })
+}
+
+export async function apiReportSalesByRekening({
+  start_date,
+  end_date,
+  use_invoice_date = false,
+}: FilterReportSalesType) {
+  return ApiService.fetchDataWithAxios<SaleReportByRekeningResponse>({
+    url: `/sales/report/by-rekening`,
+    method: "GET",
+    params: {
+      start_date,
+      end_date,
+      use_invoice_date,
+    },
   })
 }

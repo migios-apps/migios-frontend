@@ -68,14 +68,11 @@ const FormClassEvent: React.FC<FormProps> = ({ open, formProps, onClose }) => {
         const event = watchClass.events[0]
         formEventProps.reset(event)
 
-        formEventProps.setValue(
-          "start",
-          dayjs(event.start).format("YYYY-MM-DD HH:mm")
-        )
-        formEventProps.setValue(
-          "end",
-          dayjs(event.end).format("YYYY-MM-DD HH:mm")
-        )
+        const format =
+          event.frequency === "weekly" ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
+
+        formEventProps.setValue("start", dayjs(event.start).format(format))
+        formEventProps.setValue("end", dayjs(event.end).format(format))
 
         // if (watchClass.name) {
         //   formEventProps.setValue('title', `${watchClass.name}`)
@@ -91,11 +88,13 @@ const FormClassEvent: React.FC<FormProps> = ({ open, formProps, onClose }) => {
   }, [open])
 
   const onSubmit: SubmitHandler<CreateEventSchemaType> = (data) => {
+    const format =
+      data.frequency === "weekly" ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
     formProps.setValue("events", [
       {
         ...data,
-        start: dayjs(data.start).format("YYYY-MM-DD HH:mm"),
-        end: dayjs(data.end).format("YYYY-MM-DD HH:mm"),
+        start: dayjs(data.start).format(format),
+        end: dayjs(data.end).format(format),
       },
     ])
     formEventProps.reset(defaultValue)

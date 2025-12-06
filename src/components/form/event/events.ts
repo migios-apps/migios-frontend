@@ -93,32 +93,56 @@ export const validationEventSchema = yup.object().shape({
   start: yup
     .string()
     .required("Start date is required")
-    .test(
-      "is-valid-date",
-      "Start date must be a valid date in format YYYY-MM-DD HH:mm",
-      (value) => {
-        return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-      }
-    ),
+    .when("frequency", {
+      is: "weekly",
+      then: (schema) =>
+        schema.test(
+          "is-valid-date",
+          "Start date must be a valid date in format YYYY-MM-DD",
+          (value) => {
+            return dayjs(value, "YYYY-MM-DD", true).isValid()
+          }
+        ),
+      otherwise: (schema) =>
+        schema.test(
+          "is-valid-date",
+          "Start date must be a valid date in format YYYY-MM-DD HH:mm",
+          (value) => {
+            return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
+          }
+        ),
+    }),
   end: yup
     .string()
     .required("End date is required")
-    .test(
-      "is-valid-date",
-      "End date must be a valid date in format YYYY-MM-DD HH:mm",
-      (value) => {
-        return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-      }
-    )
+    .when("frequency", {
+      is: "weekly",
+      then: (schema) =>
+        schema.test(
+          "is-valid-date",
+          "End date must be a valid date in format YYYY-MM-DD",
+          (value) => {
+            return dayjs(value, "YYYY-MM-DD", true).isValid()
+          }
+        ),
+      otherwise: (schema) =>
+        schema.test(
+          "is-valid-date",
+          "End date must be a valid date in format YYYY-MM-DD HH:mm",
+          (value) => {
+            return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
+          }
+        ),
+    })
     .test(
       "is-after-start",
       "End date must be after the start date",
       function (value) {
-        const { start } = this.parent
+        const { start, frequency } = this.parent
         if (!start || !value) return true // Skip if one of the values is missing
-        return dayjs(value, "YYYY-MM-DD HH:mm").isAfter(
-          dayjs(start, "YYYY-MM-DD HH:mm")
-        )
+        const format =
+          frequency === "weekly" ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
+        return dayjs(value, format).isAfter(dayjs(start, format))
       }
     ),
   // start_time: yup
@@ -267,8 +291,14 @@ export const resetFormByFrequency = (
     form_props.setValue("frequency", frequency)
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
-    form_props.setValue("start", watch_data.start)
-    form_props.setValue("end", watch_data.end)
+    form_props.setValue(
+      "start",
+      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+    )
+    form_props.setValue(
+      "end",
+      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+    )
     // form_props.setValue(
     //   'start_time',
     //   watch_data.start_time
@@ -299,8 +329,14 @@ export const resetFormByFrequency = (
     form_props.setValue("frequency", frequency)
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
-    form_props.setValue("start", watch_data.start)
-    form_props.setValue("end", watch_data.end)
+    form_props.setValue(
+      "start",
+      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD") : ""
+    )
+    form_props.setValue(
+      "end",
+      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD") : ""
+    )
     // form_props.setValue('start_time', undefined)
     // form_props.setValue('end_time', undefined)
     form_props.setValue("end_type", watch_data.end_type)
@@ -321,8 +357,14 @@ export const resetFormByFrequency = (
     form_props.setValue("frequency", frequency)
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
-    form_props.setValue("start", watch_data.start)
-    form_props.setValue("end", watch_data.end)
+    form_props.setValue(
+      "start",
+      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+    )
+    form_props.setValue(
+      "end",
+      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+    )
     // form_props.setValue('start_time', undefined)
     // form_props.setValue('end_time', undefined)
     form_props.setValue("end_type", watch_data.end_type)
@@ -343,8 +385,14 @@ export const resetFormByFrequency = (
     form_props.setValue("frequency", frequency)
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
-    form_props.setValue("start", watch_data.start)
-    form_props.setValue("end", watch_data.end)
+    form_props.setValue(
+      "start",
+      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+    )
+    form_props.setValue(
+      "end",
+      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+    )
     // form_props.setValue('start_time', undefined)
     // form_props.setValue('end_time', undefined)
     form_props.setValue("end_type", watch_data.end_type)

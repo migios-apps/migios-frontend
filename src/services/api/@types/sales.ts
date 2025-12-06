@@ -373,3 +373,35 @@ export interface RefundRequest {
     notes?: string
   }[]
 }
+
+// filter report sales type
+export interface FilterReportSalesType {
+  start_date: string
+  end_date: string
+  use_invoice_date?: boolean
+}
+
+// report sales type
+export interface ReportSalesType {
+  item_name: string
+  total_sales: number | null
+  total_returns: number | null
+  gross_revenue: number | null
+  fgross_revenue: string
+}
+
+export type ReportSalesResponse = Omit<ApiTypes, "data"> & {
+  data: ReportSalesType[]
+}
+
+// report sales by rekening type
+export interface SaleReportByRekeningType {
+  rekening_id: number
+  rekening_name: string
+  total_payment: number
+  ftotal_payment: string
+}
+
+export type SaleReportByRekeningResponse = Omit<ApiTypes, "data"> & {
+  data: SaleReportByRekeningType[]
+}

@@ -70,8 +70,8 @@ const FormClassPage: React.FC<FormProps> = ({
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const [eventModal, setEventModal] = React.useState(false)
 
-  // console.log('watchData', watchData)
-  // console.log('errors', errors)
+  console.log("watchData", watchData)
+  console.log("errors", JSON.stringify(errors))
 
   const {
     data: instructors,

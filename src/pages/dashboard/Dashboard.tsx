@@ -110,7 +110,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <CardOverview
-                className="!grid-cols-1"
+                className="grid-cols-1!"
                 data={[
                   {
                     name: "Aktif Member",

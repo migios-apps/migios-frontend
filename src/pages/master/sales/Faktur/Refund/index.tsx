@@ -69,6 +69,7 @@ const RefundSales = () => {
         loyalty_enabled: settingsData.loyalty_enabled,
         taxes: settingsData.taxes,
         employee: salesData.employee,
+        employee_id: salesData.employee_id,
         member: salesData.member,
         discount_type: salesData.discount_type,
         discount: salesData.discount,
