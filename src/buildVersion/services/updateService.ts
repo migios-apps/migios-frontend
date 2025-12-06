@@ -11,9 +11,9 @@ class UpdateServiceImpl implements UpdateService {
   constructor() {
     this.currentEnvironment = import.meta.env.MODE || "development"
 
-    console.log("UpdateService initialized:", {
-      environment: this.currentEnvironment,
-    })
+    // console.log("UpdateService initialized:", {
+    //   environment: this.currentEnvironment,
+    // })
   }
 
   private getDismissedVersion(): string {
