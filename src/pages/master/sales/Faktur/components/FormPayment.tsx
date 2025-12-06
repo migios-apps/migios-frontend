@@ -627,7 +627,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     <InputCurrency
                       value={field.value}
                       disabled={isPaidOf}
-                      className="bg-primary-subtle text-primary focus:bg-primary-subtle h-[80px] text-center text-3xl! font-bold"
+                      className="bg-primary-subtle text-primary focus:bg-primary-subtle h-20 text-center text-3xl! font-bold"
                       onValueChange={(_value, _name, values) => {
                         field.onChange(values?.float)
                       }}
