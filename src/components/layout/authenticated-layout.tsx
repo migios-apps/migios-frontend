@@ -12,13 +12,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/layout/vertical/sidebar"
-import { ConfigDrawer } from "../config-drawer"
 import { Search } from "../search"
 import { ThemeCustomizer, ThemeCustomizerTrigger } from "../theme-customizer"
 import { ThemeSwitch } from "../theme-switch"
 import { PageLoader } from "../ui/page-loader"
+import Logo from "./Logo"
 import { Header } from "./header"
-import { TeamSwitcherHorizontal } from "./horizontal/team-switcher-horizontal"
 import { Main } from "./main"
 import { ProfileDropdown } from "./profile-dropdown"
 
@@ -80,7 +79,6 @@ export function AuthenticatedLayout({
             <Search />
             <div className="ms-auto flex items-center space-x-4">
               <ThemeSwitch />
-              <ConfigDrawer />
               <ProfileDropdown />
             </div>
           </Header>
@@ -90,11 +88,17 @@ export function AuthenticatedLayout({
         </SidebarInset>
 
         {/* Theme Customizer */}
-        <ThemeCustomizerTrigger onClick={() => setThemeCustomizerOpen(true)} />
-        <ThemeCustomizer
-          open={themeCustomizerOpen}
-          onOpenChange={setThemeCustomizerOpen}
-        />
+        {import.meta.env.DEV && (
+          <>
+            <ThemeCustomizerTrigger
+              onClick={() => setThemeCustomizerOpen(true)}
+            />
+            <ThemeCustomizer
+              open={themeCustomizerOpen}
+              onOpenChange={setThemeCustomizerOpen}
+            />
+          </>
+        )}
       </SidebarProvider>
     )
   }
@@ -113,14 +117,22 @@ export function AuthenticatedLayout({
                   onOpenChange={setMobileMenuOpen}
                 />
                 <div className="hidden md:block">
-                  <TeamSwitcherHorizontal teams={sidebarData.teams} />
+                  <Logo
+                    type="full"
+                    className={cn(
+                      "flex items-start justify-start",
+                      "text-sidebar-accent-foreground"
+                    )}
+                    svgProps={{
+                      className: "h-10 w-auto",
+                    }}
+                  />
                 </div>
               </div>
               <HorizontalNav navGroups={sidebarData.navGroups} />
               <div className="ms-auto flex items-center space-x-4">
                 <Search iconOnly />
                 <ThemeSwitch />
-                <ConfigDrawer />
                 <ProfileDropdown />
               </div>
             </div>

@@ -17,8 +17,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import Logo from "../Logo"
 import type { NavCollapsible, NavItem, NavLink } from "../types"
-import { TeamSwitcherHorizontal } from "./team-switcher-horizontal"
 
 type MobileMenuSheetProps = {
   open?: boolean
@@ -50,7 +50,11 @@ export function MobileMenuSheet({ open, onOpenChange }: MobileMenuSheetProps) {
 
         {/* Header - Team Switcher */}
         <div className="p-4">
-          <TeamSwitcherHorizontal teams={sidebarData.teams} />
+          <Logo
+            type="full"
+            className="flex items-start justify-start"
+            svgProps={{ className: "h-10 w-auto" }}
+          />
         </div>
         <Separator />
 
