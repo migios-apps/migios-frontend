@@ -183,7 +183,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
           <div className="flex flex-col gap-3 p-4 pb-0">
             {/* alert refund mode */}
             {detailType === "refund" ? (
-              <Alert className="border-amber-300 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+              <Alert className="items-center border-amber-300 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
                 <Warning2
                   className="h-8! w-8! text-amber-600 dark:text-amber-400"
                   variant="Bulk"
