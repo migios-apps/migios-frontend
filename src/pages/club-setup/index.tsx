@@ -18,7 +18,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Stepper, StepperItem } from "@/components/ui/stepper"
 import Logo from "@/components/layout/Logo"
 import { ThemeSwitch } from "@/components/theme-switch"
-import dummygenerate from "./dummygenerate.json"
+// import dummygenerate from "./dummygenerate.json"
 import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
@@ -71,7 +71,8 @@ const Onboarding = () => {
     resolver: yupResolver(formSchema as any),
     mode: "all",
     defaultValues: {
-      ...dummygenerate,
+      // ...dummygenerate,
+      email: user?.email,
     },
   })
 
