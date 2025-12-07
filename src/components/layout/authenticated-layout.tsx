@@ -13,7 +13,7 @@ import {
   SidebarProvider,
 } from "@/components/layout/vertical/sidebar"
 import { Search } from "../search"
-import { ThemeCustomizer, ThemeCustomizerTrigger } from "../theme-customizer"
+import { ThemeCustomizer } from "../theme-customizer"
 import { ThemeSwitch } from "../theme-switch"
 import { PageLoader } from "../ui/page-loader"
 import Logo from "./Logo"
@@ -90,9 +90,9 @@ export function AuthenticatedLayout({
         {/* Theme Customizer */}
         {import.meta.env.DEV && (
           <>
-            <ThemeCustomizerTrigger
+            {/* <ThemeCustomizerTrigger
               onClick={() => setThemeCustomizerOpen(true)}
-            />
+            /> */}
             <ThemeCustomizer
               open={themeCustomizerOpen}
               onOpenChange={setThemeCustomizerOpen}

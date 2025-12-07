@@ -1,8 +1,8 @@
 import React, { useMemo } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useAuth } from "@/auth"
-import dashboardDark from "@/pages/auth/sign-in/assets/dashboard-dark.png"
-import dashboardLight from "@/pages/auth/sign-in/assets/dashboard-light.png"
+import dashboardDark from "@/pages/auth/sign-in/assets/event-dark.png"
+import dashboardLight from "@/pages/auth/sign-in/assets/event-light.png"
 import { Filter } from "@/services/api/@types/api"
 import { apiGetUserClubList } from "@/services/api/ClubService"
 import { Add, LogoutCurve, SearchStatus1 } from "iconsax-reactjs"
@@ -77,7 +77,7 @@ const Clubs = () => {
         <div
           className={cn(
             "bg-muted relative h-full overflow-hidden max-lg:hidden",
-            "[&>img]:absolute [&>img]:top-[15%] [&>img]:left-20 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:object-top-left [&>img]:select-none"
+            "[&>img]:absolute [&>img]:top-[8%] [&>img]:left-1 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:object-top-left [&>img]:select-none"
           )}
         >
           <img

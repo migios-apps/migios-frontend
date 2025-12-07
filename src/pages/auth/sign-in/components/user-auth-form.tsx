@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useAuth } from "@/auth"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Facebook, Github, Loader2, LogIn } from "lucide-react"
+import { Loader2, LogIn } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import * as yup from "yup"
@@ -131,7 +131,7 @@ export function UserAuthForm({
           </Link>
         </div>
 
-        <div className="relative my-2">
+        {/* <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -149,7 +149,7 @@ export function UserAuthForm({
           <Button variant="outline" type="button" disabled={isLoading}>
             <Facebook className="h-4 w-4" /> Facebook
           </Button>
-        </div>
+        </div> */}
       </form>
     </Form>
   )

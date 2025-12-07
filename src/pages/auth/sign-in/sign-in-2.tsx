@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils"
 import Logo from "@/components/layout/Logo"
 import { ThemeSwitch } from "@/components/theme-switch"
-import dashboardDark from "./assets/dashboard-dark.png"
-import dashboardLight from "./assets/dashboard-light.png"
+import dashboardDark from "./assets/dark-dashboard.png"
+import dashboardLight from "./assets/light-dashboard.png"
 import { UserAuthForm } from "./components/user-auth-form"
 
 function SignIn2() {
@@ -53,7 +53,7 @@ function SignIn2() {
       <div
         className={cn(
           "bg-muted relative h-full overflow-hidden max-lg:hidden",
-          "[&>img]:absolute [&>img]:top-[15%] [&>img]:left-20 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:object-top-left [&>img]:select-none"
+          "[&>img]:absolute [&>img]:top-[8%] [&>img]:left-8 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&>img]:object-top-left [&>img]:select-none"
         )}
       >
         <img

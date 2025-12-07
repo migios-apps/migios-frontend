@@ -2,7 +2,6 @@ import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import { AxiosError } from "axios"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ThemeConfigProvider } from "@/components/theme-config-provider"
 import App from "./App"
 import { Toaster } from "./components/ui/sonner"
@@ -39,9 +38,9 @@ if (!rootElement.innerHTML) {
           <App />
         </ThemeConfigProvider>
         <Toaster duration={5000} position="top-center" />
-        {import.meta.env.MODE === "development" && (
+        {/* {import.meta.env.MODE === "development" && (
           <ReactQueryDevtools buttonPosition="bottom-left" />
-        )}
+        )} */}
       </QueryClientProvider>
     </StrictMode>
   )

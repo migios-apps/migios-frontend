@@ -24,6 +24,16 @@ const Dashboard = () => {
     enabled: !!club.id,
   })
 
+  // const isLoading = false
+  // const head = {
+  //   total_active_membership: 1750,
+  //   total_inactive_membership: 250,
+  //   total_freeze_members: 82,
+  //   total_member_in_membership: 1200,
+  //   total_member_in_pt: 632,
+  //   total_member_in_class: 200,
+  // }
+
   return (
     <>
       <div className="flex max-w-full flex-col gap-4 overflow-x-hidden">
