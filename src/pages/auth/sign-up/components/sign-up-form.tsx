@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import PhoneInput from "@/components/ui/phone-input"
 import { PasswordInput } from "@/components/password-input"
 
 const formSchema = yup.object({
@@ -16,7 +15,7 @@ const formSchema = yup.object({
     .string()
     .email("Email tidak valid")
     .required("Please enter your email"),
-  phone: yup.string().required("Please enter your phone number"),
+  // phone: yup.string().required("Please enter your phone number"),
   password: yup
     .string()
     .required("Please enter your password")
@@ -48,14 +47,14 @@ export function SignUpForm({
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
+      // phone: "",
       password: "",
       confirmPassword: "",
     },
   })
 
   async function onSubmit(data: SignUpSchema) {
-    const { name, password, email, phone } = data
+    const { name, password, email } = data
 
     if (!disableSubmit) {
       setIsLoading(true)
@@ -63,7 +62,7 @@ export function SignUpForm({
         name,
         password,
         email,
-        phone,
+        // phone,
       })
 
       if (result?.status === "failed") {
@@ -109,7 +108,7 @@ export function SignUpForm({
             />
           )}
         />
-        <FormFieldItem
+        {/* <FormFieldItem
           control={form.control}
           name="phone"
           label="Phone Number"
@@ -120,7 +119,7 @@ export function SignUpForm({
               {...field}
             />
           )}
-        />
+        /> */}
         <FormFieldItem
           control={form.control}
           name="password"

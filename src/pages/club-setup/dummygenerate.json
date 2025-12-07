@@ -1,0 +1,22 @@
+{
+  "name": "My Gym",
+  "phone": "+628123456789",
+  "email": "tomy@example.com",
+  "address": "Jl. Jend. Sudirman No. 123",
+  "about_club": {
+    "total_staff": "2-4",
+    "total_member": "50-100",
+    "total_location": "1",
+    "how_did_find_us": "Mesin pencari (Google, Bing, dll.)",
+    "is_other_find_us": false
+  },
+  "programs": [
+    { "name": "Membership", "type": "membership", "classes": [] },
+    { "name": "Personal Training", "type": "pt_program", "classes": [] },
+    {
+      "name": "Class Program",
+      "type": "class",
+      "classes": ["Yoga", "Pilates", "Zumba", "Cardio"]
+    }
+  ]
+}

@@ -44,7 +44,7 @@ const Step5 = () => {
   }, [progressList, currentStep])
   return (
     <div className="flex w-full flex-col">
-      <div className="relative mx-auto max-w-140 bg-white px-8 dark:bg-gray-800">
+      <div className="bg-background relative mx-auto max-w-140 px-8">
         <SparklesText
           text="Tunggu sebentar, kami sedang menyiapkan semuanya...."
           className="text-2xl lg:text-5xl"

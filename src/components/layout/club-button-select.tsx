@@ -8,6 +8,7 @@ import { apiGetUserClubList } from "@/services/api/ClubService"
 import dayjs from "dayjs"
 import { Add, SearchNormal1, SearchStatus1 } from "iconsax-reactjs"
 import { ChevronsUpDown } from "lucide-react"
+import LogoIcon from "@/assets/icons/migios-logo.svg?react"
 import { useSessionUser } from "@/stores/auth-store"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
@@ -25,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import Logo from "@/components/layout/Logo"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -197,16 +197,12 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                     sideNavCollapse && "rounded-full"
                   )}
                 >
-                  {club?.photo ? (
-                    <Avatar className="size-8 bg-transparent">
-                      <AvatarImage src={club.photo} alt={club.name} />
-                      <AvatarFallback className="bg-transparent p-0">
-                        <Logo type="icon" className="text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <Logo type="icon" className="text-primary" />
-                  )}
+                  <Avatar className="size-8 bg-transparent">
+                    <AvatarImage src={club.photo} alt={club.name} />
+                    <AvatarFallback className="bg-border-inset p-2">
+                      <LogoIcon className="h-full w-full text-[#8a8a8a]" />
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 {!sideNavCollapse && (
                   <div className="grid flex-1 text-start text-sm leading-tight">
@@ -291,16 +287,12 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                           "flex size-6 items-center justify-center rounded-sm"
                         )}
                       >
-                        {item.photo ? (
-                          <Avatar className="size-6 bg-transparent">
-                            <AvatarImage src={item.photo} alt={item.name} />
-                            <AvatarFallback className="bg-transparent p-0">
-                              <Logo type="icon" className="text-primary" />
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <Logo type="icon" className="text-primary" />
-                        )}
+                        <Avatar className="size-8 bg-transparent">
+                          <AvatarImage src={item.photo} alt={item.name} />
+                          <AvatarFallback className="bg-border-inset p-1">
+                            <LogoIcon className="h-full w-full text-[#8a8a8a]" />
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                       <div className="min-w-0 flex-1 flex-col">
                         <span

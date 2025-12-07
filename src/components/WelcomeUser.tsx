@@ -2,12 +2,31 @@ import { useEffect, useState } from "react"
 import { CheckCircle, X } from "lucide-react"
 import { useWelcome } from "@/stores/use-welcome"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { SparklesText } from "./MagicUI/SparklesText"
+import { SchoolPrideConfetti } from "./MagicUI/confetti"
 import Logo from "./layout/Logo"
+import { Separator } from "./ui/separator"
 
 const WelcomeUser = () => {
+  const [openConfetti, setOpenConfetti] = useState(false)
+
+  // close confetti after 1 second
+  useEffect(() => {
+    if (openConfetti) {
+      setTimeout(() => {
+        setOpenConfetti(false)
+      }, 1000)
+    }
+  }, [openConfetti])
+
   const { welcome, setWelcome } = useWelcome()
   const settingup = [
     "Menyiapkan Akun Migios Anda",
@@ -43,80 +62,102 @@ const WelcomeUser = () => {
       return () => clearInterval(interval)
     } else {
       setIsCompleted(true) // Semua langkah selesai
+      setOpenConfetti(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progressList, currentStep])
   return (
-    <Dialog
-      open={welcome}
-      onOpenChange={(open) => {
-        if (isCompleted) setWelcome(open)
-      }}
-    >
-      <DialogContent className="p-0">
-        <div
-          className="relative h-20 w-full overflow-hidden rounded-tl-2xl rounded-tr-2xl border-none bg-cover bg-center md:h-24"
-          style={{
-            backgroundImage: `url('/img/others/pt-program.jpg')`,
-            backgroundPositionY: "30%",
-          }}
+    <>
+      <Dialog
+        open={welcome}
+        onOpenChange={(open) => {
+          if (isCompleted) {
+            setWelcome(open)
+            setOpenConfetti(true)
+          }
+        }}
+      >
+        <DialogHeader className="rounded-2xl">
+          <DialogTitle></DialogTitle>
+          <DialogDescription></DialogDescription>
+        </DialogHeader>
+        <DialogContent
+          className="m-0 rounded-2xl border-none! p-0!"
+          showCloseButton={false}
+          autoFocus={false}
         >
-          <div className="absolute inset-0 z-0 bg-black opacity-65"></div>
-          <div className="pt-4">
-            {isCompleted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-3 text-white hover:bg-white/20 hover:text-white"
-                onClick={() => setWelcome(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-            <div className="relative flex items-center gap-1 px-2 py-1">
-              <Logo
-                className="me-2"
-                type="full"
-                svgProps={{ className: "h-12 w-auto" }}
-              />
-              <div className="flex flex-col">
-                <span className="text-base font-bold text-white sm:text-2xl">
-                  Selamat datang di Migios!
-                </span>
-                <span className="text-sm text-white sm:text-base">
-                  Solusi Manajemen Gym Terlengkap! 💪🏋️‍♂️
-                </span>
+          <div
+            className="relative h-20 w-full overflow-hidden rounded-tl-2xl rounded-tr-2xl border-none bg-cover bg-center md:h-24"
+            style={{
+              backgroundImage: `url('/img/pt-program.jpg')`,
+              backgroundPositionY: "30%",
+            }}
+          >
+            <div className="absolute inset-0 z-0 bg-black opacity-65"></div>
+            <div className="pt-4">
+              {isCompleted && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 right-3 text-white hover:bg-white/20 hover:text-white"
+                  onClick={() => {
+                    setWelcome(false)
+                    setOpenConfetti(false)
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="relative flex items-start gap-1 px-2 py-1">
+                <Logo
+                  className="me-2 text-white"
+                  type="icon"
+                  svgProps={{ className: "h-12 w-auto" }}
+                />
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-white sm:text-2xl">
+                    Selamat datang di Migios!
+                  </span>
+                  <span className="text-sm text-white sm:text-base">
+                    Transformasi Gym Anda, Raih Kesuksesan Lebih Cepat! 🚀
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="p-6">
-          <SparklesText
-            text="Tunggu sebentar, kami sedang menyiapkan semuanya...."
-            className="text-2xl lg:text-3xl"
-          />
-          <div className="mt-4 flex flex-col gap-3">
-            {settingup.map((item, index) => (
-              <div key={index} className="flex flex-col">
-                <div className="flex items-center justify-between">
-                  <span className="flex text-lg">{item}</span>
-                  {progressList[index] > 100 && (
-                    <CheckCircle className="h-5 w-5 text-emerald-500" />
+          <div className="p-6 pt-0">
+            <SparklesText
+              text="Tunggu sebentar, kami sedang menyiapkan semuanya...."
+              className="text-2xl lg:text-3xl"
+            />
+            <div className="mt-4 flex flex-col gap-0">
+              {settingup.map((item, index) => (
+                <div key={index} className="flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <span className="flex text-lg">{item}</span>
+                    {progressList[index] > 100 && (
+                      <CheckCircle className="h-5 w-5 text-emerald-500" />
+                    )}
+                  </div>
+                  {progressList[index] < 100 && (
+                    <Progress
+                      value={
+                        progressList[index] > 100 ? 100 : progressList[index]
+                      }
+                    />
                   )}
+                  {index < settingup.length - 1 &&
+                    progressList[index] > 100 && <Separator className="my-2" />}
                 </div>
-                {progressList[index] < 100 && (
-                  <Progress
-                    value={
-                      progressList[index] > 100 ? 100 : progressList[index]
-                    }
-                  />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {/* {isCompleted && <SchoolPrideConfetti duration={5} />} */}
+      {openConfetti && <SchoolPrideConfetti />}
+      {/* <Button onClick={() => setOpenConfetti(true)}>Open Confetti</Button> */}
+    </>
   )
 }
 

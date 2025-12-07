@@ -2,7 +2,7 @@ import React from "react"
 import { ArrowRight, Image as ImageIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Form, FormFieldItem } from "@/components/ui/form"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import PhoneInput from "@/components/ui/phone-input"
 import { Textarea } from "@/components/ui/textarea"
@@ -43,102 +43,100 @@ const Step1: React.FC<PropsType> = ({ onNext, formProps }) => {
   // }
   return (
     <Form {...formProps}>
-      <div className="relative max-w-120">
-        <h2>Beritahu kami sedikit tentang gym anda</h2>
-        <span className="text-lg">
-          Isi form ini untuk membantu kami mengetahui lebih lanjut tentang gym
-          anda
-        </span>
-        <div className="mt-4 flex w-full flex-col">
-          <div className="flex w-full items-center gap-4">
-            <Avatar className="h-20 w-20 bg-gray-300 text-gray-600 dark:bg-gray-500/20 dark:text-gray-100">
-              {avatarImg ? <AvatarImage src={avatarImg} alt="Avatar" /> : null}
-              <AvatarFallback>
-                <ImageIcon className="h-12 w-12 text-gray-600 dark:text-gray-100" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="w-full">
-              <FormFieldItem
-                control={control}
-                name="name"
-                label={
-                  <>
-                    Nama Gym <span className="text-destructive">*</span>
-                  </>
-                }
-                invalid={Boolean(errors.name)}
-                errorMessage={errors.name?.message}
-                render={({ field }) => (
-                  <Input
-                    type="text"
-                    autoComplete="off"
-                    placeholder="Nama Gym"
-                    {...field}
-                  />
-                )}
-              />
-            </div>
-          </div>
-          <FormFieldItem
-            control={control}
-            name="email"
-            label={
-              <>
-                Email <span className="text-destructive">*</span>
-              </>
-            }
-            invalid={Boolean(errors.email)}
-            errorMessage={errors.email?.message}
-            render={({ field }) => (
-              <Input
-                type="email"
-                autoComplete="off"
-                placeholder="Email"
-                {...field}
-              />
-            )}
-          />
-          <FormFieldItem
-            control={control}
-            name="phone"
-            label={
-              <>
-                Nomor Telepon <span className="text-destructive">*</span>
-              </>
-            }
-            invalid={Boolean(errors.phone)}
-            errorMessage={errors.phone?.message}
-            render={({ field }) => (
-              <PhoneInput placeholder="+62 *** *** ***" {...field} />
-            )}
-          />
-          <div className="mb-2 w-full">
-            <FormFieldItem
-              control={control}
-              name="address"
-              label={
-                <>
-                  Alamat Gym <span className="text-destructive">*</span>
-                </>
-              }
-              invalid={Boolean(errors.address)}
-              errorMessage={errors.address?.message}
-              render={({ field }) => (
-                <Textarea
-                  placeholder="Tulis alamat lengkap untuk lokasi gym Anda."
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              )}
-            />
-          </div>
+      <div className="flex w-full max-w-120 flex-col gap-4">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold">
+            Beritahu kami sedikit tentang gym anda
+          </h2>
+          <span className="text-muted-foreground text-lg">
+            Isi form ini untuk membantu kami mengetahui lebih lanjut tentang gym
+            anda
+          </span>
         </div>
+        <div className="flex w-full items-center justify-center">
+          <Avatar className="border-background bg-muted h-28 w-28 border-4 shadow-lg">
+            {avatarImg ? <AvatarImage src={avatarImg} alt="Avatar" /> : null}
+            <AvatarFallback>
+              <ImageIcon className="text-muted-foreground h-14 w-14" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <FormFieldItem
+          control={control}
+          name="name"
+          label={
+            <FormLabel>
+              Nama Gym <span className="text-destructive">*</span>
+            </FormLabel>
+          }
+          invalid={Boolean(errors.name)}
+          errorMessage={errors.name?.message}
+          render={({ field }) => (
+            <Input
+              type="text"
+              autoComplete="off"
+              placeholder="Nama Gym"
+              {...field}
+            />
+          )}
+        />
+        <FormFieldItem
+          control={control}
+          name="email"
+          label={
+            <FormLabel>
+              Email <span className="text-destructive">*</span>
+            </FormLabel>
+          }
+          invalid={Boolean(errors.email)}
+          errorMessage={errors.email?.message}
+          render={({ field }) => (
+            <Input
+              type="email"
+              autoComplete="off"
+              placeholder="Email"
+              {...field}
+            />
+          )}
+        />
+        <FormFieldItem
+          control={control}
+          name="phone"
+          label={
+            <FormLabel>
+              Nomor Telepon <span className="text-destructive">*</span>
+            </FormLabel>
+          }
+          invalid={Boolean(errors.phone)}
+          errorMessage={errors.phone?.message}
+          render={({ field }) => (
+            <PhoneInput placeholder="08 *** *** ***" {...field} />
+          )}
+        />
+        <FormFieldItem
+          control={control}
+          name="address"
+          label={
+            <FormLabel>
+              Alamat Gym <span className="text-destructive">*</span>
+            </FormLabel>
+          }
+          invalid={Boolean(errors.address)}
+          errorMessage={errors.address?.message}
+          render={({ field }) => (
+            <Textarea
+              placeholder="Tulis alamat lengkap untuk lokasi gym Anda."
+              {...field}
+              value={field.value ?? ""}
+            />
+          )}
+        />
         <div className="flex w-full items-center justify-end">
           <Button
             type="submit"
             variant="default"
             size="default"
-            className="mt-4 w-full rounded-full"
+            className="w-full rounded-full"
             onClick={onNext}
           >
             Step berikutnya

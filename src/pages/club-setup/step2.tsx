@@ -46,11 +46,16 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
 
   return (
     <Form {...formProps}>
-      <div className="relative">
-        <h2>Ceritakan sedikit tentang bisnis Anda</h2>
-        <span className="text-lg">
-          Ini membantu mempersonalisasikan pengalaman Anda dengan sistem migios
-        </span>
+      <div className="relative flex w-full max-w-130 flex-col gap-4">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold">
+            Ceritakan sedikit tentang bisnis Anda
+          </h2>
+          <span className="text-lg">
+            Ini membantu mempersonalisasikan pengalaman Anda dengan sistem
+            migios
+          </span>
+        </div>
         <div className="mt-8 flex w-full flex-col gap-8">
           <div className="flex flex-col">
             <h6 className="mb-2">
@@ -72,10 +77,7 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
                             field.value === option.value ? "default" : "outline"
                           }
                           size="sm"
-                          className={cn("w-full min-w-28", {
-                            "border-primary text-primary border-2":
-                              field.value === option.value,
-                          })}
+                          className={cn("w-full min-w-28")}
                           value={option.value}
                           onClick={() => field.onChange(option.value)}
                           type="button"
@@ -110,10 +112,7 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
                             field.value === option.value ? "default" : "outline"
                           }
                           size="sm"
-                          className={cn("w-full min-w-28", {
-                            "border-primary text-primary border-2":
-                              field.value === option.value,
-                          })}
+                          className={cn("w-full min-w-28")}
                           value={option.value}
                           onClick={() => field.onChange(option.value)}
                           type="button"
@@ -148,10 +147,7 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
                             field.value === option.value ? "default" : "outline"
                           }
                           size="sm"
-                          className={cn("w-full min-w-28", {
-                            "border-primary text-primary border-2":
-                              field.value === option.value,
-                          })}
+                          className={cn("w-full min-w-28")}
                           value={option.value}
                           onClick={() => field.onChange(option.value)}
                           type="button"
@@ -168,7 +164,9 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
 
           <div className="flex flex-col">
             <h2>Bagaimana Anda menemukan kami? </h2>
-            <span className="text-lg">* Opsional, tapi dihargai!</span>
+            <span className="text-muted-foreground text-sm">
+              Opsional, tapi dihargai!
+            </span>
             <div className="mb-0">
               <FormFieldItem
                 control={control}
@@ -226,7 +224,7 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
           <Button
             variant="ghost"
             size="default"
-            className="rounded-full px-0 text-start"
+            className="rounded-full text-start"
             onClick={onSkip}
           >
             Lewati tahap ini

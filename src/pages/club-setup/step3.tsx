@@ -32,7 +32,7 @@ const programs: ProgramProps[] = [
     title: "Membership",
     type: "membership",
     desc: "Siapkan program membership untuk anggota Anda.",
-    img: "/img/others/membership.jpg",
+    img: "/img/membership.jpg",
     category: [],
   },
   {
@@ -40,7 +40,7 @@ const programs: ProgramProps[] = [
     title: "Personal Training",
     type: "pt_program",
     desc: "Siapkan program personal trainer untuk anggota Anda.",
-    img: "/img/others/pt-program.jpg",
+    img: "/img/pt-program.jpg",
     category: [],
   },
   {
@@ -48,7 +48,7 @@ const programs: ProgramProps[] = [
     title: "Class Program",
     type: "class",
     desc: "Siapkan program kelas untuk anggota Anda.",
-    img: "/img/others/yoga.jpg",
+    img: "/img/yoga.jpg",
     category: [
       {
         label: "Yoga",
@@ -85,18 +85,22 @@ const Step3: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
   const dataPrograms = watchData.programs || []
 
   return (
-    <div className="relative w-full max-w-[35rem]">
-      <h2>Program apa yang Anda jalankan?</h2>
-      <span className="text-lg">
-        Program digunakan untuk mengatur keanggotaan dan akses sesi, serta
-        melacak kemajuan member.
-      </span>
+    <div className="relative flex w-full max-w-130 flex-col gap-4">
+      <div className="flex flex-col">
+        <h2 className="text-lg font-semibold">
+          Program apa yang Anda jalankan?
+        </h2>
+        <span className="text-muted-foreground text-lg">
+          Program digunakan untuk mengatur keanggotaan dan akses sesi, serta
+          melacak kemajuan member.
+        </span>
+      </div>
       <div className="mt-8 flex w-full flex-col gap-4">
         {programs.map((item, index) => (
           <div key={index} className="flex flex-col">
             <Card
               className={cn(
-                "relative overflow-hidden border bg-cover bg-center",
+                "relative overflow-hidden border bg-cover bg-center p-0 shadow-none",
                 item.category?.length > 0 &&
                   watchData.programs?.map((p) => p.type).includes(item.type)
                   ? "rounded-br-none rounded-bl-none"
@@ -110,14 +114,17 @@ const Step3: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
               <div className="absolute inset-0 z-0 bg-black opacity-55"></div>
               <CardContent className="relative z-10 flex w-full items-center justify-between gap-4 p-6 text-white">
                 <div className="flex flex-col">
-                  <h5 className="text-white">{item.title}</h5>
-                  <span>{item.desc}</span>
+                  <h5 className="text-lg font-semibold text-white">
+                    {item.title}
+                  </h5>
+                  <span className="text-md">{item.desc}</span>
                 </div>
                 <div className="flex">
                   <Checkbox
                     checked={Boolean(
                       dataPrograms.map((p) => p.type).includes(item.type)
                     )}
+                    className="data-[state=checked]:border-primary! data-[state=checked]:bg-primary! h-5 w-5 border-2 border-white dark:border-white"
                     onCheckedChange={(checked: boolean) => {
                       if (checked) {
                         setValue(
@@ -157,13 +164,13 @@ const Step3: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
                 "flex flex-wrap gap-2",
                 item.category?.length > 0 &&
                   watchData.programs?.map((p) => p.type).includes(item.type)
-                  ? "border-primary -mt-4 rounded-br-2xl rounded-bl-2xl border-2 p-3 pt-8 dark:border-gray-700"
+                  ? "border-primary -mt-4 rounded-br-2xl rounded-bl-2xl border-2 p-3 pt-8"
                   : "hidden"
               )}
             >
               {item.category?.map((option, index) => (
                 <div key={index} className="flex items-center">
-                  <div className="flex gap-2 rounded-xl border border-gray-300 p-2 dark:border-gray-600">
+                  <div className="flex items-center gap-2 rounded-xl border border-gray-300 p-2 dark:border-gray-600">
                     <span>{option.label}</span>
                     <Checkbox
                       checked={Boolean(
@@ -358,7 +365,7 @@ const Step3: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
         <Button
           variant="ghost"
           size="default"
-          className="rounded-full px-0 text-start"
+          className="rounded-full text-start"
           onClick={onSkip}
         >
           Lewati tahap ini

@@ -18,6 +18,7 @@ import {
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import cookiesStorage from "@/utils/cookiesStorage"
+import { navigateTo } from "@/utils/navigation"
 import {
   CLIENT_REFRESH_TOKEN_NAME_IN_STORAGE,
   CLIENT_TOKEN_NAME_IN_STORAGE,
@@ -51,7 +52,10 @@ type AuthAction = {
   signIn: (values: SignInCredential) => Promise<AuthResult>
   signUp: (values: SignUpCredential) => Promise<AuthResult>
   signOut: () => Promise<void>
-  setClubData: (data: UserClubListData) => Promise<AuthResult>
+  setClubData: (
+    data: UserClubListData,
+    isRedirect?: boolean
+  ) => Promise<AuthResult>
   setManualDataClub: (props: SetManualDataProps) => void
   handleSignIn: (tokens: Token, user?: UserDetail) => void
   handleSignOut: (redirectToSignIn?: boolean) => void
@@ -205,11 +209,15 @@ export const useSessionUser = create<AuthState & AuthAction>()(
         }
       },
 
-      setClubData: async (data: UserClubListData): Promise<AuthResult> => {
+      setClubData: async (
+        data: UserClubListData,
+        isRedirect: boolean = true
+      ): Promise<AuthResult> => {
         try {
           const resp = await apiSetClubData(data.id!)
           if (resp) {
-            get().setManualDataClub({ authData: resp, data, isRedirect: true })
+            get().setGetDashboard(true)
+            get().setManualDataClub({ authData: resp, data, isRedirect })
             return { status: "success", message: "" }
           }
           return { status: "failed", message: "Unable to set club" }
@@ -246,7 +254,10 @@ export const useSessionUser = create<AuthState & AuthAction>()(
           const search = window.location.search
           const params = new URLSearchParams(search)
           const redirectUrl = params.get("redirect")
-          window.location.href = redirectUrl || appConfig.authenticatedEntryPath
+          const targetPath = redirectUrl || appConfig.authenticatedEntryPath
+
+          // Use React Router navigation instead of window.location.href
+          navigateTo(targetPath)
         }
       },
     }),

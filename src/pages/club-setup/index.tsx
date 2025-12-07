@@ -10,12 +10,15 @@ import {
 import { apiBulkCreateClub } from "@/services/api/ClubService"
 import handleApiError from "@/services/handleApiError"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Navigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import { useWelcome } from "@/stores/use-welcome"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Stepper, StepperItem } from "@/components/ui/stepper"
 import Logo from "@/components/layout/Logo"
+import { ThemeSwitch } from "@/components/theme-switch"
+import dummygenerate from "./dummygenerate.json"
 import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
@@ -34,6 +37,7 @@ import {
 const { clubsAuthenticatedEntryPath } = appConfig
 
 const Onboarding = () => {
+  const navigate = useNavigate()
   const { setClubData, signOut, user } = useAuth()
   const total_user_clubs = user?.total_user_clubs ?? 0
   const setWelcome = useWelcome((state) => state.setWelcome)
@@ -67,10 +71,7 @@ const Onboarding = () => {
     resolver: yupResolver(formSchema as any),
     mode: "all",
     defaultValues: {
-      // name: 'ok gym',
-      // phone: '+628123456789',
-      email: user?.email,
-      // address: 'Jl. Jend. Sudirman No. 123',
+      ...dummygenerate,
     },
   })
 
@@ -90,9 +91,12 @@ const Onboarding = () => {
       const resError = handleApiError(error)
       console.log("error create", resError)
     },
-    onSuccess: (data: BulkCreateClubResponse) => {
+    onSuccess: async (data: BulkCreateClubResponse) => {
       setWelcome(true)
-      setClubData(data.data)
+      const result = await setClubData(data.data, false)
+      if (result.status === "success") {
+        navigate(appConfig.authenticatedEntryPath, { replace: true })
+      }
     },
   })
 
@@ -125,7 +129,10 @@ const Onboarding = () => {
 
   return (
     <>
-      <div className="flex w-full items-center justify-between gap-4 px-4 pt-3 pb-2">
+      <div className="absolute bottom-4 left-4 z-10">
+        <ThemeSwitch />
+      </div>
+      <div className="relative z-30 flex w-full items-center justify-between gap-4 px-4 pt-3 pb-2">
         {activeStep > 0 ? (
           <Button
             variant="outline"
@@ -152,10 +159,10 @@ const Onboarding = () => {
           <Step5 />
         </div>
       ) : (
-        <div className="relative flex w-full items-center justify-center bg-white dark:bg-gray-900">
+        <div className="bg-background relative flex w-full items-center justify-center">
           <div className="z-20 w-full p-4 pt-0">
             <div className="relative flex w-full flex-col items-center justify-center gap-4">
-              <div className="flex w-full max-w-140 flex-col items-center justify-center gap-8">
+              <div className="flex w-full max-w-140 flex-col items-center justify-center">
                 <Logo
                   className="me-2"
                   type="full"
@@ -168,44 +175,48 @@ const Onboarding = () => {
                   <StepperItem step={3} />
                 </Stepper>
               </div>
-              <div className="mt-4 flex w-full items-center justify-center">
-                {activeStep === 0 && (
-                  <Step1 formProps={formProps} onNext={handleNext} />
-                )}
-                {activeStep === 1 && (
-                  <Step2
-                    formProps={formProps}
-                    onNext={handleNext}
-                    onSkip={() => setActiveStep(2)}
-                  />
-                )}
-                {activeStep === 2 && (
-                  <Step3
-                    formProps={formProps}
-                    onNext={handleNext}
-                    onSkip={() => setActiveStep(3)}
-                  />
-                )}
-                {activeStep === 3 && (
-                  <Step4
-                    formProps={formProps}
-                    isLoading={createNewClub.isPending}
-                    onFinished={handleSubmit(onSubmit)}
-                  />
-                )}
-                {/* {(activeStep === 4 || activeStep === 5) && <Step5 />} */}
-              </div>
+              <Card className="relative gap-0 pt-0">
+                <CardContent>
+                  <div className="mt-4 flex w-full items-center justify-center">
+                    {activeStep === 0 && (
+                      <Step1 formProps={formProps} onNext={handleNext} />
+                    )}
+                    {activeStep === 1 && (
+                      <Step2
+                        formProps={formProps}
+                        onNext={handleNext}
+                        onSkip={() => setActiveStep(2)}
+                      />
+                    )}
+                    {activeStep === 2 && (
+                      <Step3
+                        formProps={formProps}
+                        onNext={handleNext}
+                        onSkip={() => setActiveStep(3)}
+                      />
+                    )}
+                    {activeStep === 3 && (
+                      <Step4
+                        formProps={formProps}
+                        isLoading={createNewClub.isPending}
+                        onFinished={handleSubmit(onSubmit)}
+                      />
+                    )}
+                    {/* {(activeStep === 4 || activeStep === 5) && <Step5 />} */}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
           <div
             className={cn(
-              "absolute inset-0",
+              "absolute top-1/2 left-1/2 z-0 h-screen w-full -translate-x-1/2 -translate-y-1/2",
               "bg-size-[20px_20px]",
               "bg-[radial-gradient(#d4d4d4_1px,transparent_1px)]",
               "dark:bg-[radial-gradient(#404040_1px,transparent_1px)]"
             )}
           />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-gray-900"></div>
+          <div className="bg-background pointer-events-none absolute top-1/2 left-1/2 z-0 flex h-screen w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center mask-[radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         </div>
       )}
     </>
