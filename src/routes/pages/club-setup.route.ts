@@ -7,8 +7,6 @@ export const clubSetupRoute: Routes = [
     component: lazy(() => import("@/pages/club-setup")),
     authority: [],
     meta: {
-      pageBackgroundType: "plain",
-      pageContainerType: "gutterless",
       themeConfig: {
         layout: "blank",
       },

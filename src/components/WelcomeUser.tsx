@@ -75,11 +75,9 @@ const WelcomeUser = () => {
             )}
             <div className="relative flex items-center gap-1 px-2 py-1">
               <Logo
-                type="streamline"
-                mode="dark"
-                imgClass="mx-auto relative"
-                className="!w-[30px] sm:!w-[45px]"
-                logoWidth={0}
+                className="me-2"
+                type="full"
+                svgProps={{ className: "h-12 w-auto" }}
               />
               <div className="flex flex-col">
                 <span className="text-base font-bold text-white sm:text-2xl">

@@ -1,19 +1,22 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Facebook, Github } from "lucide-react"
 import * as yup from "yup"
+import { useAuth } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import PhoneInput from "@/components/ui/phone-input"
 import { PasswordInput } from "@/components/password-input"
 
 const formSchema = yup.object({
+  name: yup.string().required("Please enter your name"),
   email: yup
     .string()
     .email("Email tidak valid")
     .required("Please enter your email"),
+  phone: yup.string().required("Please enter your phone number"),
   password: yup
     .string()
     .required("Please enter your password")
@@ -26,29 +29,49 @@ const formSchema = yup.object({
 
 export type SignUpSchema = yup.InferType<typeof formSchema>
 
+interface SignUpFormProps extends React.HTMLAttributes<HTMLFormElement> {
+  disableSubmit?: boolean
+  setMessage?: (message: string) => void
+}
+
 export function SignUpForm({
   className,
+  disableSubmit = false,
+  setMessage,
   ...props
-}: React.HTMLAttributes<HTMLFormElement>) {
+}: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { signUp } = useAuth()
 
   const form = useForm<SignUpSchema>({
     resolver: yupResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
     },
   })
 
-  function onSubmit(data: SignUpSchema) {
-    setIsLoading(true)
+  async function onSubmit(data: SignUpSchema) {
+    const { name, password, email, phone } = data
 
-    console.log(data)
+    if (!disableSubmit) {
+      setIsLoading(true)
+      const result = await signUp({
+        name,
+        password,
+        email,
+        phone,
+      })
 
-    setTimeout(() => {
+      if (result?.status === "failed") {
+        setMessage?.(result.message)
+      }
+
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (
@@ -58,6 +81,20 @@ export function SignUpForm({
         className={cn("flex flex-col gap-4", className)}
         {...props}
       >
+        <FormFieldItem
+          control={form.control}
+          name="name"
+          label="Full Name"
+          render={({ field }) => (
+            <Input
+              type="text"
+              placeholder="Full Name"
+              autoComplete="name"
+              disabled={isLoading}
+              {...field}
+            />
+          )}
+        />
         <FormFieldItem
           control={form.control}
           name="email"
@@ -74,11 +111,23 @@ export function SignUpForm({
         />
         <FormFieldItem
           control={form.control}
+          name="phone"
+          label="Phone Number"
+          render={({ field }) => (
+            <PhoneInput
+              placeholder="+62 *** *** ***"
+              disabled={isLoading}
+              {...field}
+            />
+          )}
+        />
+        <FormFieldItem
+          control={form.control}
           name="password"
           label="Password"
           render={({ field }) => (
             <PasswordInput
-              placeholder="********"
+              placeholder="Password"
               autoComplete="new-password"
               disabled={isLoading}
               {...field}
@@ -91,18 +140,18 @@ export function SignUpForm({
           label="Confirm Password"
           render={({ field }) => (
             <PasswordInput
-              placeholder="********"
+              placeholder="Confirm Password"
               autoComplete="new-password"
               disabled={isLoading}
               {...field}
             />
           )}
         />
-        <Button disabled={isLoading} type="submit">
-          Create Account
+        <Button disabled={isLoading} type="submit" variant="default">
+          {isLoading ? "Creating Account..." : "Sign Up"}
         </Button>
 
-        <div className="relative my-2">
+        {/* <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -130,7 +179,7 @@ export function SignUpForm({
           >
             <Facebook className="h-4 w-4" /> Facebook
           </Button>
-        </div>
+        </div> */}
       </form>
     </Form>
   )
