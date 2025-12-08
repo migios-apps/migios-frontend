@@ -101,10 +101,6 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
     resolver: yupResolver(branchClubSchema) as any,
     mode: "all",
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
       amount: 0,
       duration: 1,
       duration_type: "month",
