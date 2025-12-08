@@ -146,95 +146,86 @@ const Clubs = () => {
 
             <ScrollArea className="h-[calc(100vh-15rem)] w-full md:h-[calc(100vh-16rem)]">
               <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 pr-4 pb-4">
-                {dataMemo.length === 0 ? (
-                  <div className="col-span-full flex flex-col items-center justify-center gap-4 py-8">
-                    <SearchStatus1
-                      size="90"
-                      color="currentColor"
-                      variant="Bulk"
-                    />
-                    <p className="text-muted-foreground text-sm">
-                      Tidak ada club ditemukan
-                    </p>
-                  </div>
-                ) : (
-                  dataMemo.map((clubData, index) => (
-                    <Card
-                      key={index}
-                      className={cn(
-                        "relative overflow-hidden p-0 shadow-none transition-all hover:shadow-md",
-                        {
-                          "cursor-pointer": ["active"].includes(
-                            clubData.subscription_status!
-                          ),
-                          "cursor-not-allowed opacity-50": !["active"].includes(
-                            clubData.subscription_status!
-                          ),
-                        }
-                      )}
-                      onClick={async () => {
-                        if (
-                          ["active"].includes(clubData.subscription_status!)
-                        ) {
-                          await setClubData(clubData)
-                        }
-                      }}
-                    >
-                      {!["active"].includes(clubData.subscription_status!) && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="absolute top-2 right-2 z-10"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setOpenRenewSubscription(true)
-                            setClubId(clubData.id)
-                          }}
-                        >
-                          Renew
-                        </Button>
-                      )}
-                      <div className="p-6">
-                        <h5 className="mb-2 text-lg leading-5 font-semibold">
-                          {clubData.name}
-                        </h5>
-                        <p className="text-muted-foreground mb-3 text-sm">
-                          {clubData.address}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {clubData.roles?.map((role, roleIndex) => (
-                            <Badge
-                              key={roleIndex}
-                              variant="secondary"
-                              className="bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100"
-                            >
-                              <span className="capitalize">{role.name}</span>
-                            </Badge>
-                          ))}
-                          {!["active"].includes(
-                            clubData.subscription_status!
-                          ) ? (
-                            <Badge
-                              variant="destructive"
-                              className="bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100"
-                            >
-                              <span className="capitalize">
-                                Subscription {clubData.subscription_status}
-                              </span>
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">
-                              Expires on{" "}
-                              {dayjs(clubData.subscription_end_date).format(
-                                "DD MMM YYYY"
-                              )}
-                            </Badge>
-                          )}
+                {dataMemo.length > 0 && !isLoading
+                  ? dataMemo.map((clubData, index) => (
+                      <Card
+                        key={index}
+                        className={cn(
+                          "relative overflow-hidden p-0 shadow-none transition-all hover:shadow-md",
+                          {
+                            "cursor-pointer": ["active"].includes(
+                              clubData.subscription_status!
+                            ),
+                            "cursor-not-allowed opacity-50": ![
+                              "active",
+                            ].includes(clubData.subscription_status!),
+                          }
+                        )}
+                        onClick={async () => {
+                          if (
+                            ["active"].includes(clubData.subscription_status!)
+                          ) {
+                            await setClubData(clubData)
+                          }
+                        }}
+                      >
+                        {!["active"].includes(
+                          clubData.subscription_status!
+                        ) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="absolute top-2 right-2 z-10"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setOpenRenewSubscription(true)
+                              setClubId(clubData.id)
+                            }}
+                          >
+                            Renew
+                          </Button>
+                        )}
+                        <div className="p-6">
+                          <h5 className="mb-2 text-lg leading-5 font-semibold">
+                            {clubData.name}
+                          </h5>
+                          <p className="text-muted-foreground mb-3 text-sm">
+                            {clubData.address}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {clubData.roles?.map((role, roleIndex) => (
+                              <Badge
+                                key={roleIndex}
+                                variant="secondary"
+                                className="bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100"
+                              >
+                                <span className="capitalize">{role.name}</span>
+                              </Badge>
+                            ))}
+                            {!["active"].includes(
+                              clubData.subscription_status!
+                            ) ? (
+                              <Badge
+                                variant="destructive"
+                                className="bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100"
+                              >
+                                <span className="capitalize">
+                                  Subscription {clubData.subscription_status}
+                                </span>
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">
+                                Expires on{" "}
+                                {dayjs(clubData.subscription_end_date).format(
+                                  "DD MMM YYYY"
+                                )}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))
-                )}
+                      </Card>
+                    ))
+                  : null}
 
                 {isLoading &&
                   Array.from(new Array(10), (_, i) => i + 1).map((_, index) => (
@@ -253,6 +244,18 @@ const Clubs = () => {
                       </div>
                     </Card>
                   ))}
+                {dataMemo.length === 0 && !isLoading ? (
+                  <div className="col-span-full flex flex-col items-center justify-center gap-4 py-8">
+                    <SearchStatus1
+                      size="90"
+                      color="currentColor"
+                      variant="Bulk"
+                    />
+                    <p className="text-muted-foreground text-sm">
+                      Tidak ada club ditemukan
+                    </p>
+                  </div>
+                ) : null}
                 {dataMemo.length !== metaData?.total && (
                   <div className="col-span-full mt-4 text-center">
                     <Button
