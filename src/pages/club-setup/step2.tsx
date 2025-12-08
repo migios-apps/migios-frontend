@@ -14,14 +14,14 @@ type PropsType = {
 }
 
 const homany_staff = [
-  { value: "1", label: "Just me" },
+  { value: "1", label: "Hanya saya" },
   { value: "2-4", label: "2-4" },
   { value: "5-9", label: "5-9" },
   { value: "10+", label: "10+" },
 ]
 
 const howmany_member = [
-  { value: "-50", label: "Under 50" },
+  { value: "-50", label: "Dibawah 50" },
   { value: "50-100", label: "50-100" },
   { value: "101-200", label: "101-200" },
   { value: "201-400", label: "201-400" },
