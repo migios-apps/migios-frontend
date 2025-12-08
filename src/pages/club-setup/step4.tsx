@@ -96,7 +96,7 @@ const Step4: React.FC<PropsType> = ({ onFinished, formProps, isLoading }) => {
     <div className="relative flex w-full max-w-130 flex-col gap-4">
       <div className="flex flex-col">
         <h2 className="text-lg font-semibold">Tambahkan member percobaan?</h2>
-        <span className="text-muted-foreground text-lg">
+        <span className="text-muted-foreground text-base">
           Menambahkan member percobaan akan memberi Anda pengalaman pertama
           menggunakan Migios.
         </span>

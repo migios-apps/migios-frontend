@@ -90,7 +90,7 @@ const Step3: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
         <h2 className="text-lg font-semibold">
           Program apa yang Anda jalankan?
         </h2>
-        <span className="text-muted-foreground text-lg">
+        <span className="text-muted-foreground text-base">
           Program digunakan untuk mengatur keanggotaan dan akses sesi, serta
           melacak kemajuan member.
         </span>

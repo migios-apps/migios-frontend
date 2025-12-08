@@ -51,7 +51,7 @@ const Step2: React.FC<PropsType> = ({ onNext, onSkip, formProps }) => {
           <h2 className="text-lg font-semibold">
             Ceritakan sedikit tentang bisnis Anda
           </h2>
-          <span className="text-lg">
+          <span className="text-muted-foreground text-base">
             Ini membantu mempersonalisasikan pengalaman Anda dengan sistem
             migios
           </span>

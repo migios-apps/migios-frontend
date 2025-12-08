@@ -101,6 +101,11 @@ export interface BulkCreateClubDto {
     goals?: string
     join_date: string
   }[]
+  plan_type: "free" | "basic" | "premium" | "pro" | "growth" | "enterprise"
+  duration: number
+  duration_type: "day" | "week" | "month" | "year" | "forever"
+  amount: number
+  payment_method: "credit_card" | "bank_transfer" | "paypal" | "cash"
 }
 
 export interface BulkCreateClubResponse extends ApiTypes {

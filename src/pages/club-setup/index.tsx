@@ -19,6 +19,7 @@ import { Stepper, StepperItem } from "@/components/ui/stepper"
 import Logo from "@/components/layout/Logo"
 import { ThemeSwitch } from "@/components/theme-switch"
 // import dummygenerate from "./dummygenerate.json"
+import Step0 from "./step0"
 import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
@@ -47,21 +48,24 @@ const Onboarding = () => {
   React.useEffect(() => {
     switch (activeStep) {
       case 0:
-        setFormSchema(profileClubSchema)
+        setFormSchema(allaowNextSchema)
         break
       case 1:
-        setFormSchema(aboutCLubSchema)
+        setFormSchema(profileClubSchema)
         break
       case 2:
-        setFormSchema(programSchema)
+        setFormSchema(aboutCLubSchema)
         break
       case 3:
+        setFormSchema(programSchema)
+        break
+      case 4:
         setFormSchema(memberSchema)
         break
       default:
         activeStep > 0
           ? setFormSchema(allSchema)
-          : setFormSchema(profileClubSchema)
+          : setFormSchema(allaowNextSchema)
         break
     }
   }, [activeStep])
@@ -71,12 +75,16 @@ const Onboarding = () => {
     resolver: yupResolver(formSchema as any),
     mode: "all",
     defaultValues: {
-      // ...dummygenerate,
       email: user?.email,
+      plan_type: "free",
+      duration: 1,
+      duration_type: "month",
+      amount: 0,
+      payment_method: "cash",
     },
   })
 
-  const { handleSubmit } = formProps
+  const { handleSubmit, setValue } = formProps
 
   const handleNext = handleSubmit(() => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
@@ -84,6 +92,22 @@ const Onboarding = () => {
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
+  }
+
+  const handleSelectPlan = (plan: any, isYearly: boolean) => {
+    setValue("plan_type", plan.type as any)
+    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice
+    setValue("amount", price)
+    setValue("duration", plan.duration)
+    setValue(
+      "duration_type",
+      (isYearly ? plan.duration_type_yearly : plan.duration_type) as any
+    )
+
+    // Handle free plan payment method
+    if (plan.name.toLowerCase() === "free") {
+      setValue("payment_method", "cash")
+    }
   }
 
   const createNewClub = useMutation({
@@ -120,6 +144,12 @@ const Onboarding = () => {
       members: data.members
         ? (data.members as unknown as BulkCreateClubDto["members"])
         : [],
+      plan_type: data.plan_type as BulkCreateClubDto["plan_type"],
+      duration: data.duration,
+      duration_type: data.duration_type as BulkCreateClubDto["duration_type"],
+      amount: data.amount,
+      payment_method:
+        data.payment_method as BulkCreateClubDto["payment_method"],
     }
     createNewClub.mutate(body)
   }
@@ -130,7 +160,7 @@ const Onboarding = () => {
 
   return (
     <>
-      <div className="absolute bottom-4 left-4 z-10">
+      <div className="fixed bottom-4 left-4 z-10">
         <ThemeSwitch />
       </div>
       <div className="relative z-30 flex w-full items-center justify-between gap-4 px-4 pt-3 pb-2">
@@ -155,7 +185,7 @@ const Onboarding = () => {
           </div>
         </div>
       </div>
-      {activeStep === 4 ? (
+      {activeStep === 5 ? (
         <div className="mt-4 flex h-[calc(100vh-300px)] w-full items-center justify-center">
           <Step5 />
         </div>
@@ -174,39 +204,48 @@ const Onboarding = () => {
                   <StepperItem step={1} />
                   <StepperItem step={2} />
                   <StepperItem step={3} />
+                  <StepperItem step={4} />
                 </Stepper>
               </div>
-              <Card className="relative gap-0 pt-0">
-                <CardContent>
-                  <div className="mt-4 flex w-full items-center justify-center">
-                    {activeStep === 0 && (
-                      <Step1 formProps={formProps} onNext={handleNext} />
-                    )}
-                    {activeStep === 1 && (
-                      <Step2
-                        formProps={formProps}
-                        onNext={handleNext}
-                        onSkip={() => setActiveStep(2)}
-                      />
-                    )}
-                    {activeStep === 2 && (
-                      <Step3
-                        formProps={formProps}
-                        onNext={handleNext}
-                        onSkip={() => setActiveStep(3)}
-                      />
-                    )}
-                    {activeStep === 3 && (
-                      <Step4
-                        formProps={formProps}
-                        isLoading={createNewClub.isPending}
-                        onFinished={handleSubmit(onSubmit)}
-                      />
-                    )}
-                    {/* {(activeStep === 4 || activeStep === 5) && <Step5 />} */}
-                  </div>
-                </CardContent>
-              </Card>
+              {activeStep === 0 && (
+                <Step0
+                  formProps={formProps}
+                  onNext={handleNext}
+                  onPlanSelect={handleSelectPlan}
+                />
+              )}
+              {[1, 2, 3, 4].includes(activeStep) ? (
+                <Card className="relative gap-0 pt-0">
+                  <CardContent>
+                    <div className="mt-4 flex w-full items-center justify-center">
+                      {activeStep === 1 && (
+                        <Step1 formProps={formProps} onNext={handleNext} />
+                      )}
+                      {activeStep === 2 && (
+                        <Step2
+                          formProps={formProps}
+                          onNext={handleNext}
+                          onSkip={() => setActiveStep(3)}
+                        />
+                      )}
+                      {activeStep === 3 && (
+                        <Step3
+                          formProps={formProps}
+                          onNext={handleNext}
+                          onSkip={() => setActiveStep(4)}
+                        />
+                      )}
+                      {activeStep === 4 && (
+                        <Step4
+                          formProps={formProps}
+                          isLoading={createNewClub.isPending}
+                          onFinished={handleSubmit(onSubmit)}
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
             </div>
           </div>
           <div

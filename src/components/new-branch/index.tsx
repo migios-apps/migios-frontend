@@ -166,8 +166,13 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
     setValue("plan_type", plan.type as BulkCreateBranchClubDto["plan_type"])
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice
     setValue("amount", price)
-    setValue("duration", isYearly ? 12 : 1)
-    setValue("duration_type", isYearly ? "year" : "month")
+    setValue("duration", plan.duration)
+    setValue(
+      "duration_type",
+      (isYearly
+        ? plan.duration_type_yearly
+        : plan.duration_type) as BulkCreateBranchClubDto["duration_type"]
+    )
 
     // Handle free plan payment method
     if (plan.name.toLowerCase() === "free") {

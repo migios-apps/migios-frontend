@@ -99,10 +99,40 @@ export const memberSchema = yup.object().shape({
     .default([]),
 })
 
+export const subscriptionSchema = yup.object().shape({
+  plan_type: yup
+    .string()
+    .oneOf(
+      ["free", "basic", "premium", "pro", "growth", "enterprise"],
+      "Pilih plan yang valid"
+    )
+    .required("Plan subscription diperlukan"),
+  duration: yup.number().required("Durasi diperlukan"),
+  duration_type: yup
+    .string()
+    .oneOf(
+      ["day", "week", "month", "year", "forever"],
+      "Tipe durasi tidak valid"
+    )
+    .required("Tipe durasi diperlukan"),
+  amount: yup
+    .number()
+    .min(0, "Amount tidak boleh negatif")
+    .required("Amount diperlukan"),
+  payment_method: yup
+    .string()
+    .oneOf(
+      ["credit_card", "bank_transfer", "paypal", "cash"],
+      "Metode pembayaran tidak valid"
+    )
+    .required("Metode pembayaran diperlukan"),
+})
+
 export const allSchema = profileClubSchema
   .concat(aboutCLubSchema)
   .concat(programSchema)
   .concat(memberSchema)
+  .concat(subscriptionSchema)
 
 export const allaowNextSchema = yup.object().shape({})
 

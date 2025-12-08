@@ -13,6 +13,9 @@ export interface PlanPricing {
   description: string
   monthlyPrice: number
   yearlyPrice: number
+  duration: number
+  duration_type: "day" | "week" | "month" | "year"
+  duration_type_yearly: "day" | "week" | "month" | "year"
   features: PlanFeature[]
   popular: boolean
   includesPrevious?: string
@@ -32,6 +35,9 @@ const plans: PlanPricing[] = [
     description: "Cocok untuk gym kecil yang baru memulai",
     monthlyPrice: 0,
     yearlyPrice: 2990000,
+    duration: 1,
+    duration_type: "day",
+    duration_type_yearly: "day",
     features: [
       { name: "Maksimal 100 Member", included: true },
       { name: "1 Cabang Gym", included: true },
@@ -53,6 +59,9 @@ const plans: PlanPricing[] = [
     description: "Untuk gym menengah dengan fitur lengkap",
     monthlyPrice: 599000,
     yearlyPrice: 5990000,
+    duration: 1,
+    duration_type: "month",
+    duration_type_yearly: "year",
     features: [
       { name: "Maksimal 500 Member", included: true },
       { name: "Maksimal 3 Cabang Gym", included: true },
@@ -76,6 +85,9 @@ const plans: PlanPricing[] = [
     description: "Solusi lengkap untuk jaringan gym besar",
     monthlyPrice: 1299000,
     yearlyPrice: 12990000,
+    duration: 1,
+    duration_type: "month",
+    duration_type_yearly: "year",
     features: [
       { name: "Unlimited Member", included: true },
       { name: "Unlimited Cabang Gym", included: true },

@@ -48,7 +48,7 @@ const Step1: React.FC<PropsType> = ({ onNext, formProps }) => {
           <h2 className="text-lg font-semibold">
             Beritahu kami sedikit tentang gym anda
           </h2>
-          <span className="text-muted-foreground text-lg">
+          <span className="text-muted-foreground text-base">
             Isi form ini untuk membantu kami mengetahui lebih lanjut tentang gym
             anda
           </span>
