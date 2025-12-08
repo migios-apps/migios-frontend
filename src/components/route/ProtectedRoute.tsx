@@ -2,7 +2,9 @@ import { useAuth } from "@/auth"
 import { UpdateNotificationDialog, useUpdateNotification } from "@/buildVersion"
 import appConfig from "@/config/app.config"
 import { Navigate, Outlet, useLocation } from "react-router"
+import { useClubStore } from "@/stores/use-club"
 import { REDIRECT_URL_KEY } from "@/constants/app.constant"
+import DialogNewBranchClub from "@/components/new-branch"
 
 const {
   authenticatedEntryPath, // e.g., "/dashboard" (Admin)
@@ -12,6 +14,7 @@ const {
 } = appConfig
 
 const ProtectedRoute = () => {
+  const { newBranchClub, setNewBranchClub } = useClubStore()
   const { authenticated, authDashboard, user } = useAuth()
   const { isUpdateAvailable, markVersionAsDismissed, clearCacheBrowser } =
     useUpdateNotification()
@@ -81,6 +84,10 @@ const ProtectedRoute = () => {
         isOpen={isUpdateAvailable}
         onClose={() => markVersionAsDismissed()}
         onRefresh={onRefresh}
+      />
+      <DialogNewBranchClub
+        open={newBranchClub}
+        onClose={() => setNewBranchClub(false)}
       />
     </>
   )

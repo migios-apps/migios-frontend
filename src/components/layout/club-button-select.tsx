@@ -11,6 +11,7 @@ import { ChevronsUpDown } from "lucide-react"
 import LogoIcon from "@/assets/icons/migios-logo.svg?react"
 import { useSessionUser } from "@/stores/auth-store"
 import { useThemeConfig } from "@/stores/theme-config-store"
+import { useClubStore } from "@/stores/use-club"
 import { cn } from "@/lib/utils"
 import useDateDifference from "@/utils/hooks/useDateDifference"
 import useDebounce from "@/utils/hooks/useDebounce"
@@ -37,6 +38,7 @@ import { Skeleton } from "../ui/skeleton"
 type ClubButtonSelectProps = { sideNavCollapse: boolean }
 
 const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
+  const { setNewBranchClub } = useClubStore()
   const themeConfig = useThemeConfig((state) => state.themeConfig)
   const isInsetLayout = themeConfig.layout === "inset"
   const { authDashboard, setManualDataClub } = useAuth()
@@ -375,6 +377,7 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                 isInsetLayout &&
                   "bg-card-inset hover:bg-border-inset! hover:text-card-inset-foreground cursor-pointer"
               )}
+              onClick={() => setNewBranchClub(true)}
             >
               <div
                 className={cn(

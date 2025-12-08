@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { CheckCircle, X } from "lucide-react"
-import { useWelcome } from "@/stores/use-welcome"
+import { useClubStore } from "@/stores/use-club"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -27,7 +27,7 @@ const WelcomeUser = () => {
     }
   }, [openConfetti])
 
-  const { welcome, setWelcome } = useWelcome()
+  const { welcome, setWelcome } = useClubStore()
   const settingup = [
     "Menyiapkan Akun Migios Anda",
     "Menyiapkan klub gym Anda",
@@ -43,29 +43,30 @@ const WelcomeUser = () => {
   const [isCompleted, setIsCompleted] = useState(false)
 
   useEffect(() => {
-    if (currentStep < settingup.length) {
-      const interval = setInterval(() => {
-        setProgressList((prev) => {
-          const newProgress = [...prev]
-          if (newProgress[currentStep] < 100) {
-            newProgress[currentStep] += Math.floor(Math.random() * 20) + 10 // Progress naik acak (10-30)
-          }
-          return newProgress
-        })
-      }, 600) // Setiap 500ms progress bertambah
+    if (welcome) {
+      if (currentStep < settingup.length) {
+        const interval = setInterval(() => {
+          setProgressList((prev) => {
+            const newProgress = [...prev]
+            if (newProgress[currentStep] < 100) {
+              newProgress[currentStep] += Math.floor(Math.random() * 20) + 10 // Progress naik acak (10-30)
+            }
+            return newProgress
+          })
+        }, 600) // Setiap 500ms progress bertambah
 
-      if (progressList[currentStep] >= 100) {
-        clearInterval(interval)
-        setTimeout(() => setCurrentStep((prev) => prev + 1), 500) // Jeda sebelum lanjut ke step berikutnya
+        if (progressList[currentStep] >= 100) {
+          clearInterval(interval)
+          setTimeout(() => setCurrentStep((prev) => prev + 1), 500) // Jeda sebelum lanjut ke step berikutnya
+        }
+
+        return () => clearInterval(interval)
+      } else {
+        setIsCompleted(true) // Semua langkah selesai
+        setOpenConfetti(true)
       }
-
-      return () => clearInterval(interval)
-    } else {
-      setIsCompleted(true) // Semua langkah selesai
-      setOpenConfetti(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [progressList, currentStep])
+  }, [progressList, currentStep, welcome, settingup.length])
   return (
     <>
       <Dialog
@@ -73,7 +74,6 @@ const WelcomeUser = () => {
         onOpenChange={(open) => {
           if (isCompleted) {
             setWelcome(open)
-            setOpenConfetti(true)
           }
         }}
       >
@@ -102,7 +102,6 @@ const WelcomeUser = () => {
                   className="absolute top-4 right-3 text-white hover:bg-white/20 hover:text-white"
                   onClick={() => {
                     setWelcome(false)
-                    setOpenConfetti(false)
                   }}
                 >
                   <X className="h-4 w-4" />

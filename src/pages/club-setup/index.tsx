@@ -11,7 +11,7 @@ import { apiBulkCreateClub } from "@/services/api/ClubService"
 import handleApiError from "@/services/handleApiError"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Navigate, useNavigate } from "react-router-dom"
-import { useWelcome } from "@/stores/use-welcome"
+import { useClubStore } from "@/stores/use-club"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -40,7 +40,7 @@ const Onboarding = () => {
   const navigate = useNavigate()
   const { setClubData, signOut, user } = useAuth()
   const total_user_clubs = user?.total_user_clubs ?? 0
-  const setWelcome = useWelcome((state) => state.setWelcome)
+  const setWelcome = useClubStore((state) => state.setWelcome)
   const [activeStep, setActiveStep] = React.useState(0)
   const [formSchema, setFormSchema] = React.useState(allaowNextSchema)
 

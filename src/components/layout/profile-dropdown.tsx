@@ -52,6 +52,9 @@ export function ProfileDropdown() {
             <DropdownMenuItem asChild className="cursor-pointer">
               <Link to="/settings/others/membership">Membership settings</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/clubs">All clubs</Link>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
