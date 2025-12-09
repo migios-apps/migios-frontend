@@ -28,12 +28,6 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
           {/* Items */}
           <div className="mb-4">
             {detail?.items.map((item, index) => {
-              const formatDuration = `${item.duration} ${item.duration_type}`
-              const dateRange =
-                item.start_date && item.end_date
-                  ? `${dayjs(item.start_date).format("DD MMM YYYY")} - ${dayjs(item.end_date).format("DD MMM YYYY")}`
-                  : null
-
               return (
                 <div
                   key={index}
@@ -47,7 +41,6 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
                       <p className="text-xs font-medium">
                         {item.quantity} x {item.name}
                       </p>
-                      <p className="text-xs text-gray-600">@ {item.fprice}</p>
                       {item.discount_amount > 0 ? (
                         <p className="text-xs text-red-600">
                           Diskon: -{item.fdiscount_amount}
@@ -64,7 +57,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
                       ) : null}
                     </div>
                     <div className="text-right text-xs">
-                      <p className="font-medium">{item.ftotal_amount}</p>
+                      <p className="font-medium">{item.fprice}</p>
                     </div>
                   </div>
                 </div>
@@ -81,7 +74,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
             {detail?.total_discount && detail.total_discount > 0 ? (
               <div className="mb-1 flex justify-between text-xs">
                 <span className="font-semibold">Total Diskon</span>
-                <span>-{detail.fdiscount}</span>
+                <span>-{detail.ftotal_discount}</span>
               </div>
             ) : null}
             {detail?.total_tax && detail.total_tax > 0 ? (
@@ -128,7 +121,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
             </div>
             <div className="flex justify-between">
               <span>Digunakan</span>
-              <span>0.00</span>
+              <span>{detail?.point_redeemed || 0}</span>
             </div>
             <div className="flex justify-between">
               <span>Pengembalian</span>
@@ -136,11 +129,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
             </div>
             <div className="flex justify-between">
               <span>Total point dibatalkan</span>
-              <span>0.00</span>
-            </div>
-            <div className="flex justify-between font-semibold">
-              <span>Total Point</span>
-              <span>0.00</span>
+              <span>{detail?.point_cancelled || 0}</span>
             </div>
           </div>
         </div>

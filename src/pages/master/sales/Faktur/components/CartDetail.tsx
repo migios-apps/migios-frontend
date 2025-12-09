@@ -116,7 +116,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
   })
 
   const cartDataGenerated = generateCartData(watchTransaction)
-  // console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
+  console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
   // Calculate loyalty point - hanya jika transaksi belum dibayar
   const isUnpaid = isPaid === 0 || detail?.status === "unpaid"
   const loyalty_point = isUnpaid

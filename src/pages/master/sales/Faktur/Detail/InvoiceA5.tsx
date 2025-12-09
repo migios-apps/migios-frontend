@@ -168,7 +168,7 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                         </ul>
                       </td>
                       <td className="border-border text-foreground border px-1 py-2 text-right align-top font-semibold">
-                        {item.fnet_amount}
+                        {item.ftotal_amount}
                       </td>
                     </tr>
                   )
