@@ -15,7 +15,6 @@ import DatePickerAIO, {
 } from "@/components/ui/date-picker/date-picker-aio"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { isToday } from "../utils"
 
 const ScheduledEvent = (props: EventsData) => {
   return (
@@ -29,9 +28,8 @@ const ScheduledEvent = (props: EventsData) => {
       </div>
       <div>
         <span className="heading-text font-semibold">
-          {props.end && dayjs(props.end).format("hh:mm")}{" "}
+          {props.end && dayjs(props.end).format("hh:mm")}
         </span>
-        <small>{props.end && dayjs(props.end).format("A")}</small>
       </div>
     </div>
   )
@@ -85,14 +83,6 @@ const UpcomingSchedule = () => {
       </CardHeader>
       <CardContent>
         <div className="w-full">
-          <div className="mb-4">
-            <h5>
-              Scehdule{" "}
-              {isToday(dayjs(valueDateRangePicker.date[1]).toDate())
-                ? "today"
-                : dayjs(valueDateRangePicker.date?.[1]).format("DD MMM")}
-            </h5>
-          </div>
           {isLoading ? (
             <div className="h-[280px] space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
