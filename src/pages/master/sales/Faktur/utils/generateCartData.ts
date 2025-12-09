@@ -387,32 +387,14 @@ export function generateCartData(
       .toFixed(2)
   )
 
-  // ===== BAGIAN 2: PERHITUNGAN PAJAK (PPN) DARI SUBTOTAL AWAL =====
-  // 2.1 Hitung pajak dari subtotal awal (sebelum diskon transaksi)
-  // Pajak dihitung dari subtotal dan tetap tidak berubah meskipun ada diskon transaksi
+  // ===== BAGIAN 2: PERHITUNGAN PAJAK (PPN) =====
+  // Total tax adalah sum dari total_tax_amount di setiap item
+  // Pajak sudah dihitung di level item sesuai setting item masing-masing
   const totalTax = parseFloat(
     processedItems
       .reduce((total, item) => total + item.total_tax_amount, 0)
       .toFixed(2)
   )
-
-  // Hitung pajak berdasarkan subtotal awal
-  // Jika tax_calculation === 0 (exclude tax), pajak = subtotal × tarif
-  // Jika tax_calculation === 1 (include tax), pajak sudah termasuk di harga
-  let recalculatedTax = totalTax
-  if (tax_calculation === 0 && taxes.length > 0) {
-    // Harga exclude tax: hitung pajak dari subtotal awal
-    const totalTaxRate = taxes.reduce(
-      (sum: number, tax) => sum + (tax.rate || 0),
-      0
-    )
-    if (totalTaxRate > 0) {
-      recalculatedTax = parseFloat(((subtotal * totalTaxRate) / 100).toFixed(2))
-    }
-  } else if (tax_calculation === 1) {
-    // Harga include tax: pajak sudah termasuk, tidak perlu recalculate
-    recalculatedTax = totalTax
-  }
 
   // ===== BAGIAN 3: PERHITUNGAN DISKON TRANSAKSI (MULTI DISCOUNT) =====
   // 3.1 Gabungkan semua discount (dari form + dari loyalty redeem)
@@ -493,9 +475,9 @@ export function generateCartData(
   )
 
   // ===== BAGIAN 5: PERHITUNGAN TOTAL BAYAR =====
-  // 5.1 Total bayar = DPP akhir + PPN (pajak tetap dari subtotal awal)
-  // Pajak tidak berubah meskipun ada diskon transaksi
-  const totalAmount = parseFloat((dppAkhir + recalculatedTax).toFixed(2))
+  // 5.1 Total bayar = DPP akhir + PPN (pajak dari sum item.total_tax_amount)
+  // Pajak sudah dihitung di level item sesuai setting item masing-masing
+  const totalAmount = parseFloat((dppAkhir + totalTax).toFixed(2))
 
   // 5.2 Total bayar original (sebelum pajak)
   const originalTotalAmount = parseFloat(originalDppAkhir.toFixed(2))
@@ -566,7 +548,7 @@ export function generateCartData(
     // 7.2 Nilai dengan pajak
     subtotal: subtotal,
     gross_amount: gross_amount,
-    total_tax: recalculatedTax,
+    total_tax: totalTax,
     total_discount: totalDiscount,
     total_amount: totalAmount,
     balance_amount,
@@ -581,7 +563,7 @@ export function generateCartData(
     // 7.4 Formatted fields untuk nilai dengan pajak
     fsubtotal: currencyFormat(subtotal || 0),
     fgross_amount: currencyFormat(gross_amount || 0),
-    ftotal_tax: currencyFormat(recalculatedTax || 0),
+    ftotal_tax: currencyFormat(totalTax || 0),
     ftotal_discount: currencyFormat(totalDiscount || 0),
     ftotal_amount: currencyFormat(totalAmount || 0),
     fbalance_amount: currencyFormat(balance_amount || 0),
