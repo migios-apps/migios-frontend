@@ -1,31 +1,30 @@
 import { ApiTypes } from "./api"
 
+// Format Recharts: array of objects dengan setiap object mewakili satu kategori
+export type ChartDataItem = {
+  date: string
+  value?: number
+  [key: string]: string | number | undefined
+}
+
 export interface SalesDataProps {
   total_sales: number
-  categories: string[]
-  series: {
-    name: string
-    data: number[]
-  }[]
+  data: ChartDataItem[]
 }
 
 export interface MembersDataProps {
   total_members: number
-  categories: string[]
-  series: {
-    name: string
-    data: number[]
-  }[]
+  data: ChartDataItem[]
 }
 
 export interface AttendanceDataProps {
   total_checkin: number
   total_checkout: number
-  categories: string[]
-  series: {
-    name: string
-    data: number[]
-  }[]
+  data: Array<{
+    date: string
+    "Check-in": number
+    "Check-out": number
+  }>
 }
 
 export interface OverviewChartProps {
