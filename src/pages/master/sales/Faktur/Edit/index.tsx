@@ -109,8 +109,16 @@ const EditSales = () => {
         taxes: settingsData.taxes,
         employee: salesData.employee,
         member: salesData.member,
+        discounts: salesData.discounts
+          ? salesData.discounts
+          : salesData.discount_type && salesData.discount
+            ? [
+                {
         discount_type: salesData.discount_type,
-        discount: salesData.discount,
+                  discount_amount: salesData.discount,
+                },
+              ]
+            : [],
         due_date: salesData.due_date
           ? dayjs(salesData.due_date).toDate()
           : new Date(),

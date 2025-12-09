@@ -2,8 +2,10 @@ import { TransactionItemSchema } from "./validation"
 
 interface calculateDetailPaymentProps {
   items: TransactionItemSchema[]
-  discount_type: "percent" | "nominal"
-  discount: number
+  discounts?: Array<{
+    discount_type: "percent" | "nominal"
+    discount_amount: number
+  }>
   tax_rate: number
 }
 
@@ -33,17 +35,30 @@ export function calculateDetailPayment(
     0
   )
   let totalDiscount = 0
-  if (data.discount_type === "percent" && Number(data.discount) > 0) {
-    totalDiscount = subtotal * (Number(data.discount) / 100)
-  } else if (data.discount_type === "nominal" && Number(data.discount) > 0) {
-    totalDiscount = data.discount ?? 0
+  let currentAmount = subtotal
+
+  // Hitung multi discount
+  if (data.discounts && data.discounts.length > 0) {
+    data.discounts.forEach((discount) => {
+      let discountAmount = 0
+      if (
+        discount.discount_type === "percent" &&
+        discount.discount_amount > 0
+      ) {
+        discountAmount = currentAmount * (discount.discount_amount / 100)
+      } else if (
+        discount.discount_type === "nominal" &&
+        discount.discount_amount > 0
+      ) {
+        discountAmount = discount.discount_amount
+      }
+      // Pastikan diskon tidak melebihi sisa amount
+      discountAmount = Math.min(discountAmount, Math.abs(currentAmount))
+      totalDiscount += discountAmount
+      currentAmount -= discountAmount
+    })
   }
 
-  if (totalDiscount > subtotal) {
-    totalDiscount = subtotal
-  }
-
-  const currentAmount = subtotal - totalDiscount
   const taxAmount = currentAmount * data.tax_rate
 
   const totalAmount = currentAmount + taxAmount

@@ -60,8 +60,11 @@ export interface CheckoutRequest {
   transaction_id?: number
   club_id: number
   member_id?: number
-  discount_type: DiscountType
-  discount?: number
+  discounts: Array<{
+    discount_type: DiscountType
+    discount_amount: number
+    loyalty_reward_id?: number
+  }>
   tax_rate?: number
   is_paid: PaymentStatus
   due_date?: string

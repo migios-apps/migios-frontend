@@ -17,10 +17,18 @@ import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Form, FormFieldItem } from "@/components/ui/form"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { currencyFormat } from "@/components/ui/input-currency"
+import InputCurrency from "@/components/ui/input-currency"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { calculateLoyaltyPoint } from "../utils/calculateLoyaltyPoint"
@@ -98,8 +106,17 @@ const CartDetail: React.FC<CartDetailProps> = ({
     name: "items",
   })
 
+  const {
+    fields: discountFields,
+    append: appendDiscount,
+    remove: removeDiscount,
+  } = useFieldArray({
+    control,
+    name: "discounts",
+  })
+
   const cartDataGenerated = generateCartData(watchTransaction)
-  // console.log("cartDataGenerated", cartDataGenerated)
+  // console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
   // Calculate loyalty point - hanya jika transaksi belum dibayar
   const isUnpaid = isPaid === 0 || detail?.status === "unpaid"
   const loyalty_point = isUnpaid
@@ -160,6 +177,15 @@ const CartDetail: React.FC<CartDetailProps> = ({
       shouldValidate: true,
       shouldDirty: true,
     })
+
+    // Hapus discount yang memiliki loyalty_reward_id yang sama
+    const currentDiscounts = watchTransaction.discounts || []
+    const discountIndexToRemove = currentDiscounts.findIndex(
+      (discount) => discount.loyalty_reward_id === redeemItemId
+    )
+    if (discountIndexToRemove !== -1) {
+      removeDiscount(discountIndexToRemove)
+    }
 
     // Hapus items yang memiliki loyalty_reward_id yang sama
     const currentItems = watchTransaction.items || []
@@ -436,6 +462,185 @@ const CartDetail: React.FC<CartDetailProps> = ({
                       )}
 
                       <Separator />
+
+                      {/* Discount Fields */}
+                      {isPaid === 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <FormLabel>
+                              Diskon Transaksi{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                appendDiscount({
+                                  discount_type: "nominal",
+                                  discount_amount: 0,
+                                })
+                              }}
+                            >
+                              <Tag className="mr-2 h-4 w-4" />
+                              Tambah Diskon
+                            </Button>
+                          </div>
+                          {discountFields.length === 0 && (
+                            <p className="text-muted-foreground text-sm">
+                              Belum ada diskon. Klik "Tambah Diskon" untuk
+                              menambahkan.
+                            </p>
+                          )}
+                          {discountFields.map((field, index) => {
+                            const discountError = errors.discounts?.[
+                              index
+                            ] as any
+                            return (
+                              <div
+                                key={field.id}
+                                className="flex items-start gap-2 rounded-lg border p-3"
+                              >
+                                <div className="flex-1 space-y-2">
+                                  <FormFieldItem
+                                    control={control}
+                                    name={`discounts.${index}.discount_amount`}
+                                    invalid={Boolean(
+                                      discountError?.discount_amount
+                                    )}
+                                    errorMessage={
+                                      discountError?.discount_amount?.message
+                                    }
+                                    render={({ field: amountField }) => {
+                                      const watchDiscount =
+                                        watchTransaction.discounts?.[index]
+                                      return (
+                                        <InputGroup>
+                                          {watchDiscount?.discount_type ===
+                                          "nominal" ? (
+                                            <InputCurrency
+                                              placeholder="Jumlah diskon"
+                                              customInput={InputGroupInput}
+                                              value={
+                                                amountField.value || undefined
+                                              }
+                                              onValueChange={(
+                                                _value,
+                                                _name,
+                                                values
+                                              ) => {
+                                                const valData = values?.float
+                                                amountField.onChange(
+                                                  valData || 0
+                                                )
+                                              }}
+                                            />
+                                          ) : (
+                                            <InputGroupInput
+                                              type="number"
+                                              autoComplete="off"
+                                              placeholder="10%"
+                                              {...amountField}
+                                              value={
+                                                (amountField.value === 0
+                                                  ? undefined
+                                                  : amountField.value) ||
+                                                undefined
+                                              }
+                                              onChange={(e) => {
+                                                const value =
+                                                  e.target.value === ""
+                                                    ? 0
+                                                    : Number(e.target.value)
+                                                amountField.onChange(value)
+                                              }}
+                                            />
+                                          )}
+                                          <InputGroupAddon
+                                            align="inline-end"
+                                            className="pr-0"
+                                          >
+                                            <ButtonGroup>
+                                              <InputGroupButton
+                                                type="button"
+                                                variant={
+                                                  watchDiscount?.discount_type ===
+                                                  "percent"
+                                                    ? "default"
+                                                    : "ghost"
+                                                }
+                                                size="sm"
+                                                className={
+                                                  watchDiscount?.discount_type ===
+                                                  "percent"
+                                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                    : ""
+                                                }
+                                                onClick={() => {
+                                                  setValue(
+                                                    `discounts.${index}.discount_type`,
+                                                    "percent"
+                                                  )
+                                                }}
+                                              >
+                                                %
+                                              </InputGroupButton>
+                                              <InputGroupButton
+                                                type="button"
+                                                variant={
+                                                  watchDiscount?.discount_type ===
+                                                  "nominal"
+                                                    ? "default"
+                                                    : "ghost"
+                                                }
+                                                size="sm"
+                                                className={
+                                                  watchDiscount?.discount_type ===
+                                                  "nominal"
+                                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                    : ""
+                                                }
+                                                onClick={() => {
+                                                  setValue(
+                                                    `discounts.${index}.discount_type`,
+                                                    "nominal"
+                                                  )
+                                                }}
+                                              >
+                                                Rp
+                                              </InputGroupButton>
+                                            </ButtonGroup>
+                                          </InputGroupAddon>
+                                        </InputGroup>
+                                      )
+                                    }}
+                                  />
+                                  <FormFieldItem
+                                    control={control}
+                                    name={`discounts.${index}.discount_type`}
+                                    invalid={Boolean(
+                                      discountError?.discount_type
+                                    )}
+                                    errorMessage={
+                                      discountError?.discount_type?.message
+                                    }
+                                    render={() => <></>}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeDiscount(index)}
+                                  className="mt-0"
+                                >
+                                  <Trash className="text-destructive h-4 w-4" />
+                                </Button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
 
                       {/* Subtotal & Tax */}
                       <div className="space-y-2">

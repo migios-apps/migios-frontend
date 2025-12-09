@@ -52,8 +52,7 @@ export type CartDataGenratedType = {
   club_id?: number
   member_id?: number
   employee_id?: number
-  discount_type: ValidationTransactionSchema["discount_type"]
-  discount: ValidationTransactionSchema["discount"]
+  discounts: ValidationTransactionSchema["discounts"]
   is_paid?: number
   due_date?: string
   notes?: ValidationTransactionSchema["notes"]
@@ -131,13 +130,11 @@ export function generateCartData(
     items = [],
     taxes = [],
     tax_calculation = 0,
-    discount_type = "nominal",
-    discount = 0,
+    discounts = [],
     member,
     employee,
     payments = [],
     refund_from = [],
-    loyalty_redeem_items = [],
     notes,
   } = watchTransaction
 
@@ -160,31 +157,6 @@ export function generateCartData(
     },
     {} as Record<string, ValidationTransactionSchema["taxes"]>
   )
-
-  // Process loyalty redeem items
-  // Untuk redeem type="discount", kumpulkan discount (tidak menambahkan items)
-  // Untuk redeem type="free_item", items sudah ditambahkan di CartDetail.tsx saat onSelectReward
-  // Jadi tidak perlu menambahkan items lagi di sini
-  const redeemDiscounts: Array<{
-    discount_type: "percent" | "nominal"
-    discount_value: number
-  }> = []
-
-  loyalty_redeem_items.forEach((redeem) => {
-    // Jika type = discount, kumpulkan discount (discount tidak menambahkan items)
-    if (
-      redeem.type === "discount" &&
-      redeem.discount_type &&
-      redeem.discount_value
-    ) {
-      redeemDiscounts.push({
-        discount_type: redeem.discount_type as "percent" | "nominal",
-        discount_value: redeem.discount_value,
-      })
-    }
-    // Jika type = free_item, items sudah ditambahkan di CartDetail.tsx saat onSelectReward
-    // Jadi tidak perlu menambahkan items lagi di sini
-  })
 
   // Semua items (termasuk redeem_item yang sudah ditambahkan) tetap dikirim ke backend
   const allItems = [...items]
@@ -400,92 +372,139 @@ export function generateCartData(
     })
     .filter((item): item is ProcessedItem => item !== null) as ProcessedItem[]
 
-  // ===== BAGIAN 1: PERHITUNGAN TOTAL DENGAN PAJAK =====
-  // Hitung total keseluruhan dari semua item (dengan pajak)
-  const grandTotal = parseFloat(
+  // ===== BAGIAN 1: PERHITUNGAN SUBTOTAL (DPP AWAL) =====
+  // 1.1 Subtotal dengan pajak (dari net_amount setelah diskon item)
+  const subtotal = parseFloat(
     processedItems
-      .reduce((total, item) => total + item.total_amount, 0)
+      .reduce((total, item) => total + item.net_amount, 0)
       .toFixed(2)
   )
+
+  // 1.2 Subtotal original sebelum pajak (dari original_net_amount setelah diskon item)
+  const originalSubtotal = parseFloat(
+    processedItems
+      .reduce((total, item) => total + item.original_net_amount, 0)
+      .toFixed(2)
+  )
+
+  // ===== BAGIAN 2: PERHITUNGAN PAJAK (PPN) DARI SUBTOTAL AWAL =====
+  // 2.1 Hitung pajak dari subtotal awal (sebelum diskon transaksi)
+  // Pajak dihitung dari subtotal dan tetap tidak berubah meskipun ada diskon transaksi
   const totalTax = parseFloat(
     processedItems
       .reduce((total, item) => total + item.total_tax_amount, 0)
       .toFixed(2)
   )
 
-  // ===== BAGIAN 2: PERHITUNGAN TOTAL ORIGINAL (SEBELUM PAJAK) =====
-  // Hitung total keseluruhan dari semua item (original sebelum pajak)
-  const originalGrandTotal = parseFloat(
-    processedItems
-      .reduce((total, item) => total + item.original_total_amount, 0)
-      .toFixed(2)
+  // Hitung pajak berdasarkan subtotal awal
+  // Jika tax_calculation === 0 (exclude tax), pajak = subtotal × tarif
+  // Jika tax_calculation === 1 (include tax), pajak sudah termasuk di harga
+  let recalculatedTax = totalTax
+  if (tax_calculation === 0 && taxes.length > 0) {
+    // Harga exclude tax: hitung pajak dari subtotal awal
+    const totalTaxRate = taxes.reduce(
+      (sum: number, tax) => sum + (tax.rate || 0),
+      0
+    )
+    if (totalTaxRate > 0) {
+      recalculatedTax = parseFloat(((subtotal * totalTaxRate) / 100).toFixed(2))
+    }
+  } else if (tax_calculation === 1) {
+    // Harga include tax: pajak sudah termasuk, tidak perlu recalculate
+    recalculatedTax = totalTax
+  }
+
+  // ===== BAGIAN 3: PERHITUNGAN DISKON TRANSAKSI (MULTI DISCOUNT) =====
+  // 3.1 Gabungkan semua discount (dari form + dari loyalty redeem)
+  const allDiscounts: Array<{
+    discount_type: "percent" | "nominal"
+    discount_amount: number
+    loyalty_reward_id?: number
+  }> = []
+
+  // Tambahkan discount dari form (sudah termasuk discount dari loyalty redeem yang di-append saat redeem)
+  if (discounts && Array.isArray(discounts)) {
+    discounts.forEach((discount) => {
+      if (
+        discount.discount_type &&
+        discount.discount_amount &&
+        discount.discount_amount > 0
+      ) {
+        const discountItem: {
+          discount_type: "percent" | "nominal"
+          discount_amount: number
+          loyalty_reward_id?: number
+        } = {
+          discount_type: discount.discount_type as "percent" | "nominal",
+          discount_amount: discount.discount_amount,
+        }
+        if (discount.loyalty_reward_id) {
+          discountItem.loyalty_reward_id = discount.loyalty_reward_id
+        }
+        allDiscounts.push(discountItem)
+      }
+    })
+  }
+
+  // 3.2 Hitung diskon transaksi dengan pajak (diterapkan berurutan ke subtotal)
+  // LOGIKA: Diskon diterapkan berurutan, setiap diskon dihitung dari nilai setelah diskon sebelumnya
+  // Contoh: Subtotal 975.000, Diskon 10% lalu 35%
+  //   DPP1 = 975.000 - (10% × 975.000) = 877.500
+  //   DPP2 = 877.500 - (35% × 877.500) = 570.375
+  let transactionDiscount = 0
+  let currentAmount = subtotal
+  allDiscounts.forEach((discount) => {
+    const discountAmount = calculateDiscountAmount({
+      price: Math.abs(currentAmount),
+      discount_type: discount.discount_type,
+      discount_amount: discount.discount_amount,
+    })
+    // Pastikan diskon tidak melebihi sisa amount
+    const finalDiscount = Math.min(discountAmount, Math.abs(currentAmount))
+    transactionDiscount += finalDiscount
+    currentAmount -= finalDiscount // Update currentAmount untuk diskon berikutnya
+  })
+
+  // 3.3 Hitung total diskon transaksi original (sebelum pajak)
+  let originalTransactionDiscount = 0
+  let originalCurrentAmount = originalSubtotal
+  allDiscounts.forEach((discount) => {
+    const discountAmount = calculateDiscountAmount({
+      price: Math.abs(originalCurrentAmount),
+      discount_type: discount.discount_type,
+      discount_amount: discount.discount_amount,
+    })
+    // Pastikan diskon tidak melebihi sisa amount
+    const finalDiscount = Math.min(
+      discountAmount,
+      Math.abs(originalCurrentAmount)
+    )
+    originalTransactionDiscount += finalDiscount
+    originalCurrentAmount -= finalDiscount // Update originalCurrentAmount untuk diskon berikutnya
+  })
+
+  // ===== BAGIAN 4: PERHITUNGAN DPP AKHIR =====
+  // 4.1 DPP akhir dengan pajak (Subtotal setelah semua diskon transaksi)
+  const dppAkhir = parseFloat((subtotal - transactionDiscount).toFixed(2))
+
+  // 4.2 DPP akhir original (sebelum pajak)
+  const originalDppAkhir = parseFloat(
+    (originalSubtotal - originalTransactionDiscount).toFixed(2)
   )
 
-  // ===== BAGIAN 3: PERHITUNGAN DISKON TRANSAKSI =====
-  // 3.1 Diskon transaksi dengan pajak
-  let transactionDiscount = 0
-  if (discount_type && discount && discount > 0) {
-    transactionDiscount = calculateDiscountAmount({
-      price: grandTotal,
-      discount_type: discount_type,
-      discount_amount: discount,
-    })
-    transactionDiscount = Math.min(transactionDiscount, grandTotal)
-  }
+  // ===== BAGIAN 5: PERHITUNGAN TOTAL BAYAR =====
+  // 5.1 Total bayar = DPP akhir + PPN (pajak tetap dari subtotal awal)
+  // Pajak tidak berubah meskipun ada diskon transaksi
+  const totalAmount = parseFloat((dppAkhir + recalculatedTax).toFixed(2))
 
-  // 3.2 Tambahkan discount dari loyalty redeem items
-  if (redeemDiscounts.length > 0) {
-    redeemDiscounts.forEach((redeemDiscount) => {
-      const redeemDiscountAmount = calculateDiscountAmount({
-        price: grandTotal - transactionDiscount,
-        discount_type: redeemDiscount.discount_type,
-        discount_amount: redeemDiscount.discount_value,
-      })
-      transactionDiscount += Math.min(
-        redeemDiscountAmount,
-        grandTotal - transactionDiscount
-      )
-    })
-  }
+  // 5.2 Total bayar original (sebelum pajak)
+  const originalTotalAmount = parseFloat(originalDppAkhir.toFixed(2))
 
-  // 3.3 Diskon transaksi original (sebelum pajak)
-  let originalTransactionDiscount = 0
-  if (discount_type && discount && discount > 0) {
-    originalTransactionDiscount = calculateDiscountAmount({
-      price: originalGrandTotal,
-      discount_type: discount_type,
-      discount_amount: discount,
-    })
-    originalTransactionDiscount = Math.min(
-      originalTransactionDiscount,
-      originalGrandTotal
-    )
-  }
-
-  // 3.4 Tambahkan discount dari loyalty redeem items (original)
-  if (redeemDiscounts.length > 0) {
-    redeemDiscounts.forEach((redeemDiscount) => {
-      const redeemDiscountAmount = calculateDiscountAmount({
-        price: originalGrandTotal - originalTransactionDiscount,
-        discount_type: redeemDiscount.discount_type,
-        discount_amount: redeemDiscount.discount_value,
-      })
-      originalTransactionDiscount += Math.min(
-        redeemDiscountAmount,
-        originalGrandTotal - originalTransactionDiscount
-      )
-    })
-  }
-
-  // 3.5 Total diskon dan grand total akhir
+  // 5.3 Total discount (untuk display)
   const totalDiscount = transactionDiscount
-  const finalGrandTotal = grandTotal - transactionDiscount
-
-  // 3.6 Total diskon dan grand total akhir original
   const originalTotalDiscount = originalTransactionDiscount
-  const originalFinalGrandTotal =
-    originalGrandTotal - originalTransactionDiscount
 
+  // ===== BAGIAN 6: PERHITUNGAN PEMBAYARAN =====
   // Hitung total pembayaran dari payments
   const totalPayments = payments.reduce(
     (total, payment) => total + (payment.amount || 0),
@@ -493,49 +512,47 @@ export function generateCartData(
   )
 
   // Deteksi apakah ini refund mode (total_amount negatif)
-  const isRefundMode = finalGrandTotal < 0
+  const isRefundMode = totalAmount < 0
 
   // Hitung balance_amount
   let balance_amount = 0
   if (isRefundMode) {
     // Untuk refund mode: balance_amount = total_amount - totalPayments
     // total_amount negatif, totalPayments juga negatif, hasil tetap negatif
-    balance_amount = parseFloat((finalGrandTotal - totalPayments).toFixed(2))
+    balance_amount = parseFloat((totalAmount - totalPayments).toFixed(2))
   } else {
     // Untuk normal mode: balance_amount jika total pembayaran kurang dari total_amount
     balance_amount =
-      totalPayments < finalGrandTotal
-        ? parseFloat((finalGrandTotal - totalPayments).toFixed(2))
+      totalPayments < totalAmount
+        ? parseFloat((totalAmount - totalPayments).toFixed(2))
         : 0
   }
 
   // Hitung kembalian jika ada (hanya untuk normal mode)
   const return_amount =
-    !isRefundMode && totalPayments > finalGrandTotal
-      ? parseFloat((totalPayments - finalGrandTotal).toFixed(2))
+    !isRefundMode && totalPayments > totalAmount
+      ? parseFloat((totalPayments - totalAmount).toFixed(2))
       : 0
 
-  // ===== BAGIAN 4: PERHITUNGAN SUBTOTAL =====
-  // 4.1 Subtotal dengan pajak (dari net_amount)
-  const subtotal = processedItems.reduce(
-    (total, item) => total + item.net_amount,
-    0
+  // Gross amount untuk display (total sebelum diskon transaksi)
+  const gross_amount = parseFloat(
+    processedItems
+      .reduce((total, item) => total + item.total_amount, 0)
+      .toFixed(2)
+  )
+  const original_gross_amount = parseFloat(
+    processedItems
+      .reduce((total, item) => total + item.original_total_amount, 0)
+      .toFixed(2)
   )
 
-  // 4.2 Subtotal original sebelum pajak (dari original_net_amount)
-  const originalSubtotal = processedItems.reduce(
-    (total, item) => total + item.original_net_amount,
-    0
-  )
-
-  // ===== BAGIAN 5: RETURN HASIL AKHIR =====
+  // ===== BAGIAN 7: RETURN HASIL AKHIR =====
   return {
-    // 5.1 Informasi dasar transaksi
+    // 7.1 Informasi dasar transaksi
     club_id: 1, // Default atau dari context
     member_id: member?.id || undefined,
     employee_id: employee?.id || undefined,
-    discount_type,
-    discount,
+    discounts: discounts || [],
     is_paid: balance_amount <= 0 ? 1 : 0,
     due_date: new Date().toISOString().split("T")[0], // Default hari ini
     notes,
@@ -546,34 +563,53 @@ export function generateCartData(
     refund_from,
     item_include_tax: tax_calculation,
 
-    // 5.2 Nilai dengan pajak
-    subtotal: parseFloat(subtotal.toFixed(2)),
-    gross_amount: parseFloat(grandTotal.toFixed(2)),
-    total_tax: parseFloat(totalTax.toFixed(2)),
-    total_discount: parseFloat(totalDiscount.toFixed(2)),
-    total_amount: parseFloat(finalGrandTotal.toFixed(2)),
+    // 7.2 Nilai dengan pajak
+    subtotal: subtotal,
+    gross_amount: gross_amount,
+    total_tax: recalculatedTax,
+    total_discount: totalDiscount,
+    total_amount: totalAmount,
     balance_amount,
     return_amount,
 
-    // 5.3 Nilai original (sebelum pajak)
-    original_subtotal: parseFloat(originalSubtotal.toFixed(2)),
-    original_gross_amount: parseFloat(originalGrandTotal.toFixed(2)),
-    original_total_discount: parseFloat(originalTotalDiscount.toFixed(2)),
-    original_total_amount: parseFloat(originalFinalGrandTotal.toFixed(2)),
+    // 7.3 Nilai original (sebelum pajak)
+    original_subtotal: originalSubtotal,
+    original_gross_amount: original_gross_amount,
+    original_total_discount: originalTotalDiscount,
+    original_total_amount: originalTotalAmount,
 
-    // 5.4 Formatted fields untuk nilai dengan pajak
+    // 7.4 Formatted fields untuk nilai dengan pajak
     fsubtotal: currencyFormat(subtotal || 0),
-    fgross_amount: currencyFormat(grandTotal || 0),
-    ftotal_tax: currencyFormat(totalTax || 0),
+    fgross_amount: currencyFormat(gross_amount || 0),
+    ftotal_tax: currencyFormat(recalculatedTax || 0),
     ftotal_discount: currencyFormat(totalDiscount || 0),
-    ftotal_amount: currencyFormat(finalGrandTotal || 0),
+    ftotal_amount: currencyFormat(totalAmount || 0),
     fbalance_amount: currencyFormat(balance_amount || 0),
     freturn_amount: currencyFormat(return_amount || 0),
 
-    // 5.5 Formatted fields untuk nilai original
+    // 7.5 Formatted fields untuk nilai original
     foriginal_subtotal: currencyFormat(originalSubtotal || 0),
-    foriginal_gross_amount: currencyFormat(originalGrandTotal || 0),
+    foriginal_gross_amount: currencyFormat(original_gross_amount || 0),
     foriginal_total_discount: currencyFormat(originalTotalDiscount || 0),
-    foriginal_total_amount: currencyFormat(originalFinalGrandTotal || 0),
+    foriginal_total_amount: currencyFormat(originalTotalAmount || 0),
   }
 }
+
+// const discount = [
+//   {
+//     discount_type: "percent",
+//     discount_amount: 10,
+//   },
+//   {
+//     discount_type: "nominal",
+//     discount_amount: 10000,
+//   },
+//   {
+//     discount_type: "percent",
+//     discount_amount: 15,
+//   },
+//   {
+//     discount_type: "nominal",
+//     discount_amount: 15000,
+//   },
+// ]

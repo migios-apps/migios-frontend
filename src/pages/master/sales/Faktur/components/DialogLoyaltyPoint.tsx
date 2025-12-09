@@ -41,6 +41,10 @@ const DialogLoyaltyPoint: React.FC<DialogLoyaltyPointProps> = ({
     control,
     name: "items",
   })
+  const { append: appendDiscount } = useFieldArray({
+    control,
+    name: "discounts",
+  })
 
   const loyaltyRedeemItems = watchTransaction.loyalty_redeem_items || []
   const { data: balanceData, isLoading: isLoadingBalance } = useQuery({
@@ -169,6 +173,20 @@ const DialogLoyaltyPoint: React.FC<DialogLoyaltyPointProps> = ({
       shouldValidate: true,
       shouldDirty: true,
     })
+
+    // Jika type = discount, tambahkan discount ke array discounts
+    if (
+      reward.type === "discount" &&
+      reward.discount_type &&
+      reward.discount_value &&
+      reward.discount_value > 0
+    ) {
+      appendDiscount({
+        discount_type: reward.discount_type as "percent" | "nominal",
+        discount_amount: reward.discount_value,
+        loyalty_reward_id: reward.id, // Simpan loyalty_reward_id untuk tracking sumber discount
+      })
+    }
 
     // Tambahkan free items ke transaction items jika type = free_item
     if (

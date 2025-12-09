@@ -248,13 +248,26 @@ export const validationTransactionSchema = Yup.object().shape({
     )
     .default([]),
 
-  discount_type: Yup.string()
-    .oneOf(["percent", "nominal"] as DiscountType[], "Invalid discount type.")
-    .required("Discount type is required."),
-  discount: Yup.number()
-    .transform((value) => (isNaN(value) ? undefined : value))
-    .min(0, "Discount cannot be negative.")
-    .nullable(),
+  discounts: Yup.array()
+    .of(
+      Yup.object().shape({
+        discount_type: Yup.string()
+          .oneOf(
+            ["percent", "nominal"] as DiscountType[],
+            "Invalid discount type."
+          )
+          .required("Discount type is required."),
+        discount_amount: Yup.number()
+          .transform((value) => (isNaN(value) ? undefined : value))
+          .min(0, "Discount amount cannot be negative.")
+          .required("Discount amount is required."),
+        loyalty_reward_id: Yup.number()
+          .transform((value) => (isNaN(value) ? undefined : value))
+          .nullable()
+          .optional(),
+      })
+    )
+    .default([]),
   // is_paid: Yup.number()
   //   .oneOf([0, 1, 2, 3] as PaymentStatus[], 'Invalid payment status.')
   //   .required('Payment status is required.'),
@@ -363,8 +376,7 @@ export const validationTransactionSchema = Yup.object().shape({
 })
 
 export const defaultValueTransaction: any = {
-  discount_type: "nominal",
-  discount: 0,
+  discounts: [],
   is_paid: 0,
   notes: null,
   items: [],

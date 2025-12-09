@@ -360,8 +360,13 @@ const FormPayment: React.FC<FormPaymentProps> = ({
       member_id: data.member?.id,
       employee_id: data.employee?.id,
       is_paid: data.isPaid,
-      discount_type: data.discount_type,
-      discount: data.discount || 0,
+      discounts: data.discounts.map((discount) => ({
+        discount_type: discount.discount_type,
+        discount_amount: discount.discount_amount,
+        ...(discount.loyalty_reward_id && {
+          loyalty_reward_id: discount.loyalty_reward_id,
+        }),
+      })),
       due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
       items:
         (data.items.map((item) => {
