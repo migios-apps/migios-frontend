@@ -110,15 +110,12 @@ const EditSales = () => {
         employee: salesData.employee,
         member: salesData.member,
         discounts: salesData.discounts
-          ? salesData.discounts
-          : salesData.discount_type && salesData.discount
-            ? [
-                {
-        discount_type: salesData.discount_type,
-                  discount_amount: salesData.discount,
-                },
-              ]
-            : [],
+          ? salesData.discounts.map((d) => ({
+              discount_type: d.discount_type,
+              discount_amount: d.discount_amount,
+              loyalty_reward_id: d.loyalty_reward_id || undefined,
+            }))
+          : [],
         due_date: salesData.due_date
           ? dayjs(salesData.due_date).toDate()
           : new Date(),

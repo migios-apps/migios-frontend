@@ -63,7 +63,7 @@ export interface CheckoutRequest {
   discounts: Array<{
     discount_type: DiscountType
     discount_amount: number
-    loyalty_reward_id?: number
+    loyalty_reward_id?: number | null
   }>
   tax_rate?: number
   is_paid: PaymentStatus
@@ -153,8 +153,12 @@ export interface SalesDetailType {
   club_id: number
   employee_id: number
   type: string
-  discount_type: string
-  discount: number
+  discounts: {
+    discount_type: DiscountType
+    discount_amount: number
+    loyalty_reward_id: number | null
+    fdiscount: string
+  }[]
   total_tax: number
   total_discount: number
   total_amount: number
