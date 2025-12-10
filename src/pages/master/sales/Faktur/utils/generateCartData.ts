@@ -499,13 +499,23 @@ export function generateCartData(
     (originalSubtotal - originalTransactionDiscount).toFixed(2)
   )
 
-  // ===== BAGIAN 5: PERHITUNGAN TOTAL BAYAR =====
-  // 5.1 Total bayar = DPP akhir + PPN (pajak dari sum item.total_tax_amount)
-  // Pajak sudah dihitung di level item sesuai setting item masing-masing
-  let totalAmount = parseFloat((dppAkhir + totalTax).toFixed(2))
+  // ===== BAGIAN 5: PERHITUNGAN PAJAK SETELAH DISKON TRANSAKSI =====
+  // 5.1 Pajak harus proporsional dengan DPP akhir setelah diskon transaksi
+  // Jika subtotal dikurangi diskon, pajak juga harus dikurangi proporsional
+  // Formula: totalTax = totalTax * (dppAkhir / subtotal) jika subtotal > 0
+  let adjustedTotalTax = totalTax
+  if (subtotal > 0) {
+    // Hitung proporsi DPP akhir terhadap subtotal
+    const taxRatio = dppAkhir / subtotal
+    adjustedTotalTax = parseFloat((totalTax * taxRatio).toFixed(2))
+  }
+
+  // ===== BAGIAN 6: PERHITUNGAN TOTAL BAYAR =====
+  // 6.1 Total bayar = DPP akhir + PPN (pajak yang sudah disesuaikan dengan diskon transaksi)
+  let totalAmount = parseFloat((dppAkhir + adjustedTotalTax).toFixed(2))
   let rounding_amount = 0
 
-  // ===== BAGIAN 5.2: PEMBULATAN TOTAL AMOUNT (jika diaktifkan) =====
+  // ===== BAGIAN 6.2: PEMBULATAN TOTAL AMOUNT (jika diaktifkan) =====
   // Pembulatan hanya diterapkan pada total_amount jika sales_is_rounding = 1
   if (settings?.sales_is_rounding === 1 && settings?.sales_rounding_value) {
     const roundingValue = Number(settings.sales_rounding_value) || 0
@@ -524,10 +534,10 @@ export function generateCartData(
     }
   }
 
-  // 5.3 Total bayar original (sebelum pajak)
+  // 6.3 Total bayar original (sebelum pajak)
   const originalTotalAmount = parseFloat(originalDppAkhir.toFixed(2))
 
-  // 5.3 Total discount (untuk display)
+  // 6.4 Total discount (untuk display)
   const totalDiscount = transactionDiscount
   const originalTotalDiscount = originalTransactionDiscount
 
@@ -593,7 +603,7 @@ export function generateCartData(
     // 7.2 Nilai dengan pajak
     subtotal: subtotal,
     gross_amount: gross_amount,
-    total_tax: totalTax,
+    total_tax: adjustedTotalTax,
     total_discount: totalDiscount,
     total_amount: totalAmount,
     balance_amount,
@@ -608,7 +618,7 @@ export function generateCartData(
     // 7.4 Formatted fields untuk nilai dengan pajak
     fsubtotal: currencyFormat(subtotal || 0),
     fgross_amount: currencyFormat(gross_amount || 0),
-    ftotal_tax: currencyFormat(totalTax || 0),
+    ftotal_tax: currencyFormat(adjustedTotalTax || 0),
     ftotal_discount: currencyFormat(totalDiscount || 0),
     ftotal_amount: currencyFormat(totalAmount || 0),
     fbalance_amount: currencyFormat(balance_amount || 0),

@@ -162,13 +162,14 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                         <ul>
                           {item.taxes.map((tax) => (
                             <li key={tax.id}>
-                              {`${tax.name} ${tax.rate}%: ${tax.famount}`}
+                              {`${tax.name} ${tax.rate}%`}
+                              {/* {`${tax.name} ${tax.rate}%: ${tax.famount}`} */}
                             </li>
                           ))}
                         </ul>
                       </td>
                       <td className="border-border text-foreground border px-1 py-2 text-right align-top font-semibold">
-                        {item.ftotal_amount}
+                        {item.fnet_amount}
                       </td>
                     </tr>
                   )

@@ -50,7 +50,8 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
                         <div className="mt-1 text-xs text-gray-600">
                           {item.taxes.map((tax) => (
                             <p key={tax.id}>
-                              {tax.name} {tax.rate}%: {tax.famount}
+                              {tax.name} {tax.rate}%
+                              {/* {tax.name} {tax.rate}%: {tax.famount} */}
                             </p>
                           ))}
                         </div>

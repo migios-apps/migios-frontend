@@ -176,12 +176,16 @@ const CheckoutItemPackageCard: React.FC<CheckoutItemPackageCardProps> = ({
               ) : null}
 
               {item.taxes.length > 0 ? (
-                <div className="mt-2 space-y-1">
+                <div className="mt-2 flex flex-col gap-1">
                   {item.taxes.map((tax) => (
-                    <div key={tax.id} className="text-sm">
-                      <span className="text-muted-foreground">{tax.name}</span>
-                      <span className="ml-2 font-medium">
-                        {`(${tax.rate}%, ${tax.ftax_amount})`}
+                    <div
+                      key={tax.id}
+                      className="text-muted-foreground flex items-center justify-end gap-1 text-sm"
+                    >
+                      <span>{tax.name}</span>
+                      <span>
+                        {`(${tax.rate}%)`}
+                        {/* {`(${tax.rate}%, ${tax.ftax_amount})`} */}
                       </span>
                     </div>
                   ))}
