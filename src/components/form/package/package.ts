@@ -62,10 +62,10 @@ export const validationSchemaMembership = yup.object().shape({
     })
     .typeError("Discount must be a valid number")
     .when("is_promo", {
-    is: (val: number) => val === 1,
-    then: (schema) => schema.required("Discount Value is required"),
-    otherwise: (schema) => schema,
-  }),
+      is: (val: number) => val === 1,
+      then: (schema) => schema.required("Discount Value is required"),
+      otherwise: (schema) => schema,
+    }),
   loyalty_point: yup
     .object()
     .shape({
@@ -166,10 +166,10 @@ export const validationSchemaPtTrainer = yup.object().shape({
     })
     .typeError("Discount must be a valid number")
     .when("is_promo", {
-    is: (val: number) => val === 1,
-    then: (schema) => schema.required("Discount Value is required"),
-    otherwise: (schema) => schema,
-  }),
+      is: (val: number) => val === 1,
+      then: (schema) => schema.required("Discount Value is required"),
+      otherwise: (schema) => schema,
+    }),
   loyalty_point: yup
     .object()
     .shape({
@@ -271,10 +271,10 @@ export const validationSchemaClass = yup.object().shape({
     })
     .typeError("Discount must be a valid number")
     .when("is_promo", {
-    is: (val: number) => val === 1,
-    then: (schema) => schema.required("Discount Value is required"),
-    otherwise: (schema) => schema,
-  }),
+      is: (val: number) => val === 1,
+      then: (schema) => schema.required("Discount Value is required"),
+      otherwise: (schema) => schema,
+    }),
   loyalty_point: yup
     .object()
     .shape({
