@@ -83,6 +83,12 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
                 <span>{detail.ftotal_tax}</span>
               </div>
             ) : null}
+            {detail?.rounding_amount !== 0 ? (
+              <div className="mb-1 flex justify-between text-xs">
+                <span className="font-semibold">Pembulatan</span>
+                <span>{detail.frounding_amount}</span>
+              </div>
+            ) : null}
             <div className="mt-2 border-t border-gray-300 pt-2">
               <div className="flex justify-between font-bold">
                 <span className="font-semibold">Total Bayar</span>

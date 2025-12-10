@@ -7,6 +7,7 @@ import {
 } from "@/services/api/@types/sales"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as Yup from "yup"
+import parseToDecimal from "@/utils/parseToDecimal"
 
 export const transactionItemSchema = Yup.object().shape({
   item_type: Yup.string()
@@ -30,11 +31,24 @@ export const transactionItemSchema = Yup.object().shape({
     .transform((value) => (isNaN(value) ? undefined : value))
     .required("Quantity is required."),
   price: Yup.number()
-    .transform((value) => (isNaN(value) ? undefined : value))
-    .required("Price is required.")
-    .min(0, "Price cannot be negative."),
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Price must be a valid number")
+    .required("Price is required."),
   sell_price: Yup.number()
-    .transform((value) => (isNaN(value) ? undefined : value))
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Sell Price must be a valid number")
     .required("Sell Price is required."),
   discount_type: Yup.string()
     .oneOf(["percent", "nominal"] as DiscountType[], "Invalid discount type.")
@@ -42,8 +56,19 @@ export const transactionItemSchema = Yup.object().shape({
     .nullable(),
   discount: Yup.number()
     .nullable()
-    .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(0, "Discount tidak boleh kurang dari 0"),
+    .transform((_, originalValue) => {
+      if (
+        originalValue === "" ||
+        originalValue === null ||
+        originalValue === undefined
+      )
+        return null
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? null
+        : num
+    })
+    .typeError("Discount must be a valid number"),
   duration: Yup.number().when("item_type", {
     is: "package",
     then: (schema) => schema.required("Duration is required for packages."),
@@ -258,8 +283,14 @@ export const validationTransactionSchema = Yup.object().shape({
           )
           .required("Discount type is required."),
         discount_amount: Yup.number()
-          .transform((value) => (isNaN(value) ? undefined : value))
-          .min(0, "Discount amount cannot be negative.")
+          .transform((_, originalValue) => {
+            if (!originalValue) return undefined
+            const num = parseToDecimal(originalValue)
+            return num === 0 && originalValue !== 0 && originalValue !== "0"
+              ? undefined
+              : num
+          })
+          .typeError("Discount amount must be a valid number")
           .required("Discount amount is required."),
         loyalty_reward_id: Yup.number()
           .transform((value) => (isNaN(value) ? undefined : value))
@@ -284,7 +315,14 @@ export const validationTransactionSchema = Yup.object().shape({
         id: Yup.number().required("Rekening ID is required."),
         name: Yup.string().required("Payment name is required."),
         amount: Yup.number()
-          .transform((value) => (isNaN(value) ? undefined : value))
+          .transform((_, originalValue) => {
+            if (!originalValue) return undefined
+            const num = parseToDecimal(originalValue)
+            return num === 0 && originalValue !== 0 && originalValue !== "0"
+              ? undefined
+              : num
+          })
+          .typeError("Payment amount must be a valid number")
           .required("Payment amount is required.")
           .test("not-zero", "Payment amount cannot be zero.", (value) => {
             // Izinkan nilai negatif untuk refund mode
@@ -306,9 +344,15 @@ export const validationTransactionSchema = Yup.object().shape({
       Yup.object().shape({
         id: Yup.number().required("Rekening ID is required for refunds."),
         amount: Yup.number()
-          .transform((value) => (isNaN(value) ? undefined : value))
-          .required("Refund amount is required.")
-          .min(0, "Refund amount cannot be negative."),
+          .transform((_, originalValue) => {
+            if (!originalValue) return undefined
+            const num = parseToDecimal(originalValue)
+            return num === 0 && originalValue !== 0 && originalValue !== "0"
+              ? undefined
+              : num
+          })
+          .typeError("Refund amount must be a valid number")
+          .required("Refund amount is required."),
         notes: Yup.string().nullable(),
         date: Yup.string().optional(),
         isDefault: Yup.boolean().optional().default(false),
@@ -337,12 +381,25 @@ export const validationTransactionSchema = Yup.object().shape({
           }),
         discount_value: Yup.number()
           .nullable()
+          .transform((_, originalValue) => {
+            if (
+              originalValue === null ||
+              originalValue === undefined ||
+              originalValue === ""
+            )
+              return null
+            const num = parseToDecimal(originalValue)
+            return num === 0 && originalValue !== 0 && originalValue !== "0"
+              ? null
+              : num
+          })
+          .typeError("Discount value must be a valid number")
           .when("type", {
             is: "discount",
             then: (schema) =>
-              schema
-                .min(0, "Discount value cannot be negative.")
-                .required("Discount value is required for discount reward."),
+              schema.required(
+                "Discount value is required for discount reward."
+              ),
             otherwise: (schema) => schema.nullable(),
           }),
         items: Yup.array()

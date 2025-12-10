@@ -115,7 +115,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
     name: "discounts",
   })
 
-  const cartDataGenerated = generateCartData(watchTransaction)
+  const cartDataGenerated = generateCartData(watchTransaction, settings)
   console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
   // Calculate loyalty point - hanya jika transaksi belum dibayar
   const isUnpaid = isPaid === 0 || detail?.status === "unpaid"
@@ -664,6 +664,16 @@ const CartDetail: React.FC<CartDetailProps> = ({
                             {cartDataGenerated.ftotal_tax}
                           </span>
                         </div>
+                        {cartDataGenerated.rounding_amount !== 0 ? (
+                          <div className="m-0 flex justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Jumlah pembulatan
+                            </span>
+                            <span className="text-card-foreground font-medium">
+                              {cartDataGenerated.frounding_amount}
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
                       {/* Total */}
                       <div className="space-y-2">
@@ -758,6 +768,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
             formPropsTransaction={formPropsTransaction}
             transactionId={transactionId}
             isPaid={isPaid}
+            settings={settings}
           />
         </div>
       </div>

@@ -92,8 +92,17 @@ const PointOfSales = () => {
     },
   })
 
+  const { data: settingsData } = useQuery({
+    queryKey: [QUERY_KEY.settings],
+    queryFn: async () => {
+      const res = await apiGetSettings()
+      const data = res.data
+      return data
+    },
+  })
+
   // Generate cart data untuk API
-  const cartDataGenerated = generateCartData(watchTransaction)
+  const cartDataGenerated = generateCartData(watchTransaction, settingsData)
 
   // Debug: Log current transaction dan cart data
   // console.log('Current in form:', watchTransaction)
@@ -116,15 +125,6 @@ const PointOfSales = () => {
   //   discount: watchTransaction.discount || 0,
   //   tax_rate: 0,
   // })
-
-  const { data: settingsData } = useQuery({
-    queryKey: [QUERY_KEY.settings],
-    queryFn: async () => {
-      const res = await apiGetSettings()
-      const data = res.data
-      return data
-    },
-  })
 
   useEffect(() => {
     if (settingsData) {

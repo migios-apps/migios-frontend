@@ -14,6 +14,7 @@ import {
   SalesDetailType,
   UpdateSalesPaymentDto,
 } from "@/services/api/@types/sales"
+import { SettingsType } from "@/services/api/@types/settings/settings"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import { apiGetRekeningList } from "@/services/api/FinancialService"
 import { apiGetMemberList } from "@/services/api/MembeService"
@@ -70,6 +71,7 @@ type FormPaymentProps = {
   formPropsTransaction: ReturnTransactionFormSchema
   transactionId?: number
   isPaid?: PaymentStatus
+  settings?: SettingsType | null
   onClose?: () => void
 }
 
@@ -79,6 +81,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   formPropsTransaction,
   transactionId,
   isPaid = 0,
+  settings,
 }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -107,7 +110,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   } = formPropsTransaction
   const watchTransaction = watch()
 
-  const cartDataGenerated = generateCartData(watchTransaction)
+  const cartDataGenerated = generateCartData(watchTransaction, settings)
 
   // console.log('watch', {
   //   data: watch(),

@@ -1,3 +1,4 @@
+import { SettingsType } from "@/services/api/@types/settings/settings"
 import { currencyFormat } from "@/components/ui/input-currency"
 import {
   TransactionItemSchema,
@@ -92,6 +93,10 @@ export type CartDataGenratedType = {
   foriginal_gross_amount: string
   foriginal_total_discount: string
   foriginal_total_amount: string
+
+  // Rounding
+  rounding_amount?: number
+  frounding_amount?: string
 }
 
 type CalculateDiscountAmountProps = {
@@ -114,12 +119,32 @@ function calculateDiscountAmount(data: CalculateDiscountAmountProps): number {
 }
 
 /**
+ * Round amount to nearest multiple berdasarkan mode
+ */
+function roundToNearestMultiple(
+  amount: number,
+  roundingValue: number,
+  mode: "up" | "down"
+): number {
+  if (roundingValue <= 0) {
+    return amount
+  }
+  if (mode === "up") {
+    return Math.ceil(amount / roundingValue) * roundingValue
+  } else {
+    return Math.floor(amount / roundingValue) * roundingValue
+  }
+}
+
+/**
  * Generate cart data dari watchTransaction dengan tax calculation sesuai backend logic
  * @param watchTransaction - Data dari transactionSchema.watch()
+ * @param settings - Settings data untuk rounding configuration (optional)
  * @returns CartDataGenratedType yang siap untuk API
  */
 export function generateCartData(
-  watchTransaction: ValidationTransactionSchema
+  watchTransaction: ValidationTransactionSchema,
+  settings?: SettingsType | null
 ): CartDataGenratedType {
   // Validasi input
   if (!watchTransaction) {
@@ -477,9 +502,29 @@ export function generateCartData(
   // ===== BAGIAN 5: PERHITUNGAN TOTAL BAYAR =====
   // 5.1 Total bayar = DPP akhir + PPN (pajak dari sum item.total_tax_amount)
   // Pajak sudah dihitung di level item sesuai setting item masing-masing
-  const totalAmount = parseFloat((dppAkhir + totalTax).toFixed(2))
+  let totalAmount = parseFloat((dppAkhir + totalTax).toFixed(2))
+  let rounding_amount = 0
 
-  // 5.2 Total bayar original (sebelum pajak)
+  // ===== BAGIAN 5.2: PEMBULATAN TOTAL AMOUNT (jika diaktifkan) =====
+  // Pembulatan hanya diterapkan pada total_amount jika sales_is_rounding = 1
+  if (settings?.sales_is_rounding === 1 && settings?.sales_rounding_value) {
+    const roundingValue = Number(settings.sales_rounding_value) || 0
+    const roundingMode = settings.sales_rounding_mode || "up"
+
+    if (roundingValue > 0) {
+      const originalTotalAmount = totalAmount
+      totalAmount = roundToNearestMultiple(
+        totalAmount,
+        roundingValue,
+        roundingMode as "up" | "down"
+      )
+      rounding_amount = parseFloat(
+        (totalAmount - originalTotalAmount).toFixed(2)
+      )
+    }
+  }
+
+  // 5.3 Total bayar original (sebelum pajak)
   const originalTotalAmount = parseFloat(originalDppAkhir.toFixed(2))
 
   // 5.3 Total discount (untuk display)
@@ -574,6 +619,11 @@ export function generateCartData(
     foriginal_gross_amount: currencyFormat(original_gross_amount || 0),
     foriginal_total_discount: currencyFormat(originalTotalDiscount || 0),
     foriginal_total_amount: currencyFormat(originalTotalAmount || 0),
+
+    // 7.6 Rounding
+    rounding_amount: rounding_amount !== 0 ? rounding_amount : undefined,
+    frounding_amount:
+      rounding_amount !== 0 ? currencyFormat(rounding_amount || 0) : undefined,
   }
 }
 

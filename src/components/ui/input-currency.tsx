@@ -14,6 +14,7 @@ export const currencyFormat = (value: number | string) => {
     decimalSeparator: ",",
     groupSeparator: ".",
     prefix: `Rp. `,
+    decimalScale: 2,
     // decimalScale: 0,
     // ...(config?.dec_digit && { decimalScale: Number(config?.dec_digit) }),
   })
@@ -33,6 +34,7 @@ const InputCurrency = forwardRef<HTMLInputElement, CombinedCurrencyInputProps>(
         groupSeparator="."
         decimalSeparator=","
         customInput={Input}
+        decimalScale={2}
         {...props}
         onValueChange={(value, name, values) =>
           props.onValueChange?.(value, name, values)

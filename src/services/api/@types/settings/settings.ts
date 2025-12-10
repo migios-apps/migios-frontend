@@ -11,6 +11,9 @@ export interface SettingsType {
   loyalty_expired_value_by_total_order: number
   loyalty_earn_point_with_multiple: boolean
   loyalty_earn_points_when_using_points: boolean
+  sales_is_rounding?: number
+  sales_rounding_value?: number
+  sales_rounding_mode?: "up" | "down"
   taxes: {
     id: number
     type: string

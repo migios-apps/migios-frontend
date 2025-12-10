@@ -14,6 +14,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   const routeInvoice = "/settings/others/invoice"
   const routeLoyaltyPoint = "/settings/others/loyalty-point"
   const routeMembership = "/settings/others/membership"
+  const routeSales = "/settings/others/sales"
 
   useEffect(() => {
     if (activeTabRef.current && tabListRef.current) {
@@ -38,6 +39,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
     { route: routeInvoice, label: "Invoice" },
     { route: routeLoyaltyPoint, label: "Loyalty Point" },
     { route: routeMembership, label: "Membership" },
+    { route: routeSales, label: "Sales Settings" },
   ]
 
   return (

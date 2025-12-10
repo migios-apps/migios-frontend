@@ -190,7 +190,7 @@ const EditSales = () => {
   }, [salesData, settingsData, transactionSchema])
 
   // Generate cart data untuk API
-  const cartDataGenerated = generateCartData(watchTransaction)
+  const cartDataGenerated = generateCartData(watchTransaction, settingsData)
 
   // Calculate loyalty point - hanya jika transaksi belum dibayar
   const loyaltyRedeemItems = watchTransaction.loyalty_redeem_items || []

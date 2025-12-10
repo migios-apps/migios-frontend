@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
+import parseToDecimal from "@/utils/parseToDecimal"
 
 export const durationTypeOptions = [
   { label: "Day", value: "day" },
@@ -19,7 +20,18 @@ export const validationSchemaMembership = yup.object().shape({
   id: yup.number().optional().nullable(),
   photo: yup.string().optional().nullable(),
   name: yup.string().optional().required("Name is required"),
-  price: yup.number().required("Price is required"),
+  price: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Price must be a valid number")
+    .positive("Price must be positive")
+    .required("Price is required"),
   description: yup.string().optional().nullable(),
   // max_member: yup.number().optional().nullable(),
   duration: yup
@@ -39,7 +51,17 @@ export const validationSchemaMembership = yup.object().shape({
         .oneOf(["percent", "nominal"], "Invalid discount type value"),
     otherwise: (schema) => schema,
   }),
-  discount: yup.number().when("is_promo", {
+  discount: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Discount must be a valid number")
+    .when("is_promo", {
     is: (val: number) => val === 1,
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,
@@ -99,7 +121,18 @@ export const validationSchemaPtTrainer = yup.object().shape({
   id: yup.number().optional().nullable(),
   photo: yup.string().optional().nullable(),
   name: yup.string().optional().required("Name is required"),
-  price: yup.number().required("Price is required"),
+  price: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Price must be a valid number")
+    .positive("Price must be positive")
+    .required("Price is required"),
   description: yup.string().optional().nullable(),
   // max_member: yup.number().required('Max Member is required'),
   duration: yup
@@ -122,7 +155,17 @@ export const validationSchemaPtTrainer = yup.object().shape({
         .oneOf(["percent", "nominal"], "Invalid discount type value"),
     otherwise: (schema) => schema,
   }),
-  discount: yup.number().when("is_promo", {
+  discount: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Discount must be a valid number")
+    .when("is_promo", {
     is: (val: number) => val === 1,
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,
@@ -186,7 +229,18 @@ export const validationSchemaClass = yup.object().shape({
   id: yup.number().optional().nullable(),
   photo: yup.string().optional().nullable(),
   name: yup.string().optional().required("Name is required"),
-  price: yup.number().required("Price is required"),
+  price: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Price must be a valid number")
+    .positive("Price must be positive")
+    .required("Price is required"),
   description: yup.string().optional().nullable(),
   // max_member: yup.number().optional().nullable(),
   duration: yup
@@ -206,7 +260,17 @@ export const validationSchemaClass = yup.object().shape({
         .oneOf(["percent", "nominal"], "Invalid discount type value"),
     otherwise: (schema) => schema,
   }),
-  discount: yup.number().when("is_promo", {
+  discount: yup
+    .number()
+    .transform((_, originalValue) => {
+      if (!originalValue) return undefined
+      const num = parseToDecimal(originalValue)
+      return num === 0 && originalValue !== 0 && originalValue !== "0"
+        ? undefined
+        : num
+    })
+    .typeError("Discount must be a valid number")
+    .when("is_promo", {
     is: (val: number) => val === 1,
     then: (schema) => schema.required("Discount Value is required"),
     otherwise: (schema) => schema,

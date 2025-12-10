@@ -54,4 +54,14 @@ export const othersSettingsRoute: Routes = [
       },
     },
   },
+  {
+    path: "/settings/others/sales",
+    component: lazy(() => import("@/pages/master/setting/others/sales")),
+    authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
+  },
 ]

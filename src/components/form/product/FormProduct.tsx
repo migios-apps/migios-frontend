@@ -53,6 +53,7 @@ const FormProduct: React.FC<FormProps> = ({
     formState: { errors },
   } = formProps
   const watchData = watch()
+  console.log("watchData", watchData)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const [openLoyaltyDialog, setOpenLoyaltyDialog] = React.useState(false)
   const loyaltyPointForm = useLoyaltyPointForm()
@@ -105,34 +106,25 @@ const FormProduct: React.FC<FormProps> = ({
         }
       : null
 
+    const body: CreateProduct = {
+      club_id: club?.id as number,
+      name: data.name,
+      description: data.description,
+      price: parseFloat(data.price as unknown as string),
+      photo: data.photo,
+      quantity: data.quantity,
+      sku: data.sku,
+      code: data.code,
+      hpp: data.hpp,
+      loyalty_point: loyaltyPoint,
+    }
+
     if (type === "update") {
-      update.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        photo: data.photo,
-        quantity: data.quantity,
-        sku: data.sku,
-        code: data.code,
-        hpp: data.hpp,
-        loyalty_point: loyaltyPoint,
-      })
+      update.mutate(body)
       return
     }
     if (type === "create") {
-      create.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        photo: data.photo,
-        quantity: data.quantity,
-        sku: data.sku,
-        code: data.code,
-        hpp: data.hpp,
-        loyalty_point: loyaltyPoint,
-      })
+      create.mutate(body)
       return
     }
   }
@@ -222,7 +214,10 @@ const FormProduct: React.FC<FormProps> = ({
                       <InputCurrency
                         placeholder="Rp. 0"
                         value={field.value}
-                        onValueChange={field.onChange}
+                        onValueChange={(_value, _name, values) => {
+                          const valData = values?.float
+                          field.onChange(valData)
+                        }}
                       />
                     )}
                   />

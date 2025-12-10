@@ -183,48 +183,31 @@ const FormClass: React.FC<FormProps> = ({ open, type, formProps, onClose }) => {
         }
       : null
 
+    const body: CreatePackageDto = {
+      club_id: club?.id as number,
+      name: data.name,
+      description: data.description,
+      price: parseFloat(data.price as unknown as string),
+      type: "class",
+      duration: data.duration,
+      duration_type: data.duration_type as CreatePackageDto["duration_type"],
+      enabled: data.enabled,
+      allow_all_trainer: false,
+      session_duration: 0,
+      classes: data.classes,
+      is_promo: data.is_promo,
+      discount_type:
+        (data.discount_type as CreatePackageDto["discount_type"]) || "nominal",
+      discount: parseFloat(data.discount as unknown as string) || 0,
+      loyalty_point: loyaltyPoint,
+    }
+
     if (type === "update") {
-      update.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        type: "class",
-        duration: data.duration,
-        duration_type: data.duration_type as CreatePackageDto["duration_type"],
-        enabled: data.enabled,
-        allow_all_trainer: false,
-        session_duration: 0,
-        classes: data.classes,
-        is_promo: data.is_promo,
-        discount_type:
-          (data.discount_type as CreatePackageDto["discount_type"]) ||
-          "nominal",
-        discount: data.discount || 0,
-        loyalty_point: loyaltyPoint,
-      })
+      update.mutate(body)
       return
     }
     if (type === "create") {
-      create.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        type: "class",
-        duration: data.duration,
-        duration_type: data.duration_type as CreatePackageDto["duration_type"],
-        enabled: data.enabled,
-        allow_all_trainer: false,
-        session_duration: 0,
-        classes: data.classes,
-        is_promo: data.is_promo,
-        discount_type:
-          (data.discount_type as CreatePackageDto["discount_type"]) ||
-          "nominal",
-        discount: data.discount || 0,
-        loyalty_point: loyaltyPoint,
-      })
+      create.mutate(body)
       return
     }
   }
@@ -366,10 +349,7 @@ const FormClass: React.FC<FormProps> = ({ open, type, formProps, onClose }) => {
                                     placeholder="Discount amount"
                                     customInput={InputGroupInput}
                                     value={field.value || undefined}
-                                    onValueChange={(_value, _name, values) => {
-                                      const valData = values?.float
-                                      field.onChange(valData)
-                                    }}
+                                    onValueChange={field.onChange}
                                   />
                                 ) : (
                                   <InputGroupInput

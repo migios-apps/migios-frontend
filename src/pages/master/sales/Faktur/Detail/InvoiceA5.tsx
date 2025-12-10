@@ -238,6 +238,14 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                       {detail?.ftotal_tax}
                     </span>
                   </div>
+                  {detail?.rounding_amount !== 0 ? (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Pembulatan:</span>
+                      <span className="text-foreground font-medium">
+                        {detail?.frounding_amount}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="border-border border-t pt-3">
                     <div
                       className="text-foreground flex justify-between font-bold"

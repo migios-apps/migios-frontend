@@ -200,7 +200,8 @@ export interface SalesDetailType {
   fballance_amount: string
   subtotal_net_amount: number
   fsubtotal_net_amount: string
-
+  frounding_amount: string
+  rounding_amount: number
   member: {
     id: number
     code: string
