@@ -2,6 +2,7 @@ import { forwardRef } from "react"
 import CurrencyInput, {
   CurrencyInputProps,
   formatValue,
+  CurrencyInputOnChangeValues,
 } from "react-currency-input-field"
 import { Input } from "./input"
 
@@ -34,11 +35,25 @@ const InputCurrency = forwardRef<HTMLInputElement, CombinedCurrencyInputProps>(
         groupSeparator="."
         decimalSeparator=","
         customInput={Input}
-        decimalScale={2}
+        allowDecimals={true}
         {...props}
-        onValueChange={(value, name, values) =>
-          props.onValueChange?.(value, name, values)
-        }
+        onValueChange={(
+          value: string | undefined,
+          name: string | undefined,
+          values: CurrencyInputOnChangeValues | undefined
+        ) => {
+          // Jika value adalah undefined atau empty string, kirim null untuk float
+          // Ini memungkinkan field untuk dikosongkan sepenuhnya (Ctrl+A + Delete)
+          // Library menggunakan null untuk nilai kosong, bukan undefined
+          if (value === undefined || value === "") {
+            props.onValueChange?.(value, name, {
+              ...values,
+              float: null,
+            } as CurrencyInputOnChangeValues)
+          } else {
+            props.onValueChange?.(value, name, values)
+          }
+        }}
       />
     )
   }

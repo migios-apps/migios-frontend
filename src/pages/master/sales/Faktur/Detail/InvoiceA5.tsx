@@ -125,16 +125,18 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                           </span>
                           {item.item_type === "package" ? (
                             <div className="mt-2 space-y-1">
-                              <div className="text-muted-foreground">
-                                Durasi: {formatDuration}
-                                {item.session_duration > 0
-                                  ? ` • Sessions: ${item.session_duration}`
-                                  : null}
-                              </div>
+                              {item.duration > 0 ? (
+                                <p className="text-muted-foreground">
+                                  Durasi: {formatDuration}
+                                  {item.session_duration > 0
+                                    ? ` • Sessions: ${item.session_duration}`
+                                    : null}
+                                </p>
+                              ) : null}
                               {dateRange ? (
-                                <div className="text-muted-foreground">
+                                <p className="text-muted-foreground">
                                   Periode: {dateRange}
-                                </div>
+                                </p>
                               ) : null}
                               {item.package?.type === "pt_program" &&
                               item.trainer ? (
@@ -230,7 +232,9 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Diskon:</span>
                     <span className="text-foreground font-medium">
-                      -{detail?.ftotal_discount}
+                      {detail?.total_discount > 0
+                        ? `-${detail?.ftotal_discount}`
+                        : detail?.ftotal_discount}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -257,8 +261,14 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                         {detail?.ftotal_amount}
                       </span>
                     </div>
+                    {detail?.return_amount > 0 ? (
+                      <div className="text-foreground flex justify-between font-bold">
+                        <span>Kembalian:</span>
+                        <span>{detail?.freturn_amount}</span>
+                      </div>
+                    ) : null}
                   </div>
-                  {detail?.ballance_amount && detail.ballance_amount > 0 ? (
+                  {detail?.ballance_amount && detail.ballance_amount !== 0 ? (
                     <div className="text-destructive flex justify-between">
                       <span>Sisa Pembayaran:</span>
                       <span className="font-medium">
@@ -266,7 +276,7 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                       </span>
                     </div>
                   ) : null}
-                  {detail?.point_earned && detail.point_earned > 0 ? (
+                  {detail?.point_earned && detail.point_earned !== 0 ? (
                     <div className="flex justify-between text-green-600 dark:text-green-400">
                       <span>Point Diperoleh:</span>
                       <span className="font-medium">

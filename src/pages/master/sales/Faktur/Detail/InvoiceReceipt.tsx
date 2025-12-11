@@ -72,13 +72,17 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
               <span className="font-semibold">Subtotal</span>
               <span>{detail?.fsubtotal_net_amount}</span>
             </div>
-            {detail?.total_discount && detail.total_discount > 0 ? (
+            {detail?.total_discount && detail.total_discount !== 0 ? (
               <div className="mb-1 flex justify-between text-xs">
                 <span className="font-semibold">Total Diskon</span>
-                <span>-{detail.ftotal_discount}</span>
+                <span>
+                  {detail.total_discount > 0
+                    ? `-${detail.ftotal_discount}`
+                    : detail.ftotal_discount}
+                </span>
               </div>
             ) : null}
-            {detail?.total_tax && detail.total_tax > 0 ? (
+            {detail?.total_tax && detail.total_tax !== 0 ? (
               <div className="mb-1 flex justify-between text-xs">
                 <span className="font-semibold">Total Pajak</span>
                 <span>{detail.ftotal_tax}</span>
@@ -107,7 +111,7 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
                 <span>{payment.famount}</span>
               </div>
             ))}
-            {detail?.ballance_amount && detail.ballance_amount > 0 ? (
+            {detail?.ballance_amount && detail.ballance_amount !== 0 ? (
               <div className="mt-1 flex justify-between text-xs text-red-600">
                 <span className="font-semibold">Sisa Pembayaran</span>
                 <span>{detail.fballance_amount}</span>

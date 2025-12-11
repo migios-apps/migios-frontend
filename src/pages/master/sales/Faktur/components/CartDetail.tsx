@@ -15,6 +15,7 @@ import {
 import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import AlertConfirm from "@/components/ui/alert-confirm"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
@@ -94,6 +95,10 @@ const CartDetail: React.FC<CartDetailProps> = ({
     React.useState(false)
   const [selectedRedeemItem, setSelectedRedeemItem] =
     React.useState<LoyaltyType | null>(null)
+  const [openConfirmDelete, setOpenConfirmDelete] = React.useState(false)
+  const [itemIndexToDelete, setItemIndexToDelete] = React.useState<
+    number | null
+  >(null)
 
   const memberCode = memberFromForm?.code || memberCodeFromDetail
   const loyaltyRedeemItems = React.useMemo(
@@ -116,7 +121,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
   })
 
   const cartDataGenerated = generateCartData(watchTransaction, settings)
-  console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
+  // console.log("cartDataGenerated", JSON.stringify(cartDataGenerated, null, 2))
   // Calculate loyalty point - hanya jika transaksi belum dibayar
   const isUnpaid = isPaid === 0 || detail?.status === "unpaid"
   const loyalty_point = isUnpaid
@@ -326,22 +331,32 @@ const CartDetail: React.FC<CartDetailProps> = ({
                         <CheckoutItemProductCard
                           item={item}
                           showEdit={isPaid === 0}
+                          showDelete={detailType === "refund"}
                           onClick={() => {
                             formPropsItem.reset(item)
                             setIndexItem(originalIndex)
                             setOpenAddItem(true)
                             setFormItemType("update")
                           }}
+                          onDelete={() => {
+                            setItemIndexToDelete(originalIndex)
+                            setOpenConfirmDelete(true)
+                          }}
                         />
                       ) : (
                         <CheckoutItemPackageCard
                           item={item}
                           showEdit={isPaid === 0}
+                          showDelete={detailType === "refund"}
                           onClick={() => {
                             formPropsItem.reset(item)
                             setIndexItem(originalIndex)
                             setOpenAddItem(true)
                             setFormItemType("update")
+                          }}
+                          onDelete={() => {
+                            setItemIndexToDelete(originalIndex)
+                            setOpenConfirmDelete(true)
                           }}
                         />
                       )}
@@ -655,7 +670,9 @@ const CartDetail: React.FC<CartDetailProps> = ({
                         <div className="m-0 flex justify-between text-sm">
                           <span className="text-muted-foreground">Diskon</span>
                           <span className="text-card-foreground font-medium">
-                            -{cartDataGenerated.ftotal_discount}
+                            {cartDataGenerated.total_discount > 0
+                              ? `-${cartDataGenerated.ftotal_discount}`
+                              : cartDataGenerated.ftotal_discount}
                           </span>
                         </div>
                         <div className="m-0 flex justify-between text-sm">
@@ -683,6 +700,12 @@ const CartDetail: React.FC<CartDetailProps> = ({
                             {cartDataGenerated.ftotal_amount}
                           </span>
                         </div>
+                        {cartDataGenerated.return_amount > 0 ? (
+                          <div className="flex justify-between text-sm">
+                            <span>Kelebihan bayar:</span>
+                            <span>{cartDataGenerated.freturn_amount}</span>
+                          </div>
+                        ) : null}
                         {loyalty_point > 0 ? (
                           <div className="text-muted-foreground flex justify-between text-sm">
                             <span>Potensi mendapatkan poin</span>
@@ -785,6 +808,28 @@ const CartDetail: React.FC<CartDetailProps> = ({
         onClose={() => setOpenLoyaltyDialog(false)}
         memberCode={memberCode}
         formPropsTransaction={formPropsTransaction}
+      />
+
+      <AlertConfirm
+        open={openConfirmDelete}
+        title="Hapus Item"
+        description="Apakah Anda yakin ingin menghapus item ini dari refund?"
+        type="delete"
+        onClose={() => {
+          setOpenConfirmDelete(false)
+          setItemIndexToDelete(null)
+        }}
+        onLeftClick={() => {
+          setOpenConfirmDelete(false)
+          setItemIndexToDelete(null)
+        }}
+        onRightClick={() => {
+          if (itemIndexToDelete !== null) {
+            removeTransactionItem(itemIndexToDelete)
+            setOpenConfirmDelete(false)
+            setItemIndexToDelete(null)
+          }
+        }}
       />
     </Form>
   )

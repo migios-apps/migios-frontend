@@ -1,19 +1,24 @@
 import React from "react"
-import { Edit2 } from "iconsax-reactjs"
+import { Edit2, Trash } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProcessedItem } from "../utils/generateCartData"
 
 type CheckoutItemProductCardProps = {
   item: ProcessedItem
   showEdit?: boolean
+  showDelete?: boolean
   onClick?: (item: ProcessedItem) => void
+  onDelete?: () => void
 }
 
 const CheckoutItemProductCard: React.FC<CheckoutItemProductCardProps> = ({
   item,
   showEdit = true,
+  showDelete = false,
   onClick,
+  onDelete,
 }) => {
   return (
     <Card
@@ -38,11 +43,27 @@ const CheckoutItemProductCard: React.FC<CheckoutItemProductCardProps> = ({
                 <h6 className="text-lg leading-tight font-semibold">
                   {item.name}
                 </h6>
-                {showEdit ? (
-                  <div className="hover:bg-primary-subtle text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                    <Edit2 variant="Bulk" className="size-5" />
-                  </div>
-                ) : null}
+                <div className="flex items-center gap-1">
+                  {showEdit ? (
+                    <div className="hover:bg-primary-subtle text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                      <Edit2 variant="Bulk" className="size-5" />
+                    </div>
+                  ) : null}
+                  {showDelete && onDelete ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-6 w-6 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        onDelete()
+                      }}
+                    >
+                      <Trash size={16} />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -98,10 +119,14 @@ const CheckoutItemProductCard: React.FC<CheckoutItemProductCardProps> = ({
               {item.taxes.length > 0 ? (
                 <div className="mt-2 space-y-1">
                   {item.taxes.map((tax) => (
-                    <div key={tax.id} className="text-sm">
-                      <span className="text-muted-foreground">{tax.name}</span>
-                      <span className="ml-2 font-medium">
-                        {`(${tax.rate}%, ${tax.ftax_amount})`}
+                    <div
+                      key={tax.id}
+                      className="text-muted-foreground flex items-center justify-end gap-1 text-sm"
+                    >
+                      <span>{tax.name}</span>
+                      <span>
+                        {`(${tax.rate}%)`}
+                        {/* {`(${tax.rate}%, ${tax.ftax_amount})`} */}
                       </span>
                     </div>
                   ))}

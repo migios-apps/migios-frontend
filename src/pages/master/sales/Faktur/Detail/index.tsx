@@ -7,8 +7,7 @@ import {
   Printer,
   ReceiptText,
 } from "iconsax-reactjs"
-import { useParams } from "react-router-dom"
-import { useNavigateBack } from "@/utils/hooks/useNavigateBack"
+import { useParams, useNavigate } from "react-router-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusPaymentColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +22,7 @@ import InvoiceReceipt from "./InvoiceReceipt"
 
 const SaleDetail = () => {
   const { id } = useParams()
-  const navigateBack = useNavigateBack()
+  const navigate = useNavigate()
   const [tab, setTab] = React.useState("a5")
 
   const {
@@ -48,6 +47,14 @@ const SaleDetail = () => {
     )
   }
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate("/sales/faktur")
+    }
+  }
+
   return (
     <>
       <div className="flex w-full items-center justify-between gap-4 border-b border-gray-300 p-4 shadow-sm dark:border-gray-700">
@@ -70,7 +77,7 @@ const SaleDetail = () => {
           </Button>
 
           <ThemeSwitch />
-          <Button variant="ghost" size="icon" onClick={navigateBack}>
+          <Button variant="ghost" size="icon" onClick={handleBack}>
             <CloseCircle size={20} />
           </Button>
         </div>

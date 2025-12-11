@@ -13,11 +13,11 @@ import { apiGetPackageList } from "@/services/api/PackageService"
 import { apiGetProductList } from "@/services/api/ProductService"
 import { apiGetSettings } from "@/services/api/settings/settings"
 import { Box, CloseCircle, DocumentFilter, Warning2 } from "iconsax-reactjs"
+import { useNavigate } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import useFormPersist from "@/utils/hooks/useFormPersist"
 import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
-import { useNavigateBack } from "@/utils/hooks/useNavigateBack"
 import { categoryPackage } from "@/constants/packages"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -48,7 +48,7 @@ import {
 
 const PointOfSales = () => {
   const queryClient = useQueryClient()
-  const navigateBack = useNavigateBack()
+  const navigate = useNavigate()
   const club = useSessionUser((state) => state.club)
   const [tab, setTab] = React.useState("package")
   const [searchPackage, setSearchPackage] = React.useState("")
@@ -338,6 +338,14 @@ const PointOfSales = () => {
     []
   )
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate("/sales/faktur")
+    }
+  }
+
   return (
     <>
       <div className="flex w-full items-center justify-between gap-4 border-b border-gray-300 p-4 shadow-sm dark:border-gray-700">
@@ -352,7 +360,7 @@ const PointOfSales = () => {
                 if (watchTransaction.items.length > 0) {
                   setConfirmClose(true)
                 } else {
-                  navigateBack()
+                  handleBack()
                 }
               }}
             >
@@ -585,7 +593,7 @@ const PointOfSales = () => {
                 disabled={watchTransaction.items?.length === 0}
                 onClick={() => setShowCartDetail(true)}
               >
-                Checkout
+                Bayar
               </Button>
             </div>
           </div>
@@ -624,26 +632,21 @@ const PointOfSales = () => {
             <Warning2 size="40" color="#FF8A65" variant="Bulk" />
           </div>
         }
-        title="Close Page"
-        description="Are you sure you want to close this page?"
+        closable
+        title="Tutup Halaman"
+        description="Apakah Anda yakin ingin menutup halaman ini?"
         type="delete"
-        leftTitle="Keep cart"
-        rightTitle="Delete cart"
+        leftTitle="Tetap di halaman ini"
+        rightTitle="Tutup halaman"
         onClose={() => setConfirmClose(false)}
         onLeftClick={() => {
           setConfirmClose(false)
-          navigateBack()
+          handleBack()
         }}
         onRightClick={() => {
           resetTransactionForm(transactionSchema)
-          window.localStorage.setItem(
-            "item_pos",
-            JSON.stringify({
-              ...defaultValueTransaction,
-              _timestamp: Date.now(),
-            })
-          )
-          navigateBack()
+          window.localStorage.removeItem("item_pos")
+          handleBack()
           setConfirmClose(false)
         }}
       />

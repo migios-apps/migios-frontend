@@ -1,4 +1,6 @@
 import { SettingsType } from "@/services/api/@types/settings/settings"
+import dayjs from "dayjs"
+import parseToDecimal from "@/utils/parseToDecimal"
 import { currencyFormat } from "@/components/ui/input-currency"
 import {
   TransactionItemSchema,
@@ -120,6 +122,9 @@ function calculateDiscountAmount(data: CalculateDiscountAmountProps): number {
 
 /**
  * Round amount to nearest multiple berdasarkan mode
+ * Untuk nilai negatif:
+ * - "up" berarti lebih negatif (ke arah -infinity)
+ * - "down" berarti kurang negatif (ke arah 0)
  */
 function roundToNearestMultiple(
   amount: number,
@@ -129,10 +134,20 @@ function roundToNearestMultiple(
   if (roundingValue <= 0) {
     return amount
   }
-  if (mode === "up") {
-    return Math.ceil(amount / roundingValue) * roundingValue
+  if (amount >= 0) {
+    // Untuk nilai positif: up = ceil, down = floor
+    if (mode === "up") {
+      return Math.ceil(amount / roundingValue) * roundingValue
+    } else {
+      return Math.floor(amount / roundingValue) * roundingValue
+    }
   } else {
-    return Math.floor(amount / roundingValue) * roundingValue
+    // Untuk nilai negatif: up = lebih negatif (floor), down = kurang negatif (ceil)
+    if (mode === "up") {
+      return Math.floor(amount / roundingValue) * roundingValue
+    } else {
+      return Math.ceil(amount / roundingValue) * roundingValue
+    }
   }
 }
 
@@ -458,6 +473,7 @@ export function generateCartData(
   // Contoh: Subtotal 975.000, Diskon 10% lalu 35%
   //   DPP1 = 975.000 - (10% × 975.000) = 877.500
   //   DPP2 = 877.500 - (35% × 877.500) = 570.375
+  // Untuk refund (subtotal negatif), diskon tetap mengurangi (menambah nilai negatif)
   let transactionDiscount = 0
   let currentAmount = subtotal
   allDiscounts.forEach((discount) => {
@@ -467,12 +483,17 @@ export function generateCartData(
       discount_amount: discount.discount_amount,
     })
     // Pastikan diskon tidak melebihi sisa amount
-    const finalDiscount = Math.min(discountAmount, Math.abs(currentAmount))
+    // Untuk nilai negatif, diskon juga harus negatif
+    const finalDiscount =
+      currentAmount < 0
+        ? -Math.min(discountAmount, Math.abs(currentAmount))
+        : Math.min(discountAmount, Math.abs(currentAmount))
     transactionDiscount += finalDiscount
     currentAmount -= finalDiscount // Update currentAmount untuk diskon berikutnya
   })
 
   // 3.3 Hitung total diskon transaksi original (sebelum pajak)
+  // Untuk refund (originalSubtotal negatif), diskon tetap mengurangi (menambah nilai negatif)
   let originalTransactionDiscount = 0
   let originalCurrentAmount = originalSubtotal
   allDiscounts.forEach((discount) => {
@@ -482,10 +503,11 @@ export function generateCartData(
       discount_amount: discount.discount_amount,
     })
     // Pastikan diskon tidak melebihi sisa amount
-    const finalDiscount = Math.min(
-      discountAmount,
-      Math.abs(originalCurrentAmount)
-    )
+    // Untuk nilai negatif, diskon juga harus negatif
+    const finalDiscount =
+      originalCurrentAmount < 0
+        ? -Math.min(discountAmount, Math.abs(originalCurrentAmount))
+        : Math.min(discountAmount, Math.abs(originalCurrentAmount))
     originalTransactionDiscount += finalDiscount
     originalCurrentAmount -= finalDiscount // Update originalCurrentAmount untuk diskon berikutnya
   })
@@ -502,10 +524,12 @@ export function generateCartData(
   // ===== BAGIAN 5: PERHITUNGAN PAJAK SETELAH DISKON TRANSAKSI =====
   // 5.1 Pajak harus proporsional dengan DPP akhir setelah diskon transaksi
   // Jika subtotal dikurangi diskon, pajak juga harus dikurangi proporsional
-  // Formula: totalTax = totalTax * (dppAkhir / subtotal) jika subtotal > 0
+  // Formula: totalTax = totalTax * (dppAkhir / subtotal)
+  // Berlaku untuk normal transaction (subtotal > 0) dan refund (subtotal < 0)
   let adjustedTotalTax = totalTax
-  if (subtotal > 0) {
+  if (subtotal !== 0) {
     // Hitung proporsi DPP akhir terhadap subtotal
+    // Untuk refund (subtotal negatif), proporsi tetap sama dan pajak juga akan negatif
     const taxRatio = dppAkhir / subtotal
     adjustedTotalTax = parseFloat((totalTax * taxRatio).toFixed(2))
   }
@@ -517,6 +541,8 @@ export function generateCartData(
 
   // ===== BAGIAN 6.2: PEMBULATAN TOTAL AMOUNT (jika diaktifkan) =====
   // Pembulatan hanya diterapkan pada total_amount jika sales_is_rounding = 1
+  // rounding_amount menyimpan selisih pembulatan dengan tanda yang benar
+  // Negative jika rounding down (pengurangan), positive jika rounding up (tambahan)
   if (settings?.sales_is_rounding === 1 && settings?.sales_rounding_value) {
     const roundingValue = Number(settings.sales_rounding_value) || 0
     const roundingMode = settings.sales_rounding_mode || "up"
@@ -528,9 +554,9 @@ export function generateCartData(
         roundingValue,
         roundingMode as "up" | "down"
       )
-      rounding_amount = parseFloat(
-        (totalAmount - originalTotalAmount).toFixed(2)
-      )
+      // rounding_amount menyimpan selisih dengan tanda yang benar (bukan absolute)
+      const roundingDifference = totalAmount - originalTotalAmount
+      rounding_amount = parseFloat(roundingDifference.toFixed(2))
     }
   }
 
@@ -544,7 +570,7 @@ export function generateCartData(
   // ===== BAGIAN 6: PERHITUNGAN PEMBAYARAN =====
   // Hitung total pembayaran dari payments
   const totalPayments = payments.reduce(
-    (total, payment) => total + (payment.amount || 0),
+    (total, payment) => total + parseToDecimal(payment.amount),
     0
   )
 
@@ -591,7 +617,7 @@ export function generateCartData(
     employee_id: employee?.id || undefined,
     discounts: discounts || [],
     is_paid: balance_amount <= 0 ? 1 : 0,
-    due_date: new Date().toISOString().split("T")[0], // Default hari ini
+    due_date: dayjs(watchTransaction.due_date).format("YYYY-MM-DD"), // Default hari ini
     notes,
     billing_address: "",
     shipping_address: "",

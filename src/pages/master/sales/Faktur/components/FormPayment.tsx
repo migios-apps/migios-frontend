@@ -38,6 +38,7 @@ import { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
+import parseToDecimal from "@/utils/parseToDecimal"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusPaymentColor } from "@/constants/utils"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -61,7 +62,6 @@ import { generateCartData } from "../utils/generateCartData"
 import {
   ReturnTransactionFormSchema,
   ValidationTransactionSchema,
-  defaultValueTransaction,
   resetTransactionForm,
 } from "../utils/validation"
 
@@ -90,6 +90,10 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   const [confirmPartPaid, setConfirmPartPaid] = React.useState(false)
   const [confirmVoid, setConfirmVoid] = React.useState(false)
   const [confirmUnpaid, setConfirmUnpaid] = React.useState(false)
+  const [confirmReturn, setConfirmReturn] = React.useState(false)
+  const [pendingSubmitData, setPendingSubmitData] = React.useState<
+    (ValidationTransactionSchema & { isPaid: PaymentStatus }) | null
+  >(null)
   const [unpaidType, setUnpaidType] = React.useState<"unpaid" | "partial">(
     "unpaid"
   )
@@ -112,7 +116,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
   const cartDataGenerated = generateCartData(watchTransaction, settings)
 
-  // console.log('watch', {
+  // console.log("watch", {
   //   data: watch(),
   //   error: errors,
   // })
@@ -301,18 +305,25 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
   const handlePrefecth = (res?: any) => {
     const data = res?.data?.data
-    console.log("refetch", data)
     queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sales] })
-    navigate("/sales")
     resetTransactionForm(formPropsTransaction)
-    window.localStorage.setItem(
-      "item_pos",
-      JSON.stringify({ ...defaultValueTransaction, _timestamp: Date.now() })
-    )
+    window.localStorage.removeItem("item_pos")
+    navigate(`/sales/${data?.code}`)
   }
 
   const handleCheck: SubmitHandler<ValidationTransactionSchema> = () => {
     setConfirmPartPaid(true)
+  }
+
+  const handleSubmitWithReturnCheck: SubmitHandler<
+    ValidationTransactionSchema & { isPaid: PaymentStatus }
+  > = (data) => {
+    if (cartDataGenerated.return_amount > 0 && !isRefundMode) {
+      setPendingSubmitData(data)
+      setConfirmReturn(true)
+    } else {
+      onSubmit(data)
+    }
   }
 
   const voidSales = useMutation({
@@ -635,10 +646,9 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                     <InputCurrency
                       value={field.value}
                       disabled={isPaidOf}
+                      allowNegativeValue
                       className="bg-primary-subtle text-primary focus:bg-primary-subtle h-20 text-center text-3xl! font-bold"
-                      onValueChange={(_value, _name, values) => {
-                        field.onChange(values?.float)
-                      }}
+                      onValueChange={field.onChange}
                     />
                   )
                 }}
@@ -717,24 +727,20 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                   ) : listRekenings.length > 0 ? (
                     // Tampilan daftar rekening
                     listRekenings.map((rekening) => {
+                      const currentBalance = parseToDecimal(
+                        watchTransaction.balance_amount
+                      )
+                      const balanceCheck = isRefundMode
+                        ? currentBalance < 0
+                        : currentBalance > 0
+
                       return (
                         <Button
                           key={rekening.id}
                           variant="default"
-                          disabled={
-                            isPaidOf ||
-                            (isRefundMode
-                              ? watchTransaction.balance_amount >= 0
-                              : watchTransaction.balance_amount <= 0)
-                          }
+                          disabled={isPaidOf || !balanceCheck}
                           type="button"
                           onClick={() => {
-                            const currentBalance =
-                              watchTransaction.balance_amount
-                            const balanceCheck = isRefundMode
-                              ? currentBalance < 0
-                              : currentBalance > 0
-
                             if (!isPaidOf && balanceCheck) {
                               const updatedPayments = [...watch("payments")]
                               const existingPaymentIndex =
@@ -746,8 +752,8 @@ const FormPayment: React.FC<FormPaymentProps> = ({
 
                               // Untuk refund mode, amount harus negatif
                               const paymentAmount = isRefundMode
-                                ? -Math.abs(Number(currentBalance))
-                                : Number(currentBalance)
+                                ? -Math.abs(parseToDecimal(currentBalance))
+                                : parseToDecimal(currentBalance)
 
                               if (existingPaymentIndex !== -1) {
                                 // Gabungkan dengan payment yang sudah ada
@@ -845,8 +851,8 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                               ),
                             ])
                             const getRemoveTotal =
-                              Number(watch("balance_amount")) +
-                              Number(item.amount)
+                              parseToDecimal(watch("balance_amount")) +
+                              parseToDecimal(item.amount)
                             formPropsTransaction.setValue(
                               "balance_amount",
                               getRemoveTotal <= 0 ? 0 : getRemoveTotal
@@ -974,7 +980,7 @@ const FormPayment: React.FC<FormPaymentProps> = ({
                       createRefund.isPending
                     }
                     onClick={handleSubmit((data) =>
-                      onSubmit({ ...data, isPaid: 1 })
+                      handleSubmitWithReturnCheck({ ...data, isPaid: 1 })
                     )}
                   >
                     {createCheckout.isPending ||
@@ -1073,6 +1079,36 @@ const FormPayment: React.FC<FormPaymentProps> = ({
         closable={true}
         onClose={() => setConfirmUnpaid(false)}
         onRightClick={() => setConfirmUnpaid(false)}
+      />
+
+      <AlertConfirm
+        open={confirmReturn}
+        title="Kelebihan Pembayaran"
+        description={`Total pembayaran melebihi total transaksi. Ada kelebihan pembayaran sebesar ${cartDataGenerated.freturn_amount}. Apakah Anda ingin menyimpan transaksi dengan kembalian ini?`}
+        leftTitle="Batal"
+        rightTitle="Simpan dengan Kembalian"
+        type="confirm"
+        className="w-auto"
+        icon={
+          <div className="mb-2 rounded-full bg-blue-100 p-2">
+            <WalletCheck size="70" color="#3B82F6" variant="Bulk" />
+          </div>
+        }
+        onClose={() => {
+          setConfirmReturn(false)
+          setPendingSubmitData(null)
+        }}
+        onLeftClick={() => {
+          setConfirmReturn(false)
+          setPendingSubmitData(null)
+        }}
+        onRightClick={() => {
+          if (pendingSubmitData) {
+            onSubmit(pendingSubmitData)
+            setConfirmReturn(false)
+            setPendingSubmitData(null)
+          }
+        }}
       />
     </>
   )

@@ -1,20 +1,25 @@
 import React from "react"
-import { Edit2 } from "iconsax-reactjs"
+import { Edit2, Trash } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
 import { PackageType, categoryPackage } from "@/constants/packages"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProcessedItem } from "../utils/generateCartData"
 
 type CheckoutItemPackageCardProps = {
   item: ProcessedItem
   showEdit?: boolean
+  showDelete?: boolean
   onClick?: (item: ProcessedItem) => void
+  onDelete?: () => void
 }
 
 const CheckoutItemPackageCard: React.FC<CheckoutItemPackageCardProps> = ({
   item,
   showEdit = true,
+  showDelete = false,
   onClick,
+  onDelete,
 }) => {
   return (
     <Card
@@ -39,11 +44,27 @@ const CheckoutItemPackageCard: React.FC<CheckoutItemPackageCardProps> = ({
                 <h6 className="text-lg leading-tight font-semibold">
                   {item.name}
                 </h6>
-                {showEdit ? (
-                  <div className="hover:bg-primary-subtle text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                    <Edit2 variant="Bulk" className="size-5" />
-                  </div>
-                ) : null}
+                <div className="flex items-center gap-1">
+                  {showEdit ? (
+                    <div className="hover:bg-primary-subtle text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                      <Edit2 variant="Bulk" className="size-5" />
+                    </div>
+                  ) : null}
+                  {showDelete && onDelete ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-6 w-6 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        onDelete()
+                      }}
+                    >
+                      <Trash size={16} />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <p className="text-muted-foreground text-xs italic">
                 {
