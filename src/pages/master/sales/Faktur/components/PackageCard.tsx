@@ -43,7 +43,7 @@ const PackageCard = ({
       data-type={item.type}
       card-type="card-item-package"
       className={cn(
-        "relative z-10 flex h-full min-h-[120px] transform flex-col justify-between overflow-hidden bg-linear-to-r p-3 transition-all duration-100",
+        "relative flex h-full min-h-[120px] transform flex-col justify-between overflow-hidden bg-linear-to-r p-3 transition-all duration-100",
         !disabled && "cursor-pointer hover:shadow-lg active:scale-95",
         disabled
           ? cn(
@@ -86,7 +86,7 @@ const PackageCard = ({
         {item.is_promo === 1 && (
           <div
             className={cn(
-              "text-primary-foreground absolute top-4 -right-10 z-10 w-32 rotate-45 py-0.5 text-center text-xs font-semibold shadow-lg",
+              "text-primary-foreground absolute top-4 -right-10 w-32 rotate-45 py-0.5 text-center text-xs font-semibold shadow-lg",
               disabled ? "bg-accent-foreground/20" : "bg-destructive"
             )}
           >
@@ -108,7 +108,7 @@ const PackageCard = ({
           />
         </div>
         <h6 className="text-lg font-semibold text-white">{item.name}</h6>
-        <div className="z-10 flex w-full items-end justify-between gap-4">
+        <div className="flex w-full items-end justify-between gap-4">
           <div className="flex flex-col">
             <span className="text-sm text-white/80">
               {

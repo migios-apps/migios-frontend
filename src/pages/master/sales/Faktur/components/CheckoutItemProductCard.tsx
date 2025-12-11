@@ -25,7 +25,7 @@ const CheckoutItemProductCard: React.FC<CheckoutItemProductCardProps> = ({
       data-type="product"
       card-type="checkout-item-product"
       className={cn(
-        "group relative z-10 p-4 shadow-none",
+        "group relative p-4 shadow-none",
         showEdit && "hover:bg-accent cursor-pointer active:scale-95"
       )}
       onClick={(e) => {

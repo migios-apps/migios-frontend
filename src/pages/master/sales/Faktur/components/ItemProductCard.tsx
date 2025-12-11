@@ -14,7 +14,7 @@ const ItemProductCard: React.FC<ItemProductCardProps> = ({ item, onClick }) => {
     <Card
       data-type="product"
       card-type="cart-item-product"
-      className="group group-cart hover:bg-accent relative z-10 flex cursor-pointer flex-col justify-between p-3 shadow-none active:scale-95"
+      className="group group-cart hover:bg-accent relative flex cursor-pointer flex-col justify-between p-3 shadow-none active:scale-95"
       onClick={(e) => {
         e.stopPropagation()
         onClick?.(item)
@@ -31,7 +31,7 @@ const ItemProductCard: React.FC<ItemProductCardProps> = ({ item, onClick }) => {
           </Button>
         </div>
         <h6 className="font-semibold">{item.name}</h6>
-        <div className="z-10 flex w-full items-end justify-between">
+        <div className="flex w-full items-end justify-between">
           <div className="text-left leading-none">
             {item.discount && item.discount > 0 ? (
               <span className="text-muted-foreground text-sm line-through">

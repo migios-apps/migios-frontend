@@ -15,7 +15,7 @@ const ItemPackageCard: React.FC<ItemPackageCardProps> = ({ item, onClick }) => {
     <Card
       data-type={item.package_type}
       card-type="cart-item-package"
-      className="group hover:bg-accent relative z-10 flex cursor-pointer flex-col justify-between p-3 shadow-none active:scale-95"
+      className="group hover:bg-accent relative flex cursor-pointer flex-col justify-between p-3 shadow-none active:scale-95"
       onClick={(e) => {
         e.stopPropagation()
         onClick?.(item)
@@ -32,7 +32,7 @@ const ItemPackageCard: React.FC<ItemPackageCardProps> = ({ item, onClick }) => {
           </Button>
         </div>
         <h6 className="font-semibold">{item.name}</h6>
-        <div className="z-10 flex w-full items-end justify-between">
+        <div className="flex w-full items-end justify-between">
           <div className="flex flex-col">
             <span className="text-sm">
               {

@@ -26,7 +26,7 @@ const CheckoutItemPackageCard: React.FC<CheckoutItemPackageCardProps> = ({
       data-type={item.package_type}
       card-type="checkout-item-package"
       className={cn(
-        "group relative z-10 p-4 shadow-none",
+        "group relative p-4 shadow-none",
         showEdit && "hover:bg-accent cursor-pointer active:scale-95"
       )}
       onClick={(e) => {

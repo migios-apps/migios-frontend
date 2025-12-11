@@ -216,12 +216,12 @@ const FormAddItemSale: React.FC<FormProps> = ({
             <Form {...formProps}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="mb-4 flex w-full flex-col">
-                  <Card className="relative z-10 flex h-full flex-col justify-between p-3 shadow-none">
+                  <Card className="relative flex h-full flex-col justify-between p-3 shadow-none">
                     <CardContent className="p-0">
                       <h6 className="font-semibold">{watchData.name}</h6>
                       {watchData.item_type === "package" ? (
                         <div
-                          className={cn("z-10 flex", {
+                          className={cn("flex", {
                             "w-full items-end justify-between":
                               watchData.item_type === "package",
                           })}
