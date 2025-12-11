@@ -76,6 +76,7 @@ const UpcomingSchedule = () => {
           variant="single"
           align="end"
           value={valueDateRangePicker}
+          className="w-full"
           onChange={(value) => {
             setValueDateRangePicker(value)
           }}

@@ -7,7 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/animate-ui/components/radix/dialog"
 
 interface UpdateNotificationDialogProps {
   isOpen: boolean

@@ -19,14 +19,14 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from "@/components/animate-ui/components/radix/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -279,10 +279,12 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                       className={cn(
                         "min-w-0 gap-2 rounded-md border p-2 transition-colors focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none",
                         isInsetLayout &&
-                          "bg-sidebar-accent-inset border-border-inset text-card-inset-foreground hover:bg-border-inset focus:bg-border-inset",
-                        isSelected && "border-primary border-2",
+                          "border-border-inset text-card-inset-foreground focus:bg-border-inset",
+                        isSelected &&
+                          "bg-sidebar-accent-inset border-primary border-2",
                         !isSelected && "cursor-pointer"
                       )}
+                      activeClassName={isInsetLayout ? "bg-border-inset" : ""}
                     >
                       <div
                         className={cn(
@@ -372,18 +374,15 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
               className={cn(isInsetLayout && "bg-border-inset")}
             />
             <DropdownMenuItem
-              className={cn(
-                "cursor-pointer gap-2 p-2",
-                isInsetLayout &&
-                  "bg-card-inset hover:bg-border-inset! hover:text-card-inset-foreground cursor-pointer"
-              )}
+              className={cn("cursor-pointer gap-2 p-2")}
+              activeClassName={isInsetLayout ? "bg-border-inset" : ""}
               onClick={() => setNewBranchClub(true)}
             >
               <div
                 className={cn(
-                  "bg-border flex size-6 items-center justify-center rounded-md",
+                  "flex size-6 items-center justify-center rounded-md",
                   isInsetLayout &&
-                    "bg-border-inset border-border-inset text-card-inset-foreground"
+                    "border-border-inset text-card-inset-foreground"
                 )}
               >
                 <Add size={16} color="currentColor" variant="Outline" />

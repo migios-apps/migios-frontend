@@ -4,13 +4,6 @@ import { dayjs } from "@/utils/dayjs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { currencyFormat } from "@/components/ui/input-currency"
 import {
@@ -20,6 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import LayoutGymSetting from "./Layout"
 
 interface PaymentHistory {

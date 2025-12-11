@@ -14,13 +14,6 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
   Form,
   FormControl,
   FormFieldItem,
@@ -30,6 +23,13 @@ import {
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
 import { Switch } from "@/components/ui/switch"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import {
   CreateRekeningSchema,
   ReturnRekeningFormSchema,

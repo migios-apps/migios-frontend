@@ -2,14 +2,14 @@ import { useEffect, useState } from "react"
 import { CheckCircle, X } from "lucide-react"
 import { useClubStore } from "@/stores/use-club"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
+} from "@/components/animate-ui/components/radix/dialog"
 import { SparklesText } from "./MagicUI/SparklesText"
 import { SchoolPrideConfetti } from "./MagicUI/confetti"
 import Logo from "./layout/Logo"

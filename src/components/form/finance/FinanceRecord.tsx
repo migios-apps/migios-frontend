@@ -22,13 +22,6 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
 import { DatePicker } from "@/components/ui/date-picker"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
 import {
@@ -36,6 +29,13 @@ import {
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import {
   CreateFinancialRecordSchema,
   ReturnFinancialRecordFormSchema,

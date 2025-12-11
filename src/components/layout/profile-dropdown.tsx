@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/animate-ui/components/radix/dropdown-menu"
 import { SignOutDialog } from "@/components/sign-out-dialog"
 
 export function ProfileDropdown() {

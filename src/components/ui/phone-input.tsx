@@ -5,9 +5,13 @@ import flags from "react-phone-number-input/flags"
 import type { StylesConfig } from "react-select"
 import { components } from "react-select"
 import { cn } from "@/lib/utils"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/animate-ui/components/radix/popover"
 import { Button } from "./button"
 import { Input } from "./input"
-import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { Select } from "./react-select"
 
 export type PhoneInputProps = Omit<

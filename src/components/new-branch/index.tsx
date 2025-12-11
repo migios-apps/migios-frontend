@@ -17,12 +17,6 @@ import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import PhoneInput from "@/components/ui/phone-input"
@@ -35,6 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import { PlanPricing, PricingSection } from "@/components/pricing-section"
 import { ThemeSwitch } from "../theme-switch"
 import { Badge } from "../ui/badge"

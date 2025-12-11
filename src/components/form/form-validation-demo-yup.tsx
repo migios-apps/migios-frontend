@@ -30,14 +30,6 @@ import {
   SimpleTimePicker,
 } from "@/components/ui/date-picker"
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   Form,
   FormControl,
   FormDescription,
@@ -55,11 +47,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import PhoneInput from "@/components/ui/phone-input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -70,6 +57,21 @@ import {
   Select as SelectUI,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/animate-ui/components/radix/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/animate-ui/components/radix/popover"
 import {
   Sheet,
   SheetClose,
@@ -78,9 +80,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/animate-ui/components/radix/sheet"
 
 // Schema validation dengan Yup
 const formSchema = yup.object({
@@ -121,6 +121,7 @@ const formSchema = yup.object({
     .test("required", "Kota remote harus dipilih", (value) => value !== null),
   language: yup.string().required("Bahasa harus dipilih"),
   dateOfBirth: yup.date().required("Tanggal lahir harus diisi"),
+  datePicker: yup.date().required("Tanggal harus diisi"),
   appointmentDateTime: yup.date().optional(),
   meetingDateTime: yup.date().optional(),
   eventTime: yup.date().optional(),
@@ -146,7 +147,6 @@ const formSchema = yup.object({
     .oneOf(["male", "female", "other"])
     .required("Gender harus dipilih"),
   newsletter: yup.boolean().required(),
-  experience: yup.number().min(0).max(20).required(),
 })
 
 // Data untuk select options
@@ -230,8 +230,8 @@ export default function FormValidationDemo() {
       notifications: [],
       gender: null,
       newsletter: false,
-      experience: 0,
       dateOfBirth: null,
+      datePicker: null,
       appointmentDateTime: null,
       meetingDateTime: null,
       eventTime: null,
@@ -543,6 +543,25 @@ export default function FormValidationDemo() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
+            <FormFieldItem
+              control={form.control}
+              name="datePicker"
+              label="Date Picker"
+              description="Pilih tanggal dengan picker"
+              render={({ field, fieldState }) => (
+                <DateTimePicker
+                  value={
+                    field.value ? (field.value as unknown as Date) : undefined
+                  }
+                  hideTime={true}
+                  onChange={field.onChange}
+                  use12HourFormat={false}
+                  clearable
+                  error={!!fieldState.error}
+                />
+              )}
+            />
+
             <FormFieldItem
               control={form.control}
               name="appointmentDateTime"

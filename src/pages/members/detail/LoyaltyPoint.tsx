@@ -20,7 +20,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import DialogAdjustLoyaltyPoint from "./DialogAdjustLoyaltyPoint"
 
 interface LoyaltyPointProps {
@@ -338,74 +344,76 @@ const LoyaltyPoint: React.FC<LoyaltyPointProps> = ({ member }) => {
           <TabsTrigger value="earned">Poin Diperoleh</TabsTrigger>
           <TabsTrigger value="redeem">History Redeem</TabsTrigger>
         </TabsList>
-        <TabsContent value="earned" className="mt-4">
-          <DataTable
-            columns={earnedColumns}
-            data={earnedList}
-            noData={
-              (!isLoadingEarned && earnedList.length === 0) || !!errorEarned
-            }
-            loading={isLoadingEarned || isFetchingEarned}
-            pagingData={{
-              total: earnedTotal as number,
-              pageIndex: earnedTableData.pageIndex as number,
-              pageSize: earnedTableData.pageSize as number,
-            }}
-            onPaginationChange={(val) => {
-              setEarnedTableData({
-                ...earnedTableData,
-                pageIndex: val,
-              })
-            }}
-            onSelectChange={(val) => {
-              setEarnedTableData({
-                ...earnedTableData,
-                pageSize: val,
-                pageIndex: 1,
-              })
-            }}
-            onSort={(val) => {
-              setEarnedTableData({
-                ...earnedTableData,
-                sort: val,
-              })
-            }}
-          />
-        </TabsContent>
-        <TabsContent value="redeem" className="mt-4">
-          <DataTable
-            columns={redeemColumns}
-            data={redeemList}
-            noData={
-              (!isLoadingRedeem && redeemList.length === 0) || !!errorRedeem
-            }
-            loading={isLoadingRedeem || isFetchingRedeem}
-            pagingData={{
-              total: redeemTotal as number,
-              pageIndex: redeemTableData.pageIndex as number,
-              pageSize: redeemTableData.pageSize as number,
-            }}
-            onPaginationChange={(val) => {
-              setRedeemTableData({
-                ...redeemTableData,
-                pageIndex: val,
-              })
-            }}
-            onSelectChange={(val) => {
-              setRedeemTableData({
-                ...redeemTableData,
-                pageSize: val,
-                pageIndex: 1,
-              })
-            }}
-            onSort={(val) => {
-              setRedeemTableData({
-                ...redeemTableData,
-                sort: val,
-              })
-            }}
-          />
-        </TabsContent>
+        <TabsContents>
+          <TabsContent value="earned" className="mt-4">
+            <DataTable
+              columns={earnedColumns}
+              data={earnedList}
+              noData={
+                (!isLoadingEarned && earnedList.length === 0) || !!errorEarned
+              }
+              loading={isLoadingEarned || isFetchingEarned}
+              pagingData={{
+                total: earnedTotal as number,
+                pageIndex: earnedTableData.pageIndex as number,
+                pageSize: earnedTableData.pageSize as number,
+              }}
+              onPaginationChange={(val) => {
+                setEarnedTableData({
+                  ...earnedTableData,
+                  pageIndex: val,
+                })
+              }}
+              onSelectChange={(val) => {
+                setEarnedTableData({
+                  ...earnedTableData,
+                  pageSize: val,
+                  pageIndex: 1,
+                })
+              }}
+              onSort={(val) => {
+                setEarnedTableData({
+                  ...earnedTableData,
+                  sort: val,
+                })
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="redeem" className="mt-4">
+            <DataTable
+              columns={redeemColumns}
+              data={redeemList}
+              noData={
+                (!isLoadingRedeem && redeemList.length === 0) || !!errorRedeem
+              }
+              loading={isLoadingRedeem || isFetchingRedeem}
+              pagingData={{
+                total: redeemTotal as number,
+                pageIndex: redeemTableData.pageIndex as number,
+                pageSize: redeemTableData.pageSize as number,
+              }}
+              onPaginationChange={(val) => {
+                setRedeemTableData({
+                  ...redeemTableData,
+                  pageIndex: val,
+                })
+              }}
+              onSelectChange={(val) => {
+                setRedeemTableData({
+                  ...redeemTableData,
+                  pageSize: val,
+                  pageIndex: 1,
+                })
+              }}
+              onSort={(val) => {
+                setRedeemTableData({
+                  ...redeemTableData,
+                  sort: val,
+                })
+              }}
+            />
+          </TabsContent>
+        </TabsContents>
       </Tabs>
 
       <DialogAdjustLoyaltyPoint

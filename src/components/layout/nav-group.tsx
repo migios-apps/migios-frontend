@@ -7,6 +7,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/components/radix/dropdown-menu"
+import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -18,14 +26,6 @@ import {
   useSidebar,
 } from "@/components/layout/vertical/sidebar"
 import { Badge } from "../ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
 import {
   type NavCollapsible,
   type NavGroup as NavGroupProps,
@@ -163,7 +163,7 @@ function SidebarMenuCollapsedDropdown({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {item.items.map((sub) => (
-            <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
+            <DropdownMenuItem key={`${sub.title}-${sub.url}`}>
               <Link
                 to={sub.url}
                 className={`${checkIsActive(href, sub) ? "bg-secondary" : ""}`}

@@ -31,7 +31,13 @@ import {
 } from "@/components/ui/input-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import { CheckInFormSchema } from "../checkin/validation"
 import { resetCheckOutValidation, useCheckOutValidation } from "./validation"
 
@@ -270,151 +276,155 @@ const Checkout = () => {
                     </TabsTrigger>
                   </TabsList>
                 </div>
-                <div className="pt-2">
-                  <TabsContent value="code">
-                    <div className="flex flex-col gap-4">
-                      <Form {...formPorps}>
-                        <form
-                          onSubmit={handleSubmitCheckMemberCode(
-                            onSubmitCheckOut
-                          )}
-                        >
-                          <FormFieldItem
-                            control={control}
-                            name="code"
-                            render={({ field }) => (
-                              <InputGroup className="border-primary h-12 border-2">
-                                <InputGroupAddon align="inline-start">
-                                  <Scan variant="Bulk" size={20} />
-                                </InputGroupAddon>
-                                <InputGroupInput
-                                  {...field}
-                                  autoFocus
-                                  placeholder="Enter member code..."
-                                  className="text-base"
-                                />
-                              </InputGroup>
+                <div className="relative pt-2">
+                  <TabsContents>
+                    <TabsContent value="code">
+                      <div className="flex flex-col gap-4">
+                        <Form {...formPorps}>
+                          <form
+                            onSubmit={handleSubmitCheckMemberCode(
+                              onSubmitCheckOut
                             )}
-                          />
-                        </form>
-                      </Form>
-                      {errorMessage.length > 0 ? (
-                        <Alert variant="destructive">
-                          <AlertDescription>{errorMessage}</AlertDescription>
-                        </Alert>
-                      ) : null}
-                      <div className="border-border bg-border mb-2 h-px" />
-                      <div className="flex items-center justify-between">
-                        <h6 className="text-foreground w-full">{`Members check-in (${totalMemberCheckIn})`}</h6>
-                        <InputDebounce
-                          placeholder="Search (name,code)..."
-                          handleOnchange={(value) => {
-                            setTableDataCheckIn({
-                              ...tableDataCheckIn,
-                              query: value,
-                              pageIndex: 1,
-                            })
-                          }}
-                        />
-                      </div>
-                      <ScrollArea className="h-[calc(100vh-31rem)]">
-                        <div className="space-y-4 pr-3">
-                          {listDataCheckIn.map((member, index) => (
-                            <div
-                              key={index}
-                              className="border-border flex items-center justify-between gap-3 border-b pb-3"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-10">
-                                  <AvatarImage
-                                    src={member?.photo || ""}
-                                    alt={member.name}
+                          >
+                            <FormFieldItem
+                              control={control}
+                              name="code"
+                              render={({ field }) => (
+                                <InputGroup className="border-primary h-12 border-2">
+                                  <InputGroupAddon align="inline-start">
+                                    <Scan variant="Bulk" size={20} />
+                                  </InputGroupAddon>
+                                  <InputGroupInput
+                                    {...field}
+                                    autoFocus
+                                    placeholder="Enter member code..."
+                                    className="text-base"
                                   />
-                                  <AvatarFallback>
-                                    {member.name?.charAt(0)?.toUpperCase() ||
-                                      "?"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <div className="text-foreground font-medium">
-                                    {member.name}
-                                  </div>
-                                  <div className="text-muted-foreground text-sm">
-                                    {member.code}
-                                  </div>
-                                  <div className="text-muted-foreground text-sm">
-                                    {member.attendance_packages
-                                      .map((item) => item.name)
-                                      .join(", ")}
-                                  </div>
-                                  <div className="text-muted-foreground text-sm">
-                                    {member.attendance_date
-                                      ? dayjs(member.attendance_date).format(
-                                          "DD MMMM YYYY HH:mm"
-                                        )
-                                      : "-"}
-                                  </div>
-                                </div>
-                              </div>
-                              <Button
-                                type="button"
-                                className="h-8 px-2 py-0"
-                                onClick={() => {
-                                  handleCheckOut(member.code)
-                                }}
-                              >
-                                Check Out
-                              </Button>
-                            </div>
-                          ))}
-
-                          {isFetchingMemberCheckIn || isLoadingMemberCheckIn
-                            ? Array.from({ length: 3 }).map((_, index) => (
-                                <div
-                                  key={index}
-                                  className="border-border flex items-center justify-between gap-3 border-b pb-3"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
-                                    <div className="flex-1 space-y-2">
-                                      <Skeleton className="h-6 w-32" />
-                                      <Skeleton className="h-4 w-48" />
-                                    </div>
-                                  </div>
-                                  <Skeleton className="h-7 w-16 rounded-md" />
-                                </div>
-                              ))
-                            : null}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="qr">
-                    <div className="flex w-full items-center justify-center">
-                      <div className="w-full max-w-xl">
-                        {errorMessage && (
-                          <Alert variant="destructive" className="mb-4">
+                                </InputGroup>
+                              )}
+                            />
+                          </form>
+                        </Form>
+                        {errorMessage.length > 0 ? (
+                          <Alert variant="destructive">
                             <AlertDescription>{errorMessage}</AlertDescription>
                           </Alert>
-                        )}
-                        <CameraScanner
-                          allowMultiple={false}
-                          paused={tabName !== "qr"}
-                          tracker="boundingBox"
-                          onScan={(result) => {
-                            const value = result[result.length - 1].rawValue
-                            if (scanValue !== value) {
-                              setScanValue(value)
-                              setTimeout(() => {
-                                handleCheckOut(value)
-                              }, 1000)
-                            }
-                          }}
-                          onError={(error) => console.log("error", error)}
-                        />
+                        ) : null}
+                        <div className="border-border bg-border mb-2 h-px" />
+                        <div className="flex items-center justify-between">
+                          <h6 className="text-foreground w-full">{`Members check-in (${totalMemberCheckIn})`}</h6>
+                          <InputDebounce
+                            placeholder="Search (name,code)..."
+                            handleOnchange={(value) => {
+                              setTableDataCheckIn({
+                                ...tableDataCheckIn,
+                                query: value,
+                                pageIndex: 1,
+                              })
+                            }}
+                          />
+                        </div>
+                        <ScrollArea className="h-[calc(100vh-31rem)]">
+                          <div className="space-y-4 pr-3">
+                            {listDataCheckIn.map((member, index) => (
+                              <div
+                                key={index}
+                                className="border-border flex items-center justify-between gap-3 border-b pb-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-10">
+                                    <AvatarImage
+                                      src={member?.photo || ""}
+                                      alt={member.name}
+                                    />
+                                    <AvatarFallback>
+                                      {member.name?.charAt(0)?.toUpperCase() ||
+                                        "?"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <div className="text-foreground font-medium">
+                                      {member.name}
+                                    </div>
+                                    <div className="text-muted-foreground text-sm">
+                                      {member.code}
+                                    </div>
+                                    <div className="text-muted-foreground text-sm">
+                                      {member.attendance_packages
+                                        .map((item) => item.name)
+                                        .join(", ")}
+                                    </div>
+                                    <div className="text-muted-foreground text-sm">
+                                      {member.attendance_date
+                                        ? dayjs(member.attendance_date).format(
+                                            "DD MMMM YYYY HH:mm"
+                                          )
+                                        : "-"}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  className="h-8 px-2 py-0"
+                                  onClick={() => {
+                                    handleCheckOut(member.code)
+                                  }}
+                                >
+                                  Check Out
+                                </Button>
+                              </div>
+                            ))}
+
+                            {isFetchingMemberCheckIn || isLoadingMemberCheckIn
+                              ? Array.from({ length: 3 }).map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className="border-border flex items-center justify-between gap-3 border-b pb-3"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Skeleton className="h-10 w-10 rounded-full" />
+                                      <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-6 w-32" />
+                                        <Skeleton className="h-4 w-48" />
+                                      </div>
+                                    </div>
+                                    <Skeleton className="h-7 w-16 rounded-md" />
+                                  </div>
+                                ))
+                              : null}
+                          </div>
+                        </ScrollArea>
                       </div>
-                    </div>
-                  </TabsContent>
+                    </TabsContent>
+                    <TabsContent value="qr">
+                      <div className="flex w-full items-center justify-center">
+                        <div className="w-full max-w-xl">
+                          {errorMessage && (
+                            <Alert variant="destructive" className="mb-4">
+                              <AlertDescription>
+                                {errorMessage}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          <CameraScanner
+                            allowMultiple={false}
+                            paused={tabName !== "qr"}
+                            tracker="boundingBox"
+                            onScan={(result) => {
+                              const value = result[result.length - 1].rawValue
+                              if (scanValue !== value) {
+                                setScanValue(value)
+                                setTimeout(() => {
+                                  handleCheckOut(value)
+                                }, 1000)
+                              }
+                            }}
+                            onError={(error) => console.log("error", error)}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </TabsContents>
                 </div>
               </Tabs>
             </CardContent>

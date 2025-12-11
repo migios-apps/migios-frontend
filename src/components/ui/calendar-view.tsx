@@ -25,7 +25,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/animate-ui/components/radix/dialog"
 import { ScrollArea } from "./scroll-area"
 import { Tabs, TabsList, TabsTrigger } from "./tabs"
 import {

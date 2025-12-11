@@ -32,13 +32,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Loading from "@/components/ui/loading"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import InformasiDetail from "./InformasiDetail"
 import Members from "./Members"
 import PtPrograms from "./PtPrograms"
@@ -479,19 +485,21 @@ const EmployeeDetail = () => {
                       )}
                     </TabsList>
                   </div>
-                  <TabsContent value="tab1">
-                    <InformasiDetail employee={employee} />
-                  </TabsContent>
-                  {employee && employee.type === "trainer" && (
-                    <>
-                      <TabsContent value="tab2">
+                  <TabsContents className="py-6">
+                    <TabsContent value="tab1">
+                      <InformasiDetail employee={employee} />
+                    </TabsContent>
+                    <TabsContent value="tab2">
+                      {employee && employee.type === "trainer" ? (
                         <Members data={employee} />
-                      </TabsContent>
-                      <TabsContent value="tab3">
+                      ) : null}
+                    </TabsContent>
+                    <TabsContent value="tab3">
+                      {employee && employee.type === "trainer" ? (
                         <PtPrograms data={employee} />
-                      </TabsContent>
-                    </>
-                  )}
+                      ) : null}
+                    </TabsContent>
+                  </TabsContents>
                 </Tabs>
               </CardContent>
             </Card>

@@ -29,7 +29,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
+} from "@/components/animate-ui/components/radix/sheet"
 import {
   CreateLoyaltySchema,
   ReturnLoyaltyFormSchema,
@@ -128,73 +128,33 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
   return (
     <>
       <Sheet open={open} onOpenChange={handleClose}>
-        <SheetContent
-          side="right"
-          className="w-full gap-0 sm:max-w-[500px]"
-          floating
-        >
-          <SheetHeader>
-            <SheetTitle>
-              {type === "create" ? "Diskon Baru" : "Ubah Diskon"}
-            </SheetTitle>
-            <SheetDescription />
-          </SheetHeader>
-
+        <SheetContent floating className="gap-0 sm:max-w-xl">
           <Form {...formProps}>
-            <form onSubmit={handleSubmit(handleFormSubmit)}>
-              <ScrollArea className="h-[calc(100vh-10rem)] px-2">
-                <div className="space-y-4 px-4">
-                  <FormFieldItem
-                    control={control}
-                    name="points_required"
-                    label={<>Point yang diperlukan</>}
-                    render={({ field }) => (
-                      <InputGroup>
-                        <InputGroupInput
-                          type="number"
-                          autoComplete="off"
-                          placeholder="1000"
-                          {...field}
-                          value={field.value === 0 ? "" : field.value}
-                          onChange={(e) => {
-                            const value =
-                              e.target.value === "" ? 0 : Number(e.target.value)
-                            field.onChange(value)
-                          }}
-                        />
-                        <InputGroupAddon align="inline-end">
-                          Pts
-                        </InputGroupAddon>
-                      </InputGroup>
-                    )}
-                  />
-
-                  <FormFieldItem
-                    control={control}
-                    name="discount_value"
-                    label={<>Jumlah Diskon</>}
-                    render={({ field }) => (
-                      <InputGroup>
-                        {watchData.discount_type === "nominal" ? (
-                          <InputCurrency
-                            placeholder="Discount amount"
-                            customInput={InputGroupInput}
-                            value={field.value || undefined}
-                            onValueChange={(_value, _name, values) => {
-                              const valData = values?.float
-                              field.onChange(valData)
-                            }}
-                          />
-                        ) : (
+            <form
+              onSubmit={handleSubmit(handleFormSubmit)}
+              className="flex h-full flex-col"
+            >
+              <SheetHeader>
+                <SheetTitle>
+                  {type === "create" ? "Diskon Baru" : "Ubah Diskon"}
+                </SheetTitle>
+                <SheetDescription />
+              </SheetHeader>
+              <div className="flex-1 overflow-hidden px-2 pr-1">
+                <ScrollArea className="h-full px-2 pr-3">
+                  <div className="space-y-6 px-1 pb-4">
+                    <FormFieldItem
+                      control={control}
+                      name="points_required"
+                      label={<>Point yang diperlukan</>}
+                      render={({ field }) => (
+                        <InputGroup>
                           <InputGroupInput
                             type="number"
                             autoComplete="off"
-                            placeholder="10%"
+                            placeholder="1000"
                             {...field}
-                            value={
-                              (field.value === 0 ? undefined : field.value) ||
-                              undefined
-                            }
+                            value={field.value === 0 ? "" : field.value}
                             onChange={(e) => {
                               const value =
                                 e.target.value === ""
@@ -203,112 +163,154 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
                               field.onChange(value)
                             }}
                           />
-                        )}
-                        <InputGroupAddon align="inline-end" className="pr-0">
-                          <ButtonGroup>
-                            <InputGroupButton
-                              type="button"
-                              variant={
-                                watchData.discount_type === "percent"
-                                  ? "default"
-                                  : "ghost"
-                              }
-                              size="sm"
-                              className={
-                                watchData.discount_type === "percent"
-                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                  : ""
-                              }
-                              onClick={() => {
-                                formProps.setValue("discount_type", "percent")
-                                formProps.setValue("discount_value", 0)
-                              }}
-                            >
-                              %
-                            </InputGroupButton>
-                            <InputGroupButton
-                              type="button"
-                              variant={
-                                watchData.discount_type === "nominal"
-                                  ? "default"
-                                  : "ghost"
-                              }
-                              size="sm"
-                              className={
-                                watchData.discount_type === "nominal"
-                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                  : ""
-                              }
-                              onClick={() => {
-                                formProps.setValue("discount_type", "nominal")
-                                formProps.setValue("discount_value", 0)
-                              }}
-                            >
-                              Rp
-                            </InputGroupButton>
-                          </ButtonGroup>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    )}
-                  />
+                          <InputGroupAddon align="inline-end">
+                            Pts
+                          </InputGroupAddon>
+                        </InputGroup>
+                      )}
+                    />
 
-                  <FormFieldItem
-                    control={control}
-                    name="is_forever"
-                    render={({ field }) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="is_forever"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                    <FormFieldItem
+                      control={control}
+                      name="discount_value"
+                      label={<>Jumlah Diskon</>}
+                      render={({ field }) => (
+                        <InputGroup>
+                          {watchData.discount_type === "nominal" ? (
+                            <InputCurrency
+                              placeholder="Discount amount"
+                              customInput={InputGroupInput}
+                              value={field.value || undefined}
+                              onValueChange={(_value, _name, values) => {
+                                const valData = values?.float
+                                field.onChange(valData)
+                              }}
+                            />
+                          ) : (
+                            <InputGroupInput
+                              type="number"
+                              autoComplete="off"
+                              placeholder="10%"
+                              {...field}
+                              value={
+                                (field.value === 0 ? undefined : field.value) ||
+                                undefined
+                              }
+                              onChange={(e) => {
+                                const value =
+                                  e.target.value === ""
+                                    ? 0
+                                    : Number(e.target.value)
+                                field.onChange(value)
+                              }}
+                            />
+                          )}
+                          <InputGroupAddon align="inline-end" className="pr-0">
+                            <ButtonGroup>
+                              <InputGroupButton
+                                type="button"
+                                variant={
+                                  watchData.discount_type === "percent"
+                                    ? "default"
+                                    : "ghost"
+                                }
+                                size="sm"
+                                className={
+                                  watchData.discount_type === "percent"
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : ""
+                                }
+                                onClick={() => {
+                                  formProps.setValue("discount_type", "percent")
+                                  formProps.setValue("discount_value", 0)
+                                }}
+                              >
+                                %
+                              </InputGroupButton>
+                              <InputGroupButton
+                                type="button"
+                                variant={
+                                  watchData.discount_type === "nominal"
+                                    ? "default"
+                                    : "ghost"
+                                }
+                                size="sm"
+                                className={
+                                  watchData.discount_type === "nominal"
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : ""
+                                }
+                                onClick={() => {
+                                  formProps.setValue("discount_type", "nominal")
+                                  formProps.setValue("discount_value", 0)
+                                }}
+                              >
+                                Rp
+                              </InputGroupButton>
+                            </ButtonGroup>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      )}
+                    />
+
+                    <FormFieldItem
+                      control={control}
+                      name="is_forever"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="is_forever"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel
+                            htmlFor="is_forever"
+                            className="text-sm font-normal"
+                          >
+                            Aktif selamanya
+                          </FormLabel>
+                        </div>
+                      )}
+                    />
+
+                    {!watchData.is_forever && (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormFieldItem
+                          control={control}
+                          name="start_date"
+                          render={({ field }) => (
+                            <div className="flex flex-col gap-2">
+                              <FormLabel>Tanggal Mulai</FormLabel>
+                              <DatePicker
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                placeholder="Pilih tanggal mulai"
+                              />
+                            </div>
+                          )}
                         />
-                        <FormLabel
-                          htmlFor="is_forever"
-                          className="text-sm font-normal"
-                        >
-                          Aktif selamanya
-                        </FormLabel>
+
+                        <FormFieldItem
+                          control={control}
+                          name="end_date"
+                          render={({ field }) => (
+                            <div className="flex flex-col gap-2">
+                              <FormLabel>Tanggal Berakhir</FormLabel>
+                              <DatePicker
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                placeholder="Pilih tanggal berakhir"
+                              />
+                            </div>
+                          )}
+                        />
                       </div>
                     )}
-                  />
-
-                  {!watchData.is_forever && (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormFieldItem
-                        control={control}
-                        name="start_date"
-                        render={({ field }) => (
-                          <div className="flex flex-col gap-2">
-                            <FormLabel>Tanggal Mulai</FormLabel>
-                            <DatePicker
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              placeholder="Pilih tanggal mulai"
-                            />
-                          </div>
-                        )}
-                      />
-
-                      <FormFieldItem
-                        control={control}
-                        name="end_date"
-                        render={({ field }) => (
-                          <div className="flex flex-col gap-2">
-                            <FormLabel>Tanggal Berakhir</FormLabel>
-                            <DatePicker
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              placeholder="Pilih tanggal berakhir"
-                            />
-                          </div>
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-              <SheetFooter>
-                <div className="flex items-center justify-between px-4">
+                  </div>
+                </ScrollArea>
+              </div>
+              <SheetFooter className="px-4 py-2">
+                <div className="flex items-center justify-between">
                   {type === "update" && (
                     <Button
                       variant="destructive"

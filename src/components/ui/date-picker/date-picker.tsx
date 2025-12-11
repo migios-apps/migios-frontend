@@ -1,25 +1,21 @@
+import { format, Locale } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { DayPicker } from "react-day-picker"
 import { cn } from "@/lib/utils"
-import { dayjs } from "@/utils/dayjs"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/animate-ui/components/radix/popover"
 
-interface DatePickerProps
-  extends Omit<
-    React.ComponentProps<typeof DayPicker>,
-    "selected" | "onSelect"
-  > {
+type DatePickerProps = {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
   error?: boolean
-  classNameBtn?: string
+  className?: string
+  locale?: Locale
   formatStr?: string
   disabled?: (date: Date) => boolean
 }
@@ -29,10 +25,10 @@ export function DatePicker({
   onSelect,
   placeholder = "Pick a date",
   error = false,
-  classNameBtn,
-  formatStr,
+  className,
+  locale,
+  formatStr = "PPP",
   disabled,
-  ...props
 }: DatePickerProps) {
   return (
     <Popover>
@@ -43,12 +39,11 @@ export function DatePicker({
           className={cn(
             "data-[empty=true]:text-muted-foreground w-full justify-start text-start font-normal",
             error && "border-destructive ring-destructive/20 ring-[3px]",
-            classNameBtn
+            className
           )}
         >
           {selected ? (
-            // format(selected, formatStr, locale ? { locale } : undefined)
-            dayjs(selected).format(formatStr ?? "YYYY-MM-DD")
+            format(selected, formatStr, locale ? { locale } : undefined)
           ) : (
             <span>{placeholder}</span>
           )}
@@ -60,10 +55,11 @@ export function DatePicker({
           mode="single"
           selected={selected}
           onSelect={onSelect}
-          captionLayout="dropdown"
-          disabled={disabled}
+          disabled={
+            disabled ||
+            ((date: Date) => date > new Date() || date < new Date("1900-01-01"))
+          }
           initialFocus
-          {...(props as any)}
         />
       </PopoverContent>
     </Popover>

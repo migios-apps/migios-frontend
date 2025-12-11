@@ -5,13 +5,6 @@ import { ChangeStatusCuttingSession } from "@/services/api/@types/cutting-sessio
 import { apiChangeStatusCuttingSession } from "@/services/api/CuttingSessionService"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import {
   Select,
@@ -20,8 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { SheetDescription } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
+import { SheetDescription } from "@/components/animate-ui/components/radix/sheet"
 import {
   ChangeStatusFormSchema,
   useChangeStatusForm,

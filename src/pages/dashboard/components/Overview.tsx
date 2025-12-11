@@ -129,9 +129,9 @@ const Overview = () => {
   })
 
   return (
-    <Card className="gap-2 p-4">
-      <CardHeader className="p-0">
-        <div className="flex items-center justify-between">
+    <Card className="relative gap-2 p-4">
+      <CardHeader className="relative p-0">
+        <div className="flex w-full items-center justify-between">
           <CardTitle>Overview</CardTitle>
           <DatePickerAIO
             variant="range"

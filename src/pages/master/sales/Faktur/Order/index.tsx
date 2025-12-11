@@ -29,7 +29,13 @@ import {
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import { ThemeSwitch } from "@/components/theme-switch"
 import CartDetail from "../components/CartDetail"
 import FormAddItemSale from "../components/FormAddItemSale"
@@ -393,152 +399,162 @@ const PointOfSales = () => {
                 Product
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="package" className="flex flex-col gap-3 px-2">
-              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                <Select
-                  isClearable
-                  isSearchable={false}
-                  placeholder="Filter by category"
-                  className="w-full md:max-w-[200px]"
-                  value={categoryPackage.filter(
-                    (option) => option.value === packageCategory
+            <TabsContents>
+              <TabsContent value="package" className="flex flex-col gap-3 px-2">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <Select
+                    isClearable
+                    isSearchable={false}
+                    placeholder="Filter by category"
+                    className="w-full md:max-w-[200px]"
+                    value={categoryPackage.filter(
+                      (option) => option.value === packageCategory
+                    )}
+                    options={categoryPackage}
+                    onChange={(option) =>
+                      setPackageCategory(option?.value || "")
+                    }
+                  />
+                  <SelectAsyncPaginate
+                    isClearable
+                    isLoading={isFetchingNextPagePackages}
+                    loadOptions={getTrainerList as any}
+                    additional={{ page: 1 }}
+                    placeholder="Filter by trainer"
+                    className="w-full md:max-w-[200px]"
+                    value={trainer}
+                    getOptionLabel={(option) => option.name!}
+                    getOptionValue={(option) => option.id.toString()}
+                    debounceTimeout={500}
+                    onChange={(option) => setTrainer(option!)}
+                  />
+                  <InputDebounce
+                    defaultValue={searchPackage}
+                    placeholder="Search name..."
+                    handleOnchange={(value) => {
+                      setSearchPackage(value)
+                      queryClient.invalidateQueries({
+                        queryKey: [QUERY_KEY.packages],
+                      })
+                    }}
+                  />
+                </div>
+                <div
+                  ref={containerRefPackage}
+                  className="overflow-y-auto"
+                  style={{ height: "calc(100vh - 200px)" }}
+                >
+                  <div
+                    className="mb-4 grid gap-4"
+                    style={{
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(280px, 1fr))",
+                    }}
+                  >
+                    {packages?.pages.map((page, pageIndex) => (
+                      <React.Fragment key={pageIndex}>
+                        {page.data.data.map((item, index: number) => (
+                          <PackageCard
+                            key={index}
+                            disabled={
+                              watchTransaction.items
+                                ?.filter((trx) => trx.source_from === "item")
+                                ?.map((trx) => trx.package_id)
+                                ?.includes(item.id) || false
+                            }
+                            item={item}
+                            formProps={formPropsItem}
+                            onClick={() => {
+                              setOpenAddItem(true)
+                              setFormItemType("create")
+                            }}
+                          />
+                        ))}
+                      </React.Fragment>
+                    ))}
+                    {isFetchingNextPagePackages
+                      ? Array.from({ length: 12 }, (_, i) => i + 1).map(
+                          (_, i) => (
+                            <Skeleton
+                              key={i}
+                              className="h-[120px] rounded-xl"
+                            />
+                          )
+                        )
+                      : null}
+                  </div>
+                  {totalPackage === listPackages.length && (
+                    <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
+                      No more items to load
+                    </p>
                   )}
-                  options={categoryPackage}
-                  onChange={(option) => setPackageCategory(option?.value || "")}
-                />
-                <SelectAsyncPaginate
-                  isClearable
-                  isLoading={isFetchingNextPagePackages}
-                  loadOptions={getTrainerList as any}
-                  additional={{ page: 1 }}
-                  placeholder="Filter by trainer"
-                  className="w-full md:max-w-[200px]"
-                  value={trainer}
-                  getOptionLabel={(option) => option.name!}
-                  getOptionValue={(option) => option.id.toString()}
-                  debounceTimeout={500}
-                  onChange={(option) => setTrainer(option!)}
-                />
+                </div>
+              </TabsContent>
+              <TabsContent value="product" className="flex flex-col gap-3 px-2">
                 <InputDebounce
-                  defaultValue={searchPackage}
+                  defaultValue={searchProduct}
                   placeholder="Search name..."
                   handleOnchange={(value) => {
-                    setSearchPackage(value)
+                    setSearchProduct(value)
                     queryClient.invalidateQueries({
-                      queryKey: [QUERY_KEY.packages],
+                      queryKey: [QUERY_KEY.products],
                     })
                   }}
                 />
-              </div>
-              <div
-                ref={containerRefPackage}
-                className="overflow-y-auto"
-                style={{ height: "calc(100vh - 200px)" }}
-              >
                 <div
-                  className="mb-4 grid gap-4"
-                  style={{
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(280px, 1fr))",
-                  }}
+                  ref={containerRefProduct}
+                  className="overflow-y-auto"
+                  style={{ height: "calc(100vh - 175px)" }}
                 >
-                  {packages?.pages.map((page, pageIndex) => (
-                    <React.Fragment key={pageIndex}>
-                      {page.data.data.map((item, index: number) => (
-                        <PackageCard
-                          key={index}
-                          disabled={
-                            watchTransaction.items
-                              ?.filter((trx) => trx.source_from === "item")
-                              ?.map((trx) => trx.package_id)
-                              ?.includes(item.id) || false
-                          }
-                          item={item}
-                          formProps={formPropsItem}
-                          onClick={() => {
-                            setOpenAddItem(true)
-                            setFormItemType("create")
-                          }}
-                        />
-                      ))}
-                    </React.Fragment>
-                  ))}
-                  {isFetchingNextPagePackages
-                    ? Array.from({ length: 12 }, (_, i) => i + 1).map(
-                        (_, i) => (
-                          <Skeleton key={i} className="h-[120px] rounded-xl" />
+                  <div
+                    className="mb-4 grid gap-4"
+                    style={{
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(280px, 1fr))",
+                    }}
+                  >
+                    {products?.pages.map((page, pageIndex) => (
+                      <React.Fragment key={pageIndex}>
+                        {page.data.data.map((item, index: number) => (
+                          <ProductCard
+                            key={index}
+                            item={item}
+                            disabled={
+                              item.quantity === 0 ||
+                              watchTransaction.items
+                                ?.filter((trx) => trx.source_from === "item")
+                                ?.map((trx) => trx.product_id)
+                                ?.includes(item.id) ||
+                              false
+                            }
+                            formProps={formPropsItem}
+                            onClick={() => {
+                              setOpenAddItem(true)
+                              setFormItemType("create")
+                            }}
+                          />
+                        ))}
+                      </React.Fragment>
+                    ))}
+                    {isFetchingNextPageProducts
+                      ? Array.from({ length: 12 }, (_, i) => i + 1).map(
+                          (_, i) => (
+                            <Skeleton
+                              key={i}
+                              className="h-[120px] rounded-xl"
+                            />
+                          )
                         )
-                      )
-                    : null}
+                      : null}
+                  </div>
+                  {totalProduct === listProducts.length && (
+                    <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
+                      No more items to load
+                    </p>
+                  )}
                 </div>
-                {totalPackage === listPackages.length && (
-                  <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
-                    No more items to load
-                  </p>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="product" className="flex flex-col gap-3 px-2">
-              <InputDebounce
-                defaultValue={searchProduct}
-                placeholder="Search name..."
-                handleOnchange={(value) => {
-                  setSearchProduct(value)
-                  queryClient.invalidateQueries({
-                    queryKey: [QUERY_KEY.products],
-                  })
-                }}
-              />
-              <div
-                ref={containerRefProduct}
-                className="overflow-y-auto"
-                style={{ height: "calc(100vh - 175px)" }}
-              >
-                <div
-                  className="mb-4 grid gap-4"
-                  style={{
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(280px, 1fr))",
-                  }}
-                >
-                  {products?.pages.map((page, pageIndex) => (
-                    <React.Fragment key={pageIndex}>
-                      {page.data.data.map((item, index: number) => (
-                        <ProductCard
-                          key={index}
-                          item={item}
-                          disabled={
-                            item.quantity === 0 ||
-                            watchTransaction.items
-                              ?.filter((trx) => trx.source_from === "item")
-                              ?.map((trx) => trx.product_id)
-                              ?.includes(item.id) ||
-                            false
-                          }
-                          formProps={formPropsItem}
-                          onClick={() => {
-                            setOpenAddItem(true)
-                            setFormItemType("create")
-                          }}
-                        />
-                      ))}
-                    </React.Fragment>
-                  ))}
-                  {isFetchingNextPageProducts
-                    ? Array.from({ length: 12 }, (_, i) => i + 1).map(
-                        (_, i) => (
-                          <Skeleton key={i} className="h-[120px] rounded-xl" />
-                        )
-                      )
-                    : null}
-                </div>
-                {totalProduct === listProducts.length && (
-                  <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
-                    No more items to load
-                  </p>
-                )}
-              </div>
-            </TabsContent>
+              </TabsContent>
+            </TabsContents>
           </Tabs>
           <div className="h-full border-l border-gray-200 dark:border-gray-700">
             <div

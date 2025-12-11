@@ -44,12 +44,6 @@ import { statusPaymentColor } from "@/constants/utils"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { FormFieldItem } from "@/components/ui/form"
 import InputCurrency, { currencyFormat } from "@/components/ui/input-currency"
 import {
@@ -58,6 +52,12 @@ import {
 } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/components/radix/dropdown-menu"
 import { generateCartData } from "../utils/generateCartData"
 import {
   ReturnTransactionFormSchema,

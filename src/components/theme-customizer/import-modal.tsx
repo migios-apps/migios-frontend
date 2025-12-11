@@ -2,14 +2,14 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/animate-ui/components/radix/dialog"
 import type { ImportedTheme } from "./types/theme-customizer"
 
 interface ImportModalProps {

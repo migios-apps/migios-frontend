@@ -14,7 +14,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import { ThemeSwitch } from "@/components/theme-switch"
 import BottomStickyPayment from "./BottomStickyPayment"
 import InvoiceA5 from "./InvoiceA5"
@@ -93,20 +99,22 @@ const SaleDetail = () => {
               <ReceiptText color="currentColor" size={24} variant="Bulk" />
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="a5">
-            {detail ? (
-              <ScrollArea className="h-[calc(100vh-130px)]">
-                <InvoiceA5 detail={detail} />
-              </ScrollArea>
-            ) : null}
-          </TabsContent>
-          <TabsContent value="receipt">
-            {detail ? (
-              <ScrollArea className="h-[calc(100vh-130px)]">
-                <InvoiceReceipt detail={detail} />
-              </ScrollArea>
-            ) : null}
-          </TabsContent>
+          <TabsContents>
+            <TabsContent value="a5">
+              {detail ? (
+                <ScrollArea className="h-[calc(100vh-130px)]">
+                  <InvoiceA5 detail={detail} />
+                </ScrollArea>
+              ) : null}
+            </TabsContent>
+            <TabsContent value="receipt">
+              {detail ? (
+                <ScrollArea className="h-[calc(100vh-130px)]">
+                  <InvoiceReceipt detail={detail} />
+                </ScrollArea>
+              ) : null}
+            </TabsContent>
+          </TabsContents>
         </Tabs>
       </div>
       {/* Komponen Payment Section */}

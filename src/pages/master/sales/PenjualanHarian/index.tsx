@@ -22,12 +22,6 @@ import {
 import DatePickerAIO, {
   DatePickerAIOPropsValue,
 } from "@/components/ui/date-picker/date-picker-aio"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { currencyFormat } from "@/components/ui/input-currency"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -40,6 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/components/radix/dropdown-menu"
 import SalesLayout from "../Layout"
 
 const PenjualanHarianSkeleton = () => {

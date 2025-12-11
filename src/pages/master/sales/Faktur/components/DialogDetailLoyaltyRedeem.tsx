@@ -4,14 +4,14 @@ import dayjs from "dayjs"
 import { Gift, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { currencyFormat } from "@/components/ui/input-currency"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { currencyFormat } from "@/components/ui/input-currency"
+} from "@/components/animate-ui/components/radix/dialog"
 
 interface DialogDetailLoyaltyRedeemProps {
   open: boolean

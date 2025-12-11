@@ -25,15 +25,15 @@ import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import Loading from "@/components/ui/loading"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import Loading from "@/components/ui/loading"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/animate-ui/components/radix/dropdown-menu"
 import LayoutOtherSetting from "../Layout"
 import DialogFormDiscount from "./DialogFormDiscount"
 import DialogFormFreeItem from "./DialogFormFreeItem"

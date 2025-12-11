@@ -11,9 +11,13 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog"
 import InputDebounce from "@/components/ui/input-debounce"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/components/animate-ui/components/radix/dialog"
 
 type DialogMultiSelectPackageProps = {
   data?: CheckCode | null

@@ -12,14 +12,14 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { currencyFormat } from "@/components/ui/input-currency"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/animate-ui/components/radix/sheet"
 import { ReturnTransactionFormSchema } from "../utils/validation"
 
 interface DialogLoyaltyPointProps {

@@ -2,14 +2,14 @@ import React from "react"
 import { useMutation } from "@tanstack/react-query"
 import { apiCreateNewSubscription } from "@/services/api/ClubService"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Spinner } from "@/components/ui/spinner"
+} from "@/components/animate-ui/components/radix/dialog"
 
 type AlertDialogExpiredSubscriptionProps = {
   clubId?: number

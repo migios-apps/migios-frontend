@@ -36,7 +36,13 @@ import {
 } from "@/components/ui/input-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import DialogMultiSelectPackage from "./DialogMultiSelectPackage"
 import {
   CheckInFormSchema,
@@ -300,139 +306,143 @@ const CheckIn = () => {
                   </TabsList>
                 </div>
                 <div className="relative pt-2">
-                  <TabsContent value="code">
-                    <div className="flex flex-col gap-4">
-                      <Form {...formPorps}>
-                        <form
-                          onSubmit={handleSubmitCheckMemberCode(
-                            onSubmitCheckCode
-                          )}
-                        >
-                          <FormFieldItem
-                            control={control}
-                            name="code"
-                            render={({ field }) => (
-                              <InputGroup className="border-primary h-12 border-2">
-                                <InputGroupAddon align="inline-start">
-                                  <Scan variant="Bulk" size={20} />
-                                </InputGroupAddon>
-                                <InputGroupInput
-                                  {...field}
-                                  autoFocus
-                                  placeholder="Enter member code..."
-                                  className="text-base"
-                                />
-                              </InputGroup>
+                  <TabsContents>
+                    <TabsContent value="code">
+                      <div className="flex flex-col gap-4">
+                        <Form {...formPorps}>
+                          <form
+                            onSubmit={handleSubmitCheckMemberCode(
+                              onSubmitCheckCode
                             )}
-                          />
-                        </form>
-                      </Form>
-                      {errorMessage.length > 0 ? (
-                        <Alert variant="destructive">
-                          <AlertDescription>{errorMessage}</AlertDescription>
-                        </Alert>
-                      ) : null}
-                      <div className="border-border bg-border mb-2 h-px" />
-                      <div className="flex items-center justify-between">
-                        <h6 className="text-foreground w-full">{`Members hasn't check in (${totalMemberNotCheckIn})`}</h6>
-                        <InputDebounce
-                          placeholder="Search (name,code)..."
-                          handleOnchange={(value) => {
-                            setTableDataNotCheckIn({
-                              ...tableDataNotCheckIn,
-                              query: value,
-                              pageIndex: 1,
-                            })
-                          }}
-                        />
-                      </div>
-                      <ScrollArea className="h-[calc(100vh-31rem)]">
-                        <div className="space-y-4 pr-3">
-                          {listDataNotCheckIn.map((member, index) => (
-                            <div
-                              key={index}
-                              className="border-border flex items-center justify-between gap-3 border-b pb-3"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-10">
-                                  <AvatarImage
-                                    src={member?.photo || ""}
-                                    alt={member?.name}
+                          >
+                            <FormFieldItem
+                              control={control}
+                              name="code"
+                              render={({ field }) => (
+                                <InputGroup className="border-primary h-12 border-2">
+                                  <InputGroupAddon align="inline-start">
+                                    <Scan variant="Bulk" size={20} />
+                                  </InputGroupAddon>
+                                  <InputGroupInput
+                                    {...field}
+                                    autoFocus
+                                    placeholder="Enter member code..."
+                                    className="text-base"
                                   />
-                                  <AvatarFallback>
-                                    {member?.name?.charAt(0)?.toUpperCase() ||
-                                      "?"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <span className="text-foreground font-semibold">
-                                    {member?.name}
-                                  </span>
-                                  <span className="text-muted-foreground text-sm">
-                                    {member?.code}
-                                  </span>
-                                </div>
-                              </div>
-                              <Button
-                                type="button"
-                                className="h-8 px-2 py-0"
-                                onClick={() =>
-                                  handleCheckMemberCode(member.code)
-                                }
-                              >
-                                Check In
-                              </Button>
-                            </div>
-                          ))}
-
-                          {isFetchingMemberNotCheckIn ||
-                          isLoadingMemberNotCheckIn
-                            ? Array.from({ length: 3 }).map((_, index) => (
-                                <div
-                                  key={index}
-                                  className="border-border flex items-center justify-between gap-3 border-b pb-3"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
-                                    <div className="flex-1 space-y-2">
-                                      <Skeleton className="h-6 w-32" />
-                                      <Skeleton className="h-4 w-48" />
-                                    </div>
-                                  </div>
-                                  <Skeleton className="h-7 w-16 rounded-md" />
-                                </div>
-                              ))
-                            : null}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="qr">
-                    <div className="flex w-full items-center justify-center">
-                      <div className="w-full max-w-xl">
-                        {errorMessage && (
-                          <Alert variant="destructive" className="mb-4">
+                                </InputGroup>
+                              )}
+                            />
+                          </form>
+                        </Form>
+                        {errorMessage.length > 0 ? (
+                          <Alert variant="destructive">
                             <AlertDescription>{errorMessage}</AlertDescription>
                           </Alert>
-                        )}
-                        <CameraScanner
-                          allowMultiple={false}
-                          paused={tabName !== "qr"}
-                          tracker="boundingBox"
-                          onScan={(result) => {
-                            const value = result[result.length - 1].rawValue
-                            if (scanValue !== value) {
-                              setScanValue(value)
-                              setTimeout(() => {
-                                handleCheckMemberCode(value)
-                              }, 1000)
-                            }
-                          }}
-                          onError={(error) => console.log("error", error)}
-                        />
+                        ) : null}
+                        <div className="border-border bg-border mb-2 h-px" />
+                        <div className="flex items-center justify-between">
+                          <h6 className="text-foreground w-full">{`Members hasn't check in (${totalMemberNotCheckIn})`}</h6>
+                          <InputDebounce
+                            placeholder="Search (name,code)..."
+                            handleOnchange={(value) => {
+                              setTableDataNotCheckIn({
+                                ...tableDataNotCheckIn,
+                                query: value,
+                                pageIndex: 1,
+                              })
+                            }}
+                          />
+                        </div>
+                        <ScrollArea className="h-[calc(100vh-31rem)]">
+                          <div className="space-y-4 pr-3">
+                            {listDataNotCheckIn.map((member, index) => (
+                              <div
+                                key={index}
+                                className="border-border flex items-center justify-between gap-3 border-b pb-3"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-10">
+                                    <AvatarImage
+                                      src={member?.photo || ""}
+                                      alt={member?.name}
+                                    />
+                                    <AvatarFallback>
+                                      {member?.name?.charAt(0)?.toUpperCase() ||
+                                        "?"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <span className="text-foreground font-semibold">
+                                      {member?.name}
+                                    </span>
+                                    <span className="text-muted-foreground text-sm">
+                                      {member?.code}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  className="h-8 px-2 py-0"
+                                  onClick={() =>
+                                    handleCheckMemberCode(member.code)
+                                  }
+                                >
+                                  Check In
+                                </Button>
+                              </div>
+                            ))}
+
+                            {isFetchingMemberNotCheckIn ||
+                            isLoadingMemberNotCheckIn
+                              ? Array.from({ length: 3 }).map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className="border-border flex items-center justify-between gap-3 border-b pb-3"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Skeleton className="h-10 w-10 rounded-full" />
+                                      <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-6 w-32" />
+                                        <Skeleton className="h-4 w-48" />
+                                      </div>
+                                    </div>
+                                    <Skeleton className="h-7 w-16 rounded-md" />
+                                  </div>
+                                ))
+                              : null}
+                          </div>
+                        </ScrollArea>
                       </div>
-                    </div>
-                  </TabsContent>
+                    </TabsContent>
+                    <TabsContent value="qr">
+                      <div className="flex w-full items-center justify-center">
+                        <div className="w-full max-w-xl">
+                          {errorMessage && (
+                            <Alert variant="destructive" className="mb-4">
+                              <AlertDescription>
+                                {errorMessage}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          <CameraScanner
+                            allowMultiple={false}
+                            paused={tabName !== "qr"}
+                            tracker="boundingBox"
+                            onScan={(result) => {
+                              const value = result[result.length - 1].rawValue
+                              if (scanValue !== value) {
+                                setScanValue(value)
+                                setTimeout(() => {
+                                  handleCheckMemberCode(value)
+                                }, 1000)
+                              }
+                            }}
+                            onError={(error) => console.log("error", error)}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </TabsContents>
                 </div>
               </Tabs>
             </CardContent>

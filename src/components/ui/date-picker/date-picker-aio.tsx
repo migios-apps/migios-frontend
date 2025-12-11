@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react"
-import { PopoverContentProps } from "@radix-ui/react-popover"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import dayjs, { Dayjs } from "dayjs"
 import isBetween from "dayjs/plugin/isBetween"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -12,13 +11,9 @@ import {
   menusShortcutDatePicker,
 } from "@/hooks/use-date-picker"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { DatePicker } from "@/components/ui/date-picker"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { DateTimePicker } from "@/components/ui/date-picker"
+import { CalendarPicker } from "@/components/ui/date-picker/calendar-picker"
 import {
   Select,
   SelectContent,
@@ -26,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  type PopoverContentProps,
+} from "@/components/animate-ui/components/radix/popover"
 
 dayjs.extend(isBetween)
 
@@ -50,6 +51,9 @@ export interface DatePickerAIOProps {
   className?: string
   align?: PopoverContentProps["align"]
   options?: TypesActionDatePicker[]
+  min?: Date
+  max?: Date
+  topLabel?: boolean
 }
 
 const DatePickerAIO = ({
@@ -69,6 +73,9 @@ const DatePickerAIO = ({
     "all",
     "custom",
   ],
+  min,
+  max,
+  topLabel = true,
 }: DatePickerAIOProps) => {
   const [date, setDate] = useState<Dayjs | null | undefined>(
     value ? dayjs(value?.date[0]) : undefined
@@ -79,11 +86,17 @@ const DatePickerAIO = ({
   const [endDate, setEndDate] = useState<Dayjs | null | undefined>(
     value ? dayjs(value?.date[1]) : undefined
   )
-  const defaultMenu = value?.type
-    ? getMenuShortcutDatePickerByType(value.type).menu
-    : undefined
+
+  const defaultMenuMemo = useMemo(
+    () =>
+      value?.type
+        ? getMenuShortcutDatePickerByType(value.type).menu
+        : undefined,
+    [value?.type]
+  )
+
   const [menuSelected, setMenuSelected] = useState<MenuDatePicker | undefined>(
-    defaultMenu
+    defaultMenuMemo
   )
   const [errorMessage, setErrorMessage] = useState("")
 
@@ -94,18 +107,21 @@ const DatePickerAIO = ({
     setDate(value ? dayjs(value?.date[0]) : undefined)
     setStartDate(value ? dayjs(value?.date[0]) : undefined)
     setEndDate(value ? dayjs(value?.date[1]) : undefined)
-    setMenuSelected(defaultMenu)
-  }, [defaultMenu, value])
+    setMenuSelected(defaultMenuMemo)
+  }, [defaultMenuMemo, value])
 
-  const onChangeDateCalender = (date: Dayjs | null) => {
-    setDate(date)
-    onChange?.({
-      type: "today",
-      name: NamesActionDatePicker.today,
-      date: [date?.format(), date?.format()],
-    })
-    setOpen(false)
-  }
+  const onChangeDateCalender = useCallback(
+    (date: Dayjs | null) => {
+      setDate(date)
+      onChange?.({
+        type: "today",
+        name: NamesActionDatePicker.today,
+        date: [date?.format(), date?.format()],
+      })
+      setOpen(false)
+    },
+    [onChange]
+  )
 
   // const onChangeDateCalenderRange = (date: Dayjs | null) => {
   //   if (endDate?.isValid()) {
@@ -121,14 +137,15 @@ const DatePickerAIO = ({
   //   }
   // }
 
-  const onChangeStartPicker = (value: Dayjs | null) => {
+  const onChangeStartPicker = useCallback((value: Dayjs | null) => {
     setStartDate(value)
-  }
-  const onChangeEndPicker = (value: Dayjs | null) => {
-    setEndDate(value)
-  }
+  }, [])
 
-  const onChangeMenuSelected = (type: string) => {
+  const onChangeEndPicker = useCallback((value: Dayjs | null) => {
+    setEndDate(value)
+  }, [])
+
+  const onChangeMenuSelected = useCallback((type: string) => {
     const getMenuSelected = menusShortcutDatePicker.find(
       (val) => type === val.type
     )
@@ -136,7 +153,7 @@ const DatePickerAIO = ({
     setMenuSelected(getMenuSelected)
     setStartDate(dayjs(getMenuSelected.options.defaultStartDate))
     setEndDate(dayjs(getMenuSelected.options.defaultEndDate))
-  }
+  }, [])
 
   useEffect(() => {
     // Handle is custom
@@ -160,7 +177,7 @@ const DatePickerAIO = ({
     menuSelected?.type,
   ])
 
-  const onPrevSingle = () => {
+  const onPrevSingle = useCallback(() => {
     const prevDate = date?.add(-1, "day")
     setDate(prevDate)
     onChange?.({
@@ -168,8 +185,9 @@ const DatePickerAIO = ({
       name: NamesActionDatePicker.today,
       date: [prevDate?.format(), prevDate?.format()],
     })
-  }
-  const onNextSingle = () => {
+  }, [date, onChange])
+
+  const onNextSingle = useCallback(() => {
     const nextDate = date?.add(1, "day")
     setDate(nextDate)
     onChange?.({
@@ -177,9 +195,9 @@ const DatePickerAIO = ({
       name: NamesActionDatePicker.today,
       date: [nextDate?.format(), nextDate?.format()],
     })
-  }
+  }, [date, onChange])
 
-  const onPrevRange = () => {
+  const onPrevRange = useCallback(() => {
     if (!startDate || !endDate || menuSelected?.type === "all") return
 
     const totalDays = endDate.diff(startDate, "day") + 1
@@ -194,9 +212,9 @@ const DatePickerAIO = ({
       name: menuSelected?.name,
       date: [prevStartDate.format(), prevEndDate.format()],
     })
-  }
+  }, [startDate, endDate, menuSelected, onChange])
 
-  const onNextRange = () => {
+  const onNextRange = useCallback(() => {
     if (!startDate || !endDate || menuSelected?.type === "all") return
 
     const totalDays = endDate.diff(startDate, "day") + 1
@@ -211,9 +229,9 @@ const DatePickerAIO = ({
       name: menuSelected?.name,
       date: [nextStartDate.format(), nextEndDate.format()],
     })
-  }
+  }, [startDate, endDate, menuSelected, onChange])
 
-  const onApplyPicker = () => {
+  const onApplyPicker = useCallback(() => {
     if (variant === "single") {
       onChange?.({
         type: "today",
@@ -236,86 +254,182 @@ const DatePickerAIO = ({
     if (startDate?.isAfter(endDate)) return
     setOpen(false)
     setErrorMessage("")
-  }
+  }, [variant, date, startDate, endDate, menuSelected, onChange])
+
+  const showRangeLabel = useMemo(
+    () => !isCustom && value.type !== "custom" && value?.name,
+    [isCustom, value.type, value?.name]
+  )
+
+  const showSingleLabel = useMemo(() => {
+    if (!value?.date[0]) return false
+    return (
+      dayjs(value.date[0]).format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD")
+    )
+  }, [value?.date])
+
+  const filteredMenus = useMemo(
+    () => menusShortcutDatePicker.filter((menu) => options.includes(menu.type)),
+    [options]
+  )
+
+  const rangeValue = useMemo(
+    () => ({
+      from: startDate?.toDate(),
+      to: endDate?.toDate(),
+    }),
+    [startDate, endDate]
+  )
+
+  const handleRangeSelect = useCallback(
+    (range: { from?: Date; to?: Date } | undefined) => {
+      if (range?.from && dayjs(range.from).isValid())
+        setStartDate(dayjs(range.from))
+      if (range?.to && dayjs(range.to).isValid()) setEndDate(dayjs(range.to))
+    },
+    []
+  )
+
+  const singleDateFormatted = useMemo(
+    () => dayjs(value?.date[0]).format("DD MMMM YYYY"),
+    [value?.date]
+  )
+
+  const rangeDateFormatted = useMemo(() => {
+    if (value?.type === "all") return ""
+    if (!value?.date[0] || !value?.date[1]) return ""
+    return `${dayjs(value.date[0]).format("DD MMM YYYY")} - ${dayjs(
+      value.date[1]
+    ).format("DD MMM YYYY")}`
+  }, [value?.type, value?.date])
+
+  const dateFormatted = useMemo(
+    () => date?.format("DD MMMM YYYY") ?? "",
+    [date]
+  )
+
+  const isToday = useMemo(
+    () => date?.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD"),
+    [date]
+  )
+
+  const showLabelName = useMemo(
+    () => (topLabel && showSingleLabel) || (topLabel && showRangeLabel),
+    [topLabel, showSingleLabel, showRangeLabel]
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div
-        className={cn(
-          "bg-muted flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all duration-100 select-none",
-          className
-        )}
-      >
+      <ButtonGroup orientation="horizontal" className={className}>
         <Button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="text-foreground disabled:text-muted-foreground h-8 w-8 disabled:cursor-not-allowed"
+          variant="outline"
+          size="sm"
+          className={cn(
+            "h-8 disabled:cursor-not-allowed",
+            showLabelName && "h-12"
+          )}
           disabled={value?.type === "all"}
           onClick={variant === "single" ? onPrevSingle : onPrevRange}
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <PopoverTrigger asChild>
-          <div className="flex w-full flex-col items-center justify-center text-xl">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn(
+              "flex h-8 w-full flex-1 flex-col items-center justify-center gap-0.5 px-3 py-1",
+              showLabelName && "h-12"
+            )}
+          >
             {variant === "single" ? (
               <>
-                <h6 className="text-primary line-clamp-1 text-center text-base font-semibold">
-                  {dayjs(value?.date[0]).format("YYYY-MM-DD") ===
-                  dayjs().format("YYYY-MM-DD")
-                    ? "Hari ini"
-                    : ""}
-                </h6>
-                <p className="text-muted-foreground line-clamp-1 text-center text-sm">
-                  {dayjs(value?.date[0]).format("DD MMMM YYYY")}
-                </p>
+                {showLabelName ? (
+                  <>
+                    {showSingleLabel ? (
+                      <span className="text-primary line-clamp-1 text-center text-xs leading-tight font-semibold">
+                        Hari ini
+                      </span>
+                    ) : null}
+                    <span className="text-muted-foreground line-clamp-1 text-center text-xs leading-tight">
+                      {singleDateFormatted}
+                    </span>
+                  </>
+                ) : (
+                  <span
+                    className={cn(
+                      "line-clamp-1 text-center text-xs leading-tight",
+                      showSingleLabel
+                        ? "text-primary font-semibold"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {showSingleLabel ? "Hari ini" : singleDateFormatted}
+                  </span>
+                )}
               </>
             ) : null}
 
             {variant === "range" ? (
               <>
-                <h6 className="text-primary line-clamp-1 text-center text-base font-semibold">
-                  {!isCustom && value.type !== "custom" ? value?.name : ""}
-                </h6>
-                <p className="text-muted-foreground line-clamp-1 text-center text-sm">
-                  {value?.type !== "all"
-                    ? `${dayjs(value?.date[0]).format("DD MMM YYYY")} - ${dayjs(
-                        value?.date[1]
-                      ).format("DD MMM YYYY")}`
-                    : ""}
-                </p>
+                {showLabelName ? (
+                  <>
+                    <span className="text-primary line-clamp-1 text-center text-xs leading-tight font-semibold">
+                      {value.name}
+                    </span>
+                    <span className="text-muted-foreground line-clamp-1 text-center text-xs leading-tight">
+                      {rangeDateFormatted}
+                    </span>
+                  </>
+                ) : (
+                  <span
+                    className={cn(
+                      "line-clamp-1 text-center text-xs leading-tight",
+                      showRangeLabel
+                        ? "text-primary font-semibold"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {showRangeLabel ? value.name : rangeDateFormatted}
+                  </span>
+                )}
               </>
             ) : null}
-          </div>
+          </Button>
         </PopoverTrigger>
 
         <Button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="text-foreground disabled:text-muted-foreground h-8 w-8 disabled:cursor-not-allowed"
+          variant="outline"
+          size="sm"
+          className={cn(
+            "h-8 disabled:cursor-not-allowed",
+            showLabelName && "h-12"
+          )}
           disabled={value?.type === "all"}
           onClick={variant === "single" ? onNextSingle : onNextRange}
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
-      </div>
+      </ButtonGroup>
       <PopoverContent align={align} className="w-auto rounded-xl p-0">
         {variant === "single" ? (
           <div className="flex flex-col p-2">
-            <Calendar
-              mode="single"
-              selected={date?.toDate()}
-              onSelect={(date) => date && onChangeDateCalender(dayjs(date))}
-              captionLayout="dropdown"
+            <CalendarPicker
+              value={date?.toDate()}
+              onChange={(selectedDate) =>
+                onChangeDateCalender(dayjs(selectedDate))
+              }
+              min={min}
+              max={max}
             />
             <div className="flex justify-between gap-4 px-4 py-2">
-              <span>{date?.format("DD MMMM YYYY")}</span>
+              <span>{dateFormatted}</span>
               <span className="text-base font-semibold">
-                {date?.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD")
-                  ? "Hari ini"
-                  : ""}
+                {isToday ? "Hari ini" : ""}
               </span>
             </div>
           </div>
@@ -329,7 +443,7 @@ const DatePickerAIO = ({
             </div>
             <div className="flex flex-col-reverse gap-0 p-4 pt-0 md:flex-row md:gap-4">
               {/* Mobile Dropdown */}
-              <div className="w-full md:hidden">
+              <div className="mt-2 w-full md:hidden">
                 <Select
                   value={menuSelected?.type}
                   onValueChange={(value) =>
@@ -340,76 +454,59 @@ const DatePickerAIO = ({
                     <SelectValue placeholder="Pilih periode" />
                   </SelectTrigger>
                   <SelectContent>
-                    {menusShortcutDatePicker
-                      .filter((menu) => options.includes(menu.type))
-                      .map((menu, index) => (
-                        <SelectItem key={index} value={menu.type}>
-                          {menu.name}
-                        </SelectItem>
-                      ))}
+                    {filteredMenus.map((menu, index) => (
+                      <SelectItem key={index} value={menu.type}>
+                        {menu.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Desktop Button Grid */}
               <div className="hidden h-max min-w-[128px] grid-cols-2 gap-0 md:grid md:grid-cols-1">
-                {menusShortcutDatePicker
-                  .filter((menu) => options.includes(menu.type))
-                  .map((menu, index) => (
-                    <Button
-                      key={index}
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className={cn(
-                        "justify-start text-start",
-                        menuSelected?.type === menu.type
-                          ? "text-primary bg-primary-foreground hover:bg-primary-foreground hover:text-primary"
-                          : ""
-                      )}
-                      onClick={() => onChangeMenuSelected(menu.type)}
-                    >
-                      {menu.name}
-                    </Button>
-                  ))}
+                {filteredMenus.map((menu, index) => (
+                  <Button
+                    key={index}
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className={cn(
+                      "justify-start text-start",
+                      menuSelected?.type === menu.type
+                        ? "text-primary bg-primary-foreground hover:bg-primary-foreground hover:text-primary"
+                        : ""
+                    )}
+                    onClick={() => onChangeMenuSelected(menu.type)}
+                  >
+                    {menu.name}
+                  </Button>
+                ))}
               </div>
               <div className="flex flex-col items-center justify-center md:items-start md:justify-start">
                 {menuSelected?.options.readOnlyCalendar ? (
                   <>
                     {/* Mobile: 1 calendar */}
                     <div className="md:hidden">
-                      <Calendar
+                      <CalendarPicker
                         mode="range"
                         captionLayout="dropdown"
-                        selected={{
-                          from: startDate?.toDate(),
-                          to: endDate?.toDate(),
-                        }}
-                        onSelect={(range) => {
-                          if (range?.from && dayjs(range.from).isValid())
-                            setStartDate(dayjs(range.from))
-                          if (range?.to && dayjs(range.to).isValid())
-                            setEndDate(dayjs(range.to))
-                        }}
+                        value={rangeValue}
+                        onSelect={handleRangeSelect}
+                        min={min}
+                        max={max}
                       />
                     </div>
                     {/* Desktop: 2 calendars side by side */}
                     <div className="hidden md:block">
-                      <Calendar
+                      <CalendarPicker
                         mode="range"
                         captionLayout="dropdown"
                         numberOfMonths={2}
-                        disabled={(date) => date > new Date()}
-                        selected={{
-                          from: startDate?.toDate(),
-                          to: endDate?.toDate(),
-                        }}
-                        onSelect={(range) => {
-                          if (range?.from && dayjs(range.from).isValid())
-                            setStartDate(dayjs(range.from))
-                          if (range?.to && dayjs(range.to).isValid())
-                            setEndDate(dayjs(range.to))
-                        }}
+                        value={rangeValue}
+                        onSelect={handleRangeSelect}
+                        min={min}
+                        max={max}
                       />
                     </div>
                   </>
@@ -419,24 +516,28 @@ const DatePickerAIO = ({
                       <label className="text-foreground mb-1 block text-sm font-medium">
                         Tanggal mulai
                       </label>
-                      <DatePicker
-                        selected={startDate?.toDate()}
-                        onSelect={(date) =>
+                      <DateTimePicker
+                        value={startDate?.toDate()}
+                        onChange={(date) =>
                           onChangeStartPicker(date ? dayjs(date) : null)
                         }
-                        placeholder="Tanggal mulai"
+                        hideTime={true}
+                        min={min}
+                        max={max}
                       />
                     </div>
                     <div className="w-full">
                       <label className="text-foreground mb-1 block text-sm font-medium">
                         Tanggal akhir
                       </label>
-                      <DatePicker
-                        selected={endDate?.toDate()}
-                        onSelect={(date) =>
+                      <DateTimePicker
+                        value={endDate?.toDate()}
+                        onChange={(date) =>
                           onChangeEndPicker(date ? dayjs(date) : null)
                         }
-                        placeholder="Tanggal akhir"
+                        hideTime={true}
+                        min={min}
+                        max={max}
                       />
                     </div>
                   </div>

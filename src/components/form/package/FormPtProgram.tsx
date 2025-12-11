@@ -36,6 +36,8 @@ import {
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Sheet,
   SheetContent,
@@ -43,9 +45,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/animate-ui/components/radix/sheet"
 import DialogFormLoyaltyPoint from "@/components/form/loyalty-point/DialogFormLoyaltyPoint"
 import {
   useLoyaltyPointForm,
@@ -233,425 +233,431 @@ const FormPtProgram: React.FC<FormProps> = ({
   return (
     <>
       <Sheet open={open} onOpenChange={handleClose}>
-        <SheetContent
-          side="right"
-          className="w-full gap-0 sm:max-w-[620px]"
-          floating
-        >
-          <SheetHeader>
-            <SheetTitle>
-              {type === "create"
-                ? "Create PT Program Package"
-                : "Update PT Program Package"}
-            </SheetTitle>
-            <SheetDescription />
-          </SheetHeader>
+        <SheetContent floating className="gap-0 sm:max-w-xl">
           <Form {...formProps}>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <ScrollArea className="h-[calc(100vh-10rem)] px-2">
-                <div className="space-y-4 px-4">
-                  <FormFieldItem
-                    control={control}
-                    name="name"
-                    label={
-                      <FormLabel>
-                        Name <span className="text-destructive">*</span>
-                      </FormLabel>
-                    }
-                    invalid={Boolean(errors.name)}
-                    errorMessage={errors.name?.message}
-                    render={({ field }) => (
-                      <Input
-                        type="text"
-                        autoComplete="off"
-                        placeholder="Name"
-                        {...field}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="price"
-                    label={
-                      <FormLabel>
-                        Price <span className="text-destructive">*</span>
-                      </FormLabel>
-                    }
-                    invalid={Boolean(errors.price)}
-                    errorMessage={errors.price?.message}
-                    render={({ field }) => (
-                      <InputCurrency
-                        placeholder="Price"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      />
-                    )}
-                  />
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Promo</FormLabel>
-                      <FormFieldItem
-                        control={control}
-                        name="is_promo"
-                        render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">Set as Promo</span>
-                            <Switch
-                              checked={Boolean(field.value)}
-                              onCheckedChange={(checked) => {
-                                field.onChange(checked ? 1 : 0)
-                                formProps.setValue(
-                                  "discount_type",
-                                  checked ? "nominal" : undefined
-                                )
-                                formProps.setValue("discount", undefined)
-                              }}
-                            />
-                          </div>
-                        )}
-                      />
-                    </div>
-                    {watchData.is_promo ? (
-                      <FormFieldItem
-                        control={control}
-                        name="discount"
-                        invalid={Boolean(errors.discount)}
-                        errorMessage={errors.discount?.message}
-                        render={({ field }) => {
-                          const { famount } = calculateDiscountAmount({
-                            price: watchData.price,
-                            discount_type: watchData.discount_type as any,
-                            discount_amount: field.value as number,
-                          })
-                          return (
-                            <>
-                              <InputGroup>
-                                {watchData.discount_type === "nominal" ? (
-                                  <InputCurrency
-                                    placeholder="Discount amount"
-                                    customInput={InputGroupInput}
-                                    value={field.value || undefined}
-                                    onValueChange={field.onChange}
-                                  />
-                                ) : (
-                                  <InputGroupInput
-                                    type="number"
-                                    autoComplete="off"
-                                    placeholder="10%"
-                                    {...field}
-                                    value={
-                                      (field.value === 0
-                                        ? undefined
-                                        : field.value) || undefined
-                                    }
-                                    onChange={(e) => {
-                                      const value =
-                                        e.target.value === ""
-                                          ? 0
-                                          : Number(e.target.value)
-                                      field.onChange(value)
-                                    }}
-                                  />
-                                )}
-                                <InputGroupAddon
-                                  align="inline-end"
-                                  className="pr-0"
-                                >
-                                  <ButtonGroup>
-                                    <InputGroupButton
-                                      type="button"
-                                      variant={
-                                        watchData.discount_type === "percent"
-                                          ? "default"
-                                          : "ghost"
-                                      }
-                                      size="sm"
-                                      className={
-                                        watchData.discount_type === "percent"
-                                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                          : ""
-                                      }
-                                      onClick={() => {
-                                        formProps.setValue(
-                                          "discount_type",
-                                          "percent"
-                                        )
-                                        formProps.setValue("discount", 0)
-                                      }}
-                                    >
-                                      %
-                                    </InputGroupButton>
-                                    <InputGroupButton
-                                      type="button"
-                                      variant={
-                                        watchData.discount_type === "nominal"
-                                          ? "default"
-                                          : "ghost"
-                                      }
-                                      size="sm"
-                                      className={
-                                        watchData.discount_type === "nominal"
-                                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                          : ""
-                                      }
-                                      onClick={() => {
-                                        formProps.setValue(
-                                          "discount_type",
-                                          "nominal"
-                                        )
-                                        formProps.setValue("discount", 0)
-                                      }}
-                                    >
-                                      Rp
-                                    </InputGroupButton>
-                                  </ButtonGroup>
-                                </InputGroupAddon>
-                              </InputGroup>
-                              <span className="text-muted-foreground text-xs italic">
-                                Sell Price {famount}
-                              </span>
-                            </>
-                          )
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                  <FormFieldItem
-                    control={control}
-                    name="loyalty_point"
-                    label={<>Loyalty Point Earned</>}
-                    invalid={Boolean(errors.loyalty_point)}
-                    errorMessage={errors.loyalty_point?.message}
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        {watchData.loyalty_point ? (
-                          <div className="border-border flex items-center justify-between rounded-lg border p-3">
-                            <div className="flex items-center gap-2">
-                              <Gift className="text-primary size-5" />
-                              <div>
-                                <div className="text-foreground text-sm font-medium">
-                                  {watchData.loyalty_point.points} Points
-                                </div>
-                                <div className="text-muted-foreground text-xs">
-                                  {watchData.loyalty_point.expired_type ===
-                                  "forever"
-                                    ? "Forever"
-                                    : `For ${watchData.loyalty_point.expired_value ?? 0} ${watchData.loyalty_point.expired_type}${(watchData.loyalty_point.expired_value ?? 0) > 1 ? "s" : ""}`}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  if (watchData.loyalty_point) {
-                                    loyaltyPointForm.reset({
-                                      points: watchData.loyalty_point.points,
-                                      expired_type:
-                                        watchData.loyalty_point.expired_type,
-                                      expired_value:
-                                        watchData.loyalty_point.expired_value ??
-                                        0,
-                                    })
-                                    setOpenLoyaltyDialog(true)
-                                  }
-                                }}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  field.onChange(null)
-                                }}
-                              >
-                                Hapus
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => {
-                              resetLoyaltyPointForm(loyaltyPointForm)
-                              setOpenLoyaltyDialog(true)
-                            }}
-                          >
-                            <Gift className="mr-2 size-4" />
-                            Tambah Loyalty Point
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  />
-                  <div className="grid gap-4 md:grid-cols-2">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex h-full flex-col"
+            >
+              <SheetHeader>
+                <SheetTitle>
+                  {type === "create"
+                    ? "Create PT Program Package"
+                    : "Update PT Program Package"}
+                </SheetTitle>
+                <SheetDescription />
+              </SheetHeader>
+              <div className="flex-1 overflow-hidden px-2 pr-1">
+                <ScrollArea className="h-full px-2 pr-3">
+                  <div className="space-y-6 px-1 pb-4">
                     <FormFieldItem
                       control={control}
-                      name="duration"
+                      name="name"
                       label={
                         <FormLabel>
-                          Duration <span className="text-destructive">*</span>
+                          Name <span className="text-destructive">*</span>
                         </FormLabel>
                       }
-                      invalid={Boolean(errors.duration)}
-                      errorMessage={errors.duration?.message}
+                      invalid={Boolean(errors.name)}
+                      errorMessage={errors.name?.message}
                       render={({ field }) => (
                         <Input
-                          type="number"
+                          type="text"
                           autoComplete="off"
-                          placeholder="duration"
+                          placeholder="Name"
                           {...field}
                         />
                       )}
                     />
                     <FormFieldItem
                       control={control}
-                      name="duration_type"
+                      name="price"
                       label={
                         <FormLabel>
-                          Duration Type{" "}
-                          <span className="text-destructive">*</span>
+                          Price <span className="text-destructive">*</span>
                         </FormLabel>
                       }
-                      invalid={Boolean(errors.duration_type)}
-                      errorMessage={errors.duration_type?.message}
-                      render={({ field, fieldState }) => (
-                        <Select
-                          isSearchable={false}
-                          placeholder="Please Select"
-                          value={durationTypeOptions.filter(
-                            (option) => option.value === field.value
-                          )}
-                          options={durationTypeOptions}
-                          error={!!fieldState.error}
-                          onChange={(option) => field.onChange(option?.value)}
+                      invalid={Boolean(errors.price)}
+                      errorMessage={errors.price?.message}
+                      render={({ field }) => (
+                        <InputCurrency
+                          placeholder="Price"
+                          value={field.value}
+                          onValueChange={field.onChange}
                         />
                       )}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>
-                        Trainers <span className="text-destructive">*</span>
-                      </FormLabel>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Promo</FormLabel>
+                        <FormFieldItem
+                          control={control}
+                          name="is_promo"
+                          render={({ field }) => (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">Set as Promo</span>
+                              <Switch
+                                checked={Boolean(field.value)}
+                                onCheckedChange={(checked) => {
+                                  field.onChange(checked ? 1 : 0)
+                                  formProps.setValue(
+                                    "discount_type",
+                                    checked ? "nominal" : undefined
+                                  )
+                                  formProps.setValue("discount", undefined)
+                                }}
+                              />
+                            </div>
+                          )}
+                        />
+                      </div>
+                      {watchData.is_promo ? (
+                        <FormFieldItem
+                          control={control}
+                          name="discount"
+                          invalid={Boolean(errors.discount)}
+                          errorMessage={errors.discount?.message}
+                          render={({ field }) => {
+                            const { famount } = calculateDiscountAmount({
+                              price: watchData.price,
+                              discount_type: watchData.discount_type as any,
+                              discount_amount: field.value as number,
+                            })
+                            return (
+                              <>
+                                <InputGroup>
+                                  {watchData.discount_type === "nominal" ? (
+                                    <InputCurrency
+                                      placeholder="Discount amount"
+                                      customInput={InputGroupInput}
+                                      value={field.value || undefined}
+                                      onValueChange={field.onChange}
+                                    />
+                                  ) : (
+                                    <InputGroupInput
+                                      type="number"
+                                      autoComplete="off"
+                                      placeholder="10%"
+                                      {...field}
+                                      value={
+                                        (field.value === 0
+                                          ? undefined
+                                          : field.value) || undefined
+                                      }
+                                      onChange={(e) => {
+                                        const value =
+                                          e.target.value === ""
+                                            ? 0
+                                            : Number(e.target.value)
+                                        field.onChange(value)
+                                      }}
+                                    />
+                                  )}
+                                  <InputGroupAddon
+                                    align="inline-end"
+                                    className="pr-0"
+                                  >
+                                    <ButtonGroup>
+                                      <InputGroupButton
+                                        type="button"
+                                        variant={
+                                          watchData.discount_type === "percent"
+                                            ? "default"
+                                            : "ghost"
+                                        }
+                                        size="sm"
+                                        className={
+                                          watchData.discount_type === "percent"
+                                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                            : ""
+                                        }
+                                        onClick={() => {
+                                          formProps.setValue(
+                                            "discount_type",
+                                            "percent"
+                                          )
+                                          formProps.setValue("discount", 0)
+                                        }}
+                                      >
+                                        %
+                                      </InputGroupButton>
+                                      <InputGroupButton
+                                        type="button"
+                                        variant={
+                                          watchData.discount_type === "nominal"
+                                            ? "default"
+                                            : "ghost"
+                                        }
+                                        size="sm"
+                                        className={
+                                          watchData.discount_type === "nominal"
+                                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                            : ""
+                                        }
+                                        onClick={() => {
+                                          formProps.setValue(
+                                            "discount_type",
+                                            "nominal"
+                                          )
+                                          formProps.setValue("discount", 0)
+                                        }}
+                                      >
+                                        Rp
+                                      </InputGroupButton>
+                                    </ButtonGroup>
+                                  </InputGroupAddon>
+                                </InputGroup>
+                                <span className="text-muted-foreground text-xs italic">
+                                  Sell Price {famount}
+                                </span>
+                              </>
+                            )
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                    <FormFieldItem
+                      control={control}
+                      name="loyalty_point"
+                      label={<>Loyalty Point Earned</>}
+                      invalid={Boolean(errors.loyalty_point)}
+                      errorMessage={errors.loyalty_point?.message}
+                      render={({ field }) => (
+                        <div className="space-y-2">
+                          {watchData.loyalty_point ? (
+                            <div className="border-border flex items-center justify-between rounded-lg border p-3">
+                              <div className="flex items-center gap-2">
+                                <Gift className="text-primary size-5" />
+                                <div>
+                                  <div className="text-foreground text-sm font-medium">
+                                    {watchData.loyalty_point.points} Points
+                                  </div>
+                                  <div className="text-muted-foreground text-xs">
+                                    {watchData.loyalty_point.expired_type ===
+                                    "forever"
+                                      ? "Forever"
+                                      : `For ${watchData.loyalty_point.expired_value ?? 0} ${watchData.loyalty_point.expired_type}${(watchData.loyalty_point.expired_value ?? 0) > 1 ? "s" : ""}`}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (watchData.loyalty_point) {
+                                      loyaltyPointForm.reset({
+                                        points: watchData.loyalty_point.points,
+                                        expired_type:
+                                          watchData.loyalty_point.expired_type,
+                                        expired_value:
+                                          watchData.loyalty_point
+                                            .expired_value ?? 0,
+                                      })
+                                      setOpenLoyaltyDialog(true)
+                                    }
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    field.onChange(null)
+                                  }}
+                                >
+                                  Hapus
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => {
+                                resetLoyaltyPointForm(loyaltyPointForm)
+                                setOpenLoyaltyDialog(true)
+                              }}
+                            >
+                              <Gift className="mr-2 size-4" />
+                              Tambah Loyalty Point
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    />
+                    <div className="grid gap-4 md:grid-cols-2">
                       <FormFieldItem
                         control={control}
-                        name="allow_all_trainer"
+                        name="duration"
+                        label={
+                          <FormLabel>
+                            Duration <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        invalid={Boolean(errors.duration)}
+                        errorMessage={errors.duration?.message}
                         render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">Assign All Trainers</span>
-                            <Switch
-                              checked={field.value ?? false}
-                              onCheckedChange={field.onChange}
-                            />
-                          </div>
+                          <Input
+                            type="number"
+                            autoComplete="off"
+                            placeholder="duration"
+                            {...field}
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="duration_type"
+                        label={
+                          <FormLabel>
+                            Duration Type{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        invalid={Boolean(errors.duration_type)}
+                        errorMessage={errors.duration_type?.message}
+                        render={({ field, fieldState }) => (
+                          <Select
+                            isSearchable={false}
+                            placeholder="Please Select"
+                            value={durationTypeOptions.filter(
+                              (option) => option.value === field.value
+                            )}
+                            options={durationTypeOptions}
+                            error={!!fieldState.error}
+                            onChange={(option) => field.onChange(option?.value)}
+                          />
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>
+                          Trainers <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormFieldItem
+                          control={control}
+                          name="allow_all_trainer"
+                          render={({ field }) => (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                Assign All Trainers
+                              </span>
+                              <Switch
+                                checked={field.value ?? false}
+                                onCheckedChange={field.onChange}
+                              />
+                            </div>
+                          )}
+                        />
+                      </div>
+                      <FormFieldItem
+                        control={control}
+                        name="trainers"
+                        invalid={Boolean(errors.trainers)}
+                        errorMessage={errors.trainers?.message}
+                        render={({ field, fieldState }) => (
+                          <SelectAsyncPaginate
+                            isClearable
+                            isMulti
+                            isLoading={isLoading}
+                            loadOptions={getTrainerList as any}
+                            additional={{ page: 1 }}
+                            placeholder="Select Trainer"
+                            value={field.value}
+                            error={!!fieldState.error}
+                            cacheUniqs={[watchData.trainers]}
+                            isOptionDisabled={() =>
+                              ((watchData.trainers as any[]) ?? []).length >= 5
+                            }
+                            getOptionLabel={(option) => option.name!}
+                            getOptionValue={(option) => option.code}
+                            debounceTimeout={500}
+                            isDisabled={watchData.allow_all_trainer}
+                            formatOptionLabel={({ name, photo }) => {
+                              return (
+                                <div className="flex items-center justify-start gap-2">
+                                  <Avatar className="size-8">
+                                    {photo ? (
+                                      <AvatarImage
+                                        src={photo || ""}
+                                        alt={name}
+                                      />
+                                    ) : (
+                                      <AvatarFallback>
+                                        <User className="size-4" />
+                                      </AvatarFallback>
+                                    )}
+                                  </Avatar>
+                                  <span className="text-sm">{name}</span>
+                                </div>
+                              )
+                            }}
+                            onChange={(option) => field.onChange(option)}
+                          />
                         )}
                       />
                     </div>
                     <FormFieldItem
                       control={control}
-                      name="trainers"
-                      invalid={Boolean(errors.trainers)}
-                      errorMessage={errors.trainers?.message}
-                      render={({ field, fieldState }) => (
-                        <SelectAsyncPaginate
-                          isClearable
-                          isMulti
-                          isLoading={isLoading}
-                          loadOptions={getTrainerList as any}
-                          additional={{ page: 1 }}
-                          placeholder="Select Trainer"
-                          value={field.value}
-                          error={!!fieldState.error}
-                          cacheUniqs={[watchData.trainers]}
-                          isOptionDisabled={() =>
-                            ((watchData.trainers as any[]) ?? []).length >= 5
-                          }
-                          getOptionLabel={(option) => option.name!}
-                          getOptionValue={(option) => option.code}
-                          debounceTimeout={500}
-                          isDisabled={watchData.allow_all_trainer}
-                          formatOptionLabel={({ name, photo }) => {
-                            return (
-                              <div className="flex items-center justify-start gap-2">
-                                <Avatar className="size-8">
-                                  {photo ? (
-                                    <AvatarImage src={photo || ""} alt={name} />
-                                  ) : (
-                                    <AvatarFallback>
-                                      <User className="size-4" />
-                                    </AvatarFallback>
-                                  )}
-                                </Avatar>
-                                <span className="text-sm">{name}</span>
-                              </div>
-                            )
-                          }}
-                          onChange={(option) => field.onChange(option)}
+                      name="session_duration"
+                      label={
+                        <FormLabel>
+                          Session <span className="text-destructive">*</span>
+                        </FormLabel>
+                      }
+                      invalid={Boolean(errors.session_duration)}
+                      errorMessage={errors.session_duration?.message}
+                      render={({ field }) => (
+                        <Input
+                          type="number"
+                          autoComplete="off"
+                          placeholder="Session"
+                          {...field}
                         />
                       )}
                     />
-                  </div>
-                  <FormFieldItem
-                    control={control}
-                    name="session_duration"
-                    label={
-                      <FormLabel>
-                        Session <span className="text-destructive">*</span>
-                      </FormLabel>
-                    }
-                    invalid={Boolean(errors.session_duration)}
-                    errorMessage={errors.session_duration?.message}
-                    render={({ field }) => (
-                      <Input
-                        type="number"
-                        autoComplete="off"
-                        placeholder="Session"
-                        {...field}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="description"
-                    label={<FormLabel>Description</FormLabel>}
-                    invalid={Boolean(errors.description)}
-                    errorMessage={errors.description?.message}
-                    render={({ field }) => (
-                      <Textarea
-                        placeholder="description"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="enabled"
-                    invalid={Boolean(errors.enabled)}
-                    errorMessage={errors.enabled?.message}
-                    render={({ field }) => (
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={field.value ?? false}
-                          onCheckedChange={field.onChange}
+                    <FormFieldItem
+                      control={control}
+                      name="description"
+                      label={<FormLabel>Description</FormLabel>}
+                      invalid={Boolean(errors.description)}
+                      errorMessage={errors.description?.message}
+                      render={({ field }) => (
+                        <Textarea
+                          placeholder="description"
+                          {...field}
+                          value={field.value ?? ""}
                         />
-                        <FormLabel>
-                          {field.value ? "Enabled" : "Disabled"}
-                        </FormLabel>
-                      </div>
-                    )}
-                  />
-                </div>
-              </ScrollArea>
-              <SheetFooter>
-                <div className="flex items-center justify-between px-4">
+                      )}
+                    />
+                    <FormFieldItem
+                      control={control}
+                      name="enabled"
+                      invalid={Boolean(errors.enabled)}
+                      errorMessage={errors.enabled?.message}
+                      render={({ field }) => (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel>
+                            {field.value ? "Enabled" : "Disabled"}
+                          </FormLabel>
+                        </div>
+                      )}
+                    />
+                  </div>
+                </ScrollArea>
+              </div>
+              <SheetFooter className="px-4 py-2">
+                <div className="flex items-center justify-between">
                   {type === "update" && (
                     <Button
                       variant="destructive"

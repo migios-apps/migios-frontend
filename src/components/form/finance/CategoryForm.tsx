@@ -13,15 +13,15 @@ import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/animate-ui/components/radix/dialog"
 import {
   CreateCategorySchema,
   ReturnCategoryFormSchema,

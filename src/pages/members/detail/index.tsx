@@ -27,13 +27,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Loading from "@/components/ui/loading"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/animate/tabs"
 import { useMember } from "../store/useMember"
 import FreezProgram from "./FreezProgram"
 import InformasiDetail from "./InformasiDetail"
@@ -459,21 +465,23 @@ const MemberDetail = () => {
                       <TabsTrigger value="tab5">Loyalty Point</TabsTrigger>
                     </TabsList>
                   </div>
-                  <TabsContent value="tab1">
-                    <InformasiDetail member={member} />
-                  </TabsContent>
-                  <TabsContent value="tab2">
-                    <Package member={member} />
-                  </TabsContent>
-                  <TabsContent value="tab3">
-                    <Mesurement member={member} />
-                  </TabsContent>
-                  <TabsContent value="tab4">
-                    <FreezProgram data={member} />
-                  </TabsContent>
-                  <TabsContent value="tab5">
-                    <LoyaltyPoint member={member} />
-                  </TabsContent>
+                  <TabsContents>
+                    <TabsContent value="tab1">
+                      <InformasiDetail member={member} />
+                    </TabsContent>
+                    <TabsContent value="tab2">
+                      <Package member={member} />
+                    </TabsContent>
+                    <TabsContent value="tab3">
+                      <Mesurement member={member} />
+                    </TabsContent>
+                    <TabsContent value="tab4">
+                      <FreezProgram data={member} />
+                    </TabsContent>
+                    <TabsContent value="tab5">
+                      <LoyaltyPoint member={member} />
+                    </TabsContent>
+                  </TabsContents>
                 </Tabs>
               </CardContent>
             </Card>

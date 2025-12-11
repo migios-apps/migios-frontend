@@ -12,17 +12,17 @@ import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import InputCurrency from "@/components/ui/input-currency"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import InputCurrency from "@/components/ui/input-currency"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/animate-ui/components/radix/dialog"
 import DialogFormLoyaltyPoint from "@/components/form/loyalty-point/DialogFormLoyaltyPoint"
 import {
   useLoyaltyPointForm,

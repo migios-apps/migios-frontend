@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/animate-ui/components/radix/sheet"
 import Logo from "../Logo"
 import type { NavCollapsible, NavItem, NavLink } from "../types"
 

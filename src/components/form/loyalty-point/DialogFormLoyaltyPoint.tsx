@@ -1,13 +1,5 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import {
   InputGroup,
@@ -15,6 +7,14 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Select } from "@/components/ui/react-select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import {
   LoyaltyPointFormSchema,
   ReturnLoyaltyPointFormSchema,

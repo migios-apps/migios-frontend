@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import InputDebounce from "@/components/ui/input-debounce"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Sheet,
   SheetContent,
@@ -19,8 +21,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/animate-ui/components/radix/sheet"
 
 type DrawerDetailProps = {
   role?: Role | null
@@ -100,135 +101,145 @@ const DrawerDetail: React.FC<DrawerDetailProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onDrawerClose()}>
-      <SheetContent floating className="flex w-full flex-col gap-0 sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>Role Detail</SheetTitle>
-          <SheetDescription>
-            Informasi detail role dan daftar pengguna yang memiliki role ini
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent floating className="gap-0 sm:max-w-xl">
+        <div className="flex h-full flex-col">
+          <SheetHeader>
+            <SheetTitle>Role Detail</SheetTitle>
+            <SheetDescription>
+              Informasi detail role dan daftar pengguna yang memiliki role ini
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden px-2 pr-1">
+            <ScrollArea className="h-full px-2 pr-3">
+              <div className="space-y-6 px-1 pb-4">
+                <Card className="p-0 shadow-none">
+                  <CardContent className="flex flex-col gap-2 p-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground text-sm font-medium">
+                        Name
+                      </span>
+                      <p className="text-foreground text-base font-semibold">
+                        {role?.display_name}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground text-sm font-medium">
+                        Description
+                      </span>
+                      <p className="text-foreground text-sm">
+                        {role?.description || "-"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        <div className="flex flex-1 flex-col gap-4 overflow-hidden px-2">
-          <Card className="p-0 shadow-none">
-            <CardContent className="flex flex-col gap-2 p-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-muted-foreground text-sm font-medium">
-                  Name
-                </span>
-                <p className="text-foreground text-base font-semibold">
-                  {role?.display_name}
-                </p>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-muted-foreground text-sm font-medium">
-                  Description
-                </span>
-                <p className="text-foreground text-sm">
-                  {role?.description || "-"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-1 flex-col gap-3 overflow-hidden p-2">
-            <div className="flex items-center justify-between">
-              <h5 className="text-foreground text-base font-semibold">
-                Users List
-              </h5>
-              {totalData && (
-                <span className="text-muted-foreground text-sm">
-                  {listData.length} of {totalData}
-                </span>
-              )}
-            </div>
-            <InputDebounce
-              placeholder="Search users..."
-              handleOnchange={(value) => {
-                setTableData({
-                  ...tableData,
-                  query: value,
-                  pageIndex: 1,
-                })
-              }}
-            />
-            <div ref={containerRefRoleUsers} className="flex-1 overflow-y-auto">
-              <div className="flex flex-col gap-2">
-                {data?.pages.map((page, pageIndex) => (
-                  <React.Fragment key={pageIndex}>
-                    {page.data.data.map((item, index: number) => (
-                      <Card
-                        key={index}
-                        className="hover:bg-muted/50 p-0 shadow-none"
-                      >
-                        <CardContent className="flex items-center gap-3 p-2">
-                          <Avatar className="size-10">
-                            <AvatarImage
-                              src={item.photo || ""}
-                              alt={item.name}
-                            />
-                            <AvatarFallback>
-                              {item.name?.charAt(0)?.toUpperCase() || "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-1 flex-col gap-0.5">
-                            <Link
-                              to={`/employee/detail/${item.code}`}
-                              className="text-foreground hover:text-primary font-medium transition-colors"
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-foreground text-base font-semibold">
+                      Users List
+                    </h5>
+                    {totalData && (
+                      <span className="text-muted-foreground text-sm">
+                        {listData.length} of {totalData}
+                      </span>
+                    )}
+                  </div>
+                  <InputDebounce
+                    placeholder="Search users..."
+                    handleOnchange={(value) => {
+                      setTableData({
+                        ...tableData,
+                        query: value,
+                        pageIndex: 1,
+                      })
+                    }}
+                  />
+                  <div
+                    ref={containerRefRoleUsers}
+                    className="max-h-96 overflow-y-auto"
+                  >
+                    <div className="flex flex-col gap-2">
+                      {data?.pages.map((page, pageIndex) => (
+                        <React.Fragment key={pageIndex}>
+                          {page.data.data.map((item, index: number) => (
+                            <Card
+                              key={index}
+                              className="hover:bg-muted/50 p-0 shadow-none"
                             >
-                              {item.name}
-                            </Link>
-                            <p className="text-muted-foreground text-xs">
-                              {item.code}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </React.Fragment>
-                ))}
-                {isFetchingNextPage &&
-                  Array.from({ length: 3 }, (_, i) => i + 1).map((_, i) => (
-                    <Skeleton key={i} className="h-[66px] rounded-lg" />
-                  ))}
+                              <CardContent className="flex items-center gap-3 p-2">
+                                <Avatar className="size-10">
+                                  <AvatarImage
+                                    src={item.photo || ""}
+                                    alt={item.name}
+                                  />
+                                  <AvatarFallback>
+                                    {item.name?.charAt(0)?.toUpperCase() || "?"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-1 flex-col gap-0.5">
+                                  <Link
+                                    to={`/employee/detail/${item.code}`}
+                                    className="text-foreground hover:text-primary font-medium transition-colors"
+                                  >
+                                    {item.name}
+                                  </Link>
+                                  <p className="text-muted-foreground text-xs">
+                                    {item.code}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                      {isFetchingNextPage &&
+                        Array.from({ length: 3 }, (_, i) => i + 1).map(
+                          (_, i) => (
+                            <Skeleton key={i} className="h-[66px] rounded-lg" />
+                          )
+                        )}
+                    </div>
+                    {listData.length === 0 && !isFetchingNextPage && (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <p className="text-muted-foreground text-sm">
+                          Tidak ada pengguna ditemukan
+                        </p>
+                      </div>
+                    )}
+                    {totalData === listData.length && listData.length > 0 && (
+                      <div className="py-4 text-center">
+                        <p className="text-muted-foreground text-sm">
+                          Semua pengguna telah dimuat
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              {listData.length === 0 && !isFetchingNextPage && (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Tidak ada pengguna ditemukan
-                  </p>
-                </div>
-              )}
-              {totalData === listData.length && listData.length > 0 && (
-                <div className="py-4 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Semua pengguna telah dimuat
-                  </p>
-                </div>
-              )}
-            </div>
+            </ScrollArea>
           </div>
+          <SheetFooter className="px-4 py-2">
+            <div className="flex w-full items-center justify-between">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onDrawerClose()}
+              >
+                <Trash2 className="mr-2 size-4" />
+                Delete
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  navigate(`/settings/roles-permissions/edit/${role?.id}`)
+                }
+              >
+                <Pencil className="mr-2 size-4" />
+                Edit Role
+              </Button>
+            </div>
+          </SheetFooter>
         </div>
-
-        <SheetFooter className="flex flex-col gap-2 sm:flex-row sm:gap-2">
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDrawerClose()}
-          >
-            <Trash2 className="mr-2 size-4" />
-            Delete
-          </Button>
-          <Button
-            size="sm"
-            onClick={() =>
-              navigate(`/settings/roles-permissions/edit/${role?.id}`)
-            }
-            className="flex-1 sm:flex-initial"
-          >
-            <Pencil className="mr-2 size-4" />
-            Edit Role
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

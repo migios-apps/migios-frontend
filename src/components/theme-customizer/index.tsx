@@ -6,14 +6,14 @@ import { Layout, Palette, RotateCcw, Settings, X } from "lucide-react"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from "@/components/animate-ui/components/radix/sheet"
 import { useThemeManager } from "./hooks/use-theme-manager"
 import { ImportModal } from "./import-modal"
 import { LayoutTab } from "./layout-tab"

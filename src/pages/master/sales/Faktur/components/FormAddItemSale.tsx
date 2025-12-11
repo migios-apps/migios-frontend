@@ -17,12 +17,6 @@ import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Card, CardContent } from "@/components/ui/card"
 import { DatePicker } from "@/components/ui/date-picker"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
@@ -37,6 +31,12 @@ import {
   SelectAsyncPaginate,
 } from "@/components/ui/react-select"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/components/radix/dialog"
 import {
   ReturnTransactionItemFormSchema,
   TransactionItemSchema,
