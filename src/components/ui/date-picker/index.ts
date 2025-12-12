@@ -1,5 +1,4 @@
 import { CalendarPicker } from "./calendar-picker"
-import { DatePicker } from "./date-picker"
 import DatePickerAIO from "./date-picker-aio"
 import { DateTimeInput } from "./datetime-input"
 import { DateTimePicker } from "./datetime-picker"
@@ -7,7 +6,6 @@ import { SimpleTimePicker } from "./simple-time-picker"
 import { TimePicker } from "./time-picker"
 
 export {
-  DatePicker,
   DatePickerAIO,
   DateTimeInput,
   DateTimePicker,
