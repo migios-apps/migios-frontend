@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { Input, inputVariants } from "@/components/ui/input"
 import InputCurrency, {
   type CombinedCurrencyInputProps,
 } from "@/components/ui/input-currency"
@@ -73,6 +74,14 @@ export interface InputPercentNominalProps {
    */
   disabled?: boolean
   /**
+   * Size untuk button dan input (konsisten dengan Button component)
+   */
+  size?:
+    | VariantProps<typeof inputVariants>["size"]
+    | VariantProps<typeof buttonVariants>["size"]
+    | null
+    | undefined
+  /**
    * Props tambahan untuk Input (mode percent)
    */
   inputProps?: Omit<
@@ -84,6 +93,7 @@ export interface InputPercentNominalProps {
     | "aria-invalid"
     | "type"
     | "autoComplete"
+    | "size"
   >
   /**
    * Props tambahan untuk InputCurrency (mode nominal)
@@ -117,6 +127,7 @@ const InputPercentNominal = React.forwardRef<
       disabled = false,
       inputProps,
       currencyProps,
+      size,
     },
     ref
   ) => {
@@ -155,6 +166,7 @@ const InputPercentNominal = React.forwardRef<
           aria-invalid={error}
           onClick={handlePercentClick}
           disabled={disabled}
+          size={size}
         >
           {percentLabel}
         </Button>
@@ -165,6 +177,7 @@ const InputPercentNominal = React.forwardRef<
           aria-invalid={error}
           onClick={handleNominalClick}
           disabled={disabled}
+          size={size}
         >
           {nominalLabel}
         </Button>
@@ -178,6 +191,7 @@ const InputPercentNominal = React.forwardRef<
             className={cn(inputClassName)}
             disabled={disabled}
             {...currencyProps}
+            size={(size as any) || undefined}
           />
         ) : (
           <Input
@@ -190,6 +204,7 @@ const InputPercentNominal = React.forwardRef<
             aria-invalid={error}
             className={cn(inputClassName)}
             disabled={disabled}
+            size={size}
             {...inputProps}
           />
         )}

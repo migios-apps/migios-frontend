@@ -20,12 +20,18 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        default:
+          "h-9 px-3 py-2 has-[>svg]:px-2.5 md:h-9 md:px-4 md:has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-2.5 has-[>svg]:px-2 md:px-3 md:has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-4 has-[>svg]:px-3 md:px-6 md:has-[>svg]:px-4",
+        xl: "h-11 rounded-md px-5 has-[>svg]:px-4 md:h-12 md:px-8 md:has-[>svg]:px-5",
+        "2xl":
+          "h-12 rounded-md px-6 has-[>svg]:px-5 md:h-14 md:px-10 md:has-[>svg]:px-6",
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
+        "icon-xl": "size-11 md:size-12",
+        "icon-2xl": "size-12 md:size-14",
       },
     },
     defaultVariants: {

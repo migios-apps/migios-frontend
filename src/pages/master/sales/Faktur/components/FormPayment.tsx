@@ -304,11 +304,11 @@ const FormPayment: React.FC<FormPaymentProps> = ({
   // const totalRekening = rekenings?.pages[0]?.data.meta.total
 
   const handlePrefecth = (res?: any) => {
-    const data = res?.data?.data
+    const data = res?.data
     queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sales] })
     resetTransactionForm(formPropsTransaction)
     window.localStorage.removeItem("item_pos")
-    navigate(`/sales/${data?.code}`)
+    navigate(`/sales/${data?.code}`, { replace: true })
   }
 
   const handleCheck: SubmitHandler<ValidationTransactionSchema> = () => {

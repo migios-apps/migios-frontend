@@ -15,7 +15,7 @@ export const currencyFormat = (value: number | string) => {
     decimalSeparator: ",",
     groupSeparator: ".",
     prefix: `Rp. `,
-    decimalScale: 2,
+    // decimalScale: 2,
     // decimalScale: 0,
     // ...(config?.dec_digit && { decimalScale: Number(config?.dec_digit) }),
   })

@@ -20,9 +20,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DateTimePicker } from "@/components/ui/date-picker"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import { Form, FormFieldItem } from "@/components/ui/form"
 import { currencyFormat } from "@/components/ui/input-currency"
-import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { calculateLoyaltyPoint } from "../utils/calculateLoyaltyPoint"
@@ -39,7 +38,7 @@ import CheckoutItemPackageCard from "./CheckoutItemPackageCard"
 import CheckoutItemProductCard from "./CheckoutItemProductCard"
 import CheckoutItemRedeemCollectionCard from "./CheckoutItemRedeemCollectionCard"
 import DialogDetailLoyaltyRedeem from "./DialogDetailLoyaltyRedeem"
-import DialogLoyaltyPoint from "./DialogLoyaltyPoint"
+import DiscountAndRedeem from "./DiscountAndRedeem"
 import FormPayment from "./FormPayment"
 
 interface CartDetailProps {
@@ -83,7 +82,8 @@ const CartDetail: React.FC<CartDetailProps> = ({
 
   const memberFromForm = watchTransaction.member
   const memberCodeFromDetail = detail?.member?.code
-  const [openLoyaltyDialog, setOpenLoyaltyDialog] = React.useState(false)
+  const [openDiscountAndRedeem, setOpenDiscountAndRedeem] =
+    React.useState(false)
   const [openRedeemDetailDialog, setOpenRedeemDetailDialog] =
     React.useState(false)
   const [selectedRedeemItem, setSelectedRedeemItem] =
@@ -104,11 +104,7 @@ const CartDetail: React.FC<CartDetailProps> = ({
     name: "items",
   })
 
-  const {
-    fields: discountFields,
-    append: appendDiscount,
-    remove: removeDiscount,
-  } = useFieldArray({
+  const { remove: removeDiscount } = useFieldArray({
     control,
     name: "discounts",
   })
@@ -366,16 +362,90 @@ const CartDetail: React.FC<CartDetailProps> = ({
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => setOpenLoyaltyDialog(true)}
+                            onClick={() => setOpenDiscountAndRedeem(true)}
                             className="gap-2"
                           >
-                            <Gift size="16" />
-                            Redeem Poin
+                            <Tag size="16" />
+                            Tambah diskon atau Redeem
                           </Button>
                         )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {/* Discounts & Vouchers */}
+                      {watchTransaction.discounts &&
+                        watchTransaction.discounts.length > 0 && (
+                          <>
+                            <Separator />
+                            <div className="flex flex-col gap-2">
+                              <span className="text-sm font-semibold">
+                                Diskon & Voucher
+                              </span>
+                              {watchTransaction.discounts.map(
+                                (discount, index) => {
+                                  const discountWithVoucher = discount as any
+                                  const isVoucher =
+                                    discountWithVoucher.voucher_code
+                                  const isLoyaltyDiscount =
+                                    discount.loyalty_reward_id
+
+                                  // Skip discount dari loyalty reward (sudah ditampilkan di Loyalty Redeem)
+                                  if (isLoyaltyDiscount) return null
+
+                                  return (
+                                    <Card
+                                      key={index}
+                                      className="hover:bg-accent relative p-0 shadow-none transition-colors"
+                                    >
+                                      <CardContent className="p-3">
+                                        <div className="flex items-center justify-between gap-2">
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-sm font-semibold">
+                                                {isVoucher
+                                                  ? `Voucher: ${discountWithVoucher.voucher_code}`
+                                                  : "Diskon Manual"}
+                                              </span>
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs"
+                                              >
+                                                <Tag className="mr-1 h-3 w-3" />
+                                                {isVoucher
+                                                  ? "Voucher"
+                                                  : "Diskon"}
+                                              </Badge>
+                                            </div>
+                                            <div className="text-muted-foreground mt-1 text-xs">
+                                              {discount.discount_type ===
+                                              "percent"
+                                                ? `Diskon ${discount.discount_amount}%`
+                                                : `Diskon ${currencyFormat(discount.discount_amount || 0)}`}
+                                            </div>
+                                          </div>
+                                          {isPaid === 0 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                removeDiscount(index)
+                                              }}
+                                            >
+                                              <Trash size={16} />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  )
+                                }
+                              )}
+                            </div>
+                          </>
+                        )}
+
                       {/* Loyalty Redeem Items */}
                       {loyaltyRedeemItems.length > 0 && (
                         <>
@@ -467,118 +537,6 @@ const CartDetail: React.FC<CartDetailProps> = ({
                       )}
 
                       <Separator />
-
-                      {/* Discount Fields */}
-                      {isPaid === 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <FormLabel>
-                              Diskon Transaksi{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                appendDiscount({
-                                  discount_type: "nominal",
-                                  discount_amount: 0,
-                                })
-                              }}
-                            >
-                              <Tag className="mr-2 h-4 w-4" />
-                              Tambah Diskon
-                            </Button>
-                          </div>
-                          {discountFields.length === 0 && (
-                            <p className="text-muted-foreground text-sm">
-                              Belum ada diskon. Klik "Tambah Diskon" untuk
-                              menambahkan.
-                            </p>
-                          )}
-                          {discountFields
-                            .filter((field) => field.loyalty_reward_id !== null)
-                            .map((field, index) => {
-                              const discountError = errors.discounts?.[
-                                index
-                              ] as any
-                              return (
-                                <div
-                                  key={field.id}
-                                  className="flex items-start gap-2 rounded-lg border p-3"
-                                >
-                                  <div className="flex-1 space-y-2">
-                                    <FormFieldItem
-                                      control={control}
-                                      name={`discounts.${index}.discount_amount`}
-                                      invalid={Boolean(
-                                        discountError?.discount_amount
-                                      )}
-                                      errorMessage={
-                                        discountError?.discount_amount?.message
-                                      }
-                                      render={({ field, fieldState }) => {
-                                        const watchDiscount =
-                                          watchTransaction.discounts?.[index]
-                                        return (
-                                          <InputPercentNominal
-                                            value={
-                                              field.value === 0
-                                                ? undefined
-                                                : field.value
-                                            }
-                                            onChange={(val) => {
-                                              const value =
-                                                val === null || val === ""
-                                                  ? 0
-                                                  : Number(val)
-                                              field.onChange(value)
-                                            }}
-                                            type={
-                                              (watchDiscount?.discount_type as
-                                                | "percent"
-                                                | "nominal") || "percent"
-                                            }
-                                            onTypeChange={(type) => {
-                                              setValue(
-                                                `discounts.${index}.discount_type`,
-                                                type as any
-                                              )
-                                            }}
-                                            placeholderPercent="10%"
-                                            placeholderNominal="Jumlah diskon"
-                                            error={!!fieldState.error}
-                                          />
-                                        )
-                                      }}
-                                    />
-                                    <FormFieldItem
-                                      control={control}
-                                      name={`discounts.${index}.discount_type`}
-                                      invalid={Boolean(
-                                        discountError?.discount_type
-                                      )}
-                                      errorMessage={
-                                        discountError?.discount_type?.message
-                                      }
-                                      render={() => <></>}
-                                    />
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeDiscount(index)}
-                                    className="mt-0"
-                                  >
-                                    <Trash className="text-destructive h-4 w-4" />
-                                  </Button>
-                                </div>
-                              )
-                            })}
-                        </div>
-                      )}
 
                       {/* Subtotal & Tax */}
                       <div className="space-y-2">
@@ -726,9 +684,9 @@ const CartDetail: React.FC<CartDetailProps> = ({
         selectedRedeemItem={selectedRedeemItem}
       />
 
-      <DialogLoyaltyPoint
-        open={openLoyaltyDialog}
-        onClose={() => setOpenLoyaltyDialog(false)}
+      <DiscountAndRedeem
+        open={openDiscountAndRedeem}
+        onClose={() => setOpenDiscountAndRedeem(false)}
         memberCode={memberCode}
         formPropsTransaction={formPropsTransaction}
       />

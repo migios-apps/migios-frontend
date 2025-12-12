@@ -15,6 +15,12 @@ export type TransactionStatus =
   | "void"
   | "pending"
   | "completed"
+export interface DiscountListType {
+  discount_type: DiscountType
+  discount_amount: number
+  loyalty_reward_id?: number | null
+  voucher_id?: number | null
+}
 
 export interface SalesItem {
   item_type: ItemType
@@ -60,11 +66,7 @@ export interface CheckoutRequest {
   transaction_id?: number
   club_id: number
   member_id?: number
-  discounts: Array<{
-    discount_type: DiscountType
-    discount_amount: number
-    loyalty_reward_id?: number | null
-  }>
+  discounts: Array<DiscountListType>
   tax_rate?: number
   is_paid: PaymentStatus
   due_date?: string
@@ -153,12 +155,7 @@ export interface SalesDetailType {
   club_id: number
   employee_id: number
   type: string
-  discounts: {
-    discount_type: DiscountType
-    discount_amount: number
-    loyalty_reward_id: number | null
-    fdiscount: string
-  }[]
+  discounts: Array<DiscountListType>
   total_tax: number
   total_discount: number
   total_amount: number

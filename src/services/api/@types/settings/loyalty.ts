@@ -5,24 +5,24 @@ export interface LoyaltyItemType {
   id: number
   reward_id: number
   loyalty_reward_id: number
-  package_id?: number | null
-  product_id?: number | null
-  quantity?: number | null
-  item_type?: string | null
+  package_id: number | null
+  product_id: number | null
+  quantity: number | null
+  item_type: string | null
   name: string
-  photo?: string | null
-  original_price?: number | null
-  duration?: number | null
-  duration_type?: string | null
-  session_duration?: number | null
-  enabled?: boolean | null
-  allow_all_trainer?: boolean | null
-  type?: string | null
+  photo: string | null
+  original_price: number | null
+  duration: number | null
+  duration_type: string | null
+  session_duration: number | null
+  enabled: boolean | null
+  allow_all_trainer: boolean | null
+  type: string | null
   price: number
   discount_type: string
-  discount?: number | null
-  extra_session?: number | null
-  extra_day?: number | null
+  discount: number | null
+  extra_session: number | null
+  extra_day: number | null
   classes: ClassesType[]
   foriginal_price: string
   fprice: string
