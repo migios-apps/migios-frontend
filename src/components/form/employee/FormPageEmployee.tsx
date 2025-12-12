@@ -1,6 +1,6 @@
 import React from "react"
 import { SubmitHandler } from "react-hook-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { CreateEmployee } from "@/services/api/@types/employee"
 import { Role } from "@/services/api/@types/settings/role"
 import {
@@ -14,7 +14,6 @@ import { ArrowLeft, Trash2, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
-import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import BottomStickyBar from "@/components/ui/bottom-sticky-bar"
@@ -56,7 +55,7 @@ export const userTypeOptions = [
 type FormProps = {
   type: "create" | "update"
   formProps: ReturnEmployeeSchema
-  onSuccess: () => void
+  onSuccess?: () => void
 }
 
 type OptionType = {
@@ -69,7 +68,6 @@ const FormPageEmployee: React.FC<FormProps> = ({
   formProps,
   onSuccess,
 }) => {
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const club = useSessionUser((state) => state.club)
   const {
@@ -86,12 +84,15 @@ const FormPageEmployee: React.FC<FormProps> = ({
 
   const handleClose = () => {
     resetEmployeeForm(formProps)
-    onSuccess()
   }
 
-  const handlePrefecth = () => {
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.employees] })
+  const handlePrefecth = (res: any) => {
+    const data = res.data?.data
     handleClose()
+    onSuccess?.()
+    if (data?.code) {
+      navigate(`/employee/detail/${data?.code}`, { replace: true })
+    }
   }
 
   // Mutations
