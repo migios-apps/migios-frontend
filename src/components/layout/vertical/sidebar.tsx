@@ -2,7 +2,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { type VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
-import { type Transition } from "motion/react"
+import { type Transition, motion, AnimatePresence } from "motion/react"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -574,11 +574,8 @@ const sidebarMenuButtonVariantsInset = cva(
     "active:bg-sidebar-accent-inset active:text-sidebar-accent-inset-foreground",
     // Focus state
     "focus-visible:ring-2",
-    // Data active state (selected)
-    "data-[active=true]:bg-sidebar-accent-inset data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-inset-foreground",
-    // Data active with gradient (override background)
-    "data-[active=true]:bg-gradient-to-l data-[active=true]:from-sidebar-inset data-[active=true]:to-primary/40",
-    "data-[active=true]:text-primary-foreground",
+    // Data active state (selected) - only font weight and text color, background handled by motion.div
+    "data-[active=true]:font-medium data-[active=true]:text-primary-foreground",
     // Collapsible trigger with active child - gradient from top to bottom
     "data-[has-active-child=true]:bg-gradient-to-l data-[has-active-child=true]:from-sidebar-inset data-[has-active-child=true]:to-primary/40 data-[has-active-child=true]:text-primary-foreground"
   ),
@@ -618,27 +615,51 @@ function SidebarMenuButton({
   const { isMobile, state } = useSidebar()
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
+  const activeClassNameValue =
+    themeConfig.layout === "inset"
+      ? sidebarMenuButtonActiveVariantsInset({ variant })
+      : sidebarMenuButtonActiveVariants({ variant })
+
+  const activeIndicatorClassName =
+    themeConfig.layout === "inset"
+      ? "bg-gradient-to-l from-sidebar-inset to-primary/40 text-primary-foreground rounded-md"
+      : activeClassNameValue
+
   const button = (
-    <HighlightItem
-      activeClassName={
-        themeConfig.layout === "inset"
-          ? sidebarMenuButtonActiveVariantsInset({ variant })
-          : sidebarMenuButtonActiveVariants({ variant })
-      }
-    >
-      <Comp
-        data-slot="sidebar-menu-button"
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(
-          themeConfig.layout === "inset"
-            ? sidebarMenuButtonVariantsInset({ size })
-            : sidebarMenuButtonVariants({ variant, size }),
-          className
-        )}
-        {...props}
-      />
+    <HighlightItem activeClassName={activeClassNameValue}>
+      <div className="relative">
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              layoutId="sidebar-active-indicator"
+              className={cn(
+                "pointer-events-none absolute inset-0 rounded-md",
+                activeIndicatorClassName
+              )}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35 }}
+              style={{ zIndex: 0 }}
+            />
+          )}
+        </AnimatePresence>
+        <Comp
+          data-slot="sidebar-menu-button"
+          data-sidebar="menu-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(
+            "relative",
+            themeConfig.layout === "inset"
+              ? sidebarMenuButtonVariantsInset({ size })
+              : sidebarMenuButtonVariants({ variant, size }),
+            className
+          )}
+          style={{ zIndex: 1 }}
+          {...props}
+        />
+      </div>
     </HighlightItem>
   )
 
@@ -814,6 +835,23 @@ const sidebarMenuSubButtonVariants = cva(
   }
 )
 
+const sidebarMenuSubButtonActiveVariantsInset = cva(
+  "bg-gradient-to-l from-sidebar-inset to-sidebar-accent-inset-foreground/20 text-primary-foreground rounded-md",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-gradient-to-l from-sidebar-inset to-sidebar-accent-inset-foreground/20 text-primary-foreground",
+        outline:
+          "bg-gradient-to-l from-sidebar-inset to-sidebar-accent-inset-foreground/20 text-primary-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
 const sidebarMenuSubButtonVariantsInset = cva(
   cn(
     "ring-sidebar-ring flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-inherit group-data-[collapsible=icon]:hidden",
@@ -821,11 +859,8 @@ const sidebarMenuSubButtonVariantsInset = cva(
     "text-sidebar-inset-text",
     // Active state (click)
     "active:bg-sidebar-accent-inset active:text-sidebar-accent-inset-foreground",
-    // Data active state (selected)
-    "data-[active=true]:bg-sidebar-accent-inset data-[active=true]:text-sidebar-accent-inset-foreground",
-    // Data active with gradient (override background)
-    "data-[active=true]:from-sidebar-inset data-[active=true]:to-primary/40 data-[active=true]:bg-gradient-to-l",
-    "data-[active=true]:text-primary-foreground"
+    // Data active state (selected) - only font weight and text color, background handled by motion.div
+    "data-[active=true]:font-medium data-[active=true]:text-primary-foreground"
   ),
   {
     variants: {
@@ -844,39 +879,66 @@ function SidebarMenuSubButton({
   asChild = false,
   size = "md",
   isActive = false,
+  variant = "default",
   className,
   ...props
 }: React.ComponentProps<"a"> & {
   asChild?: boolean
   size?: "sm" | "md"
   isActive?: boolean
+  variant?: "default" | "outline"
 } & VariantProps<typeof sidebarMenuSubButtonVariants>) {
   const Comp = asChild ? Slot : "a"
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
+  const activeClassNameValue =
+    themeConfig.layout === "inset"
+      ? sidebarMenuSubButtonActiveVariantsInset({ variant })
+      : "bg-sidebar-accent text-sidebar-accent-foreground rounded-md"
+
+  const activeIndicatorClassName =
+    themeConfig.layout === "inset"
+      ? "bg-gradient-to-l from-sidebar-inset to-primary/40 text-primary-foreground rounded-md"
+      : activeClassNameValue
+
   return (
-    <HighlightItem
-      activeClassName={
-        themeConfig.layout === "inset"
-          ? "bg-gradient-to-l from-sidebar-inset to-sidebar-accent-inset-foreground/20 text-primary-foreground rounded-md"
-          : "bg-sidebar-accent text-sidebar-accent-foreground rounded-md"
-      }
-    >
-      <Comp
-        data-slot="sidebar-menu-sub-button"
-        data-sidebar="menu-sub-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(
-          themeConfig.layout === "inset"
-            ? sidebarMenuSubButtonVariantsInset({ size })
-            : sidebarMenuSubButtonVariants({ size }),
-          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-          "group-data-[collapsible=icon]:hidden",
-          className
-        )}
-        {...props}
-      />
+    <HighlightItem activeClassName={activeClassNameValue}>
+      <div className="relative">
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              layoutId="sidebar-sub-active-indicator"
+              className={cn(
+                "pointer-events-none absolute inset-0 rounded-md",
+                activeIndicatorClassName
+              )}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35 }}
+              style={{ zIndex: 0 }}
+            />
+          )}
+        </AnimatePresence>
+        <Comp
+          data-slot="sidebar-menu-sub-button"
+          data-sidebar="menu-sub-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(
+            "relative",
+            themeConfig.layout === "inset"
+              ? sidebarMenuSubButtonVariantsInset({ size })
+              : sidebarMenuSubButtonVariants({ size }),
+            themeConfig.layout !== "inset" &&
+              "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
+            "group-data-[collapsible=icon]:hidden",
+            className
+          )}
+          style={{ zIndex: 1 }}
+          {...props}
+        />
+      </div>
     </HighlightItem>
   )
 }
