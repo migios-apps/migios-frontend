@@ -33,7 +33,7 @@ import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
 import { InputIdentity } from "@/components/ui/input-identity"
 import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   type ReturnAsyncSelect,
@@ -284,7 +284,7 @@ const FormPageEmployee: React.FC<FormProps> = ({
                     invalid={Boolean(errors.phone)}
                     errorMessage={errors.phone?.message}
                     render={({ field, fieldState }) => (
-                      <PhoneInput
+                      <InputPhone
                         placeholder="+62 *** *** ***"
                         {...field}
                         error={!!fieldState.error}

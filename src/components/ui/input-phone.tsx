@@ -14,7 +14,7 @@ import { Button } from "./button"
 import { Input } from "./input"
 import { Select } from "./react-select"
 
-export type PhoneInputProps = Omit<
+export type InputPhoneProps = Omit<
   React.ComponentProps<"input">,
   "onChange" | "value" | "ref"
 > &
@@ -24,8 +24,8 @@ export type PhoneInputProps = Omit<
     error?: boolean
   }
 
-const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
-  React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
+const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
+  React.forwardRef<React.ElementRef<typeof RPNInput.default>, InputPhoneProps>(
     (
       { className, onChange, defaultCountry = "ID", error = false, ...props },
       ref
@@ -38,21 +38,20 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           countrySelectComponent={(countrySelectProps) => (
             <CountrySelect {...countrySelectProps} error={error} />
           )}
-          inputComponent={(inputProps) => (
-            <InputComponent {...inputProps} error={error} />
-          )}
+          inputComponent={InputComponent}
           smartCaret={false}
           international={false}
           defaultCountry={defaultCountry}
           onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
+          error={error}
           {...props}
         />
       )
     }
   )
-PhoneInput.displayName = "PhoneInput"
+InputPhone.displayName = "InputPhone"
 
-export default PhoneInput
+export default InputPhone
 
 const InputComponent = ({
   className,
@@ -99,7 +98,11 @@ const CountrySelect = ({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="rounded-tr-none rounded-br-none px-3"
+          className={cn(
+            "rounded-tr-none rounded-br-none px-3",
+            error &&
+              "aria-invalid:border-destructive dark:aria-invalid:border-destructive/40 ring-1"
+          )}
           type="button"
           variant="outline"
           aria-invalid={error}

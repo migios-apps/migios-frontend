@@ -113,7 +113,7 @@ export function SignUpForm({
           name="phone"
           label="Phone Number"
           render={({ field }) => (
-            <PhoneInput
+            <InputPhone
               placeholder="+62 *** *** ***"
               disabled={isLoading}
               {...field}

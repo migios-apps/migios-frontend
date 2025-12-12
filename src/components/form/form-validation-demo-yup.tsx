@@ -44,7 +44,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -296,7 +296,7 @@ export default function FormValidationDemo() {
               name="phone"
               label="Nomor Telepon"
               render={({ field, fieldState }) => (
-                <PhoneInput
+                <InputPhone
                   {...field}
                   defaultCountry="ID"
                   error={!!fieldState.error}

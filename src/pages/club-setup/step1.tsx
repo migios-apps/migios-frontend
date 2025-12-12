@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { Textarea } from "@/components/ui/textarea"
 import { ReturnClubFormSchema } from "./validation"
 
@@ -110,7 +110,7 @@ const Step1: React.FC<PropsType> = ({ onNext, formProps }) => {
           invalid={Boolean(errors.phone)}
           errorMessage={errors.phone?.message}
           render={({ field, fieldState }) => (
-            <PhoneInput
+            <InputPhone
               placeholder="08 *** *** ***"
               {...field}
               error={!!fieldState.error}

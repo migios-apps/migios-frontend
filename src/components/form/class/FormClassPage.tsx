@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import type { ReturnAsyncSelect } from "@/components/ui/react-select"
 import { Select, SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -422,7 +422,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           //   }}
                           //   error={!!fieldState.error}
                           // />
-                          <PhoneInput
+                          <InputPhone
                             placeholder="08 *** *** ***"
                             {...field}
                             error={!!fieldState.error}

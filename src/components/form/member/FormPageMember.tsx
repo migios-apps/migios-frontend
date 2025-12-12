@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputIdentity } from "@/components/ui/input-identity"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import Upload from "@/components/ui/upload"
@@ -243,7 +243,7 @@ const FormPageMember: React.FC<FormProps> = ({
                     invalid={Boolean(errors.phone)}
                     errorMessage={errors.phone?.message}
                     render={({ field, fieldState }) => (
-                      <PhoneInput
+                      <InputPhone
                         placeholder="+62 *** *** ***"
                         {...field}
                         error={!!fieldState.error}

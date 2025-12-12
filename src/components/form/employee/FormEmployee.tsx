@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputIdentity } from "@/components/ui/input-identity"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select } from "@/components/ui/react-select"
 import { Textarea } from "@/components/ui/textarea"
@@ -272,7 +272,7 @@ const FormEmployee: React.FC<FormProps> = ({
                   invalid={Boolean(errors.phone)}
                   errorMessage={errors.phone?.message}
                   render={({ field, fieldState }) => (
-                    <PhoneInput
+                    <InputPhone
                       placeholder="+62 *** *** ***"
                       error={!!fieldState.error}
                       {...field}

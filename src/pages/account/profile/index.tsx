@@ -10,7 +10,7 @@ import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputIdentity } from "@/components/ui/input-identity"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import {
   Select as SelectUI,
   SelectContent,
@@ -123,7 +123,7 @@ const ProfilePage = () => {
                 invalid={Boolean(form.formState.errors.phone)}
                 errorMessage={form.formState.errors.phone?.message}
                 render={({ field, fieldState }) => (
-                  <PhoneInput
+                  <InputPhone
                     placeholder="+62 *** *** ***"
                     {...field}
                     error={!!fieldState.error}

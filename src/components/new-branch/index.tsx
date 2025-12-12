@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import PhoneInput from "@/components/ui/phone-input"
+import InputPhone from "@/components/ui/input-phone"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
@@ -357,7 +357,7 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
                                   formProps.formState.errors.phone?.message
                                 }
                                 render={({ field, fieldState }) => (
-                                  <PhoneInput
+                                  <InputPhone
                                     placeholder="+62 *** *** ***"
                                     {...field}
                                     error={!!fieldState.error}
