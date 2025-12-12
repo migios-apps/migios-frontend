@@ -291,7 +291,7 @@ const FormMember: React.FC<FormProps> = ({
                         identityType={watchData.identity_type}
                         onIdentityTypeChange={(value) => {
                           formProps.setValue("identity_type", value as any)
-                                }}
+                        }}
                         identityNumber={field.value}
                         onIdentityNumberChange={field.onChange}
                         error={
@@ -299,8 +299,8 @@ const FormMember: React.FC<FormProps> = ({
                           Boolean(errors.identity_type) ||
                           Boolean(errors.identity_number)
                         }
-                          placeholder="No. Identity"
-                        />
+                        placeholder="No. Identity"
+                      />
                     )
                   }}
                 />

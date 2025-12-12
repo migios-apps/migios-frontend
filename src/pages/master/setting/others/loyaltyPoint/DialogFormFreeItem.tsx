@@ -264,388 +264,427 @@ const DialogFormFreeItem: React.FC<DialogFormFreeItemProps> = ({
             <form
               onSubmit={handleSubmit(handleFormSubmit)}
               className="flex h-full flex-col"
-        >
-          <SheetHeader>
-            <SheetTitle>
+            >
+              <SheetHeader>
+                <SheetTitle>
                   {type === "create"
                     ? "Tambah Item Gratis"
                     : "Ubah Item Gratis"}
-            </SheetTitle>
-            <SheetDescription />
-          </SheetHeader>
+                </SheetTitle>
+                <SheetDescription />
+              </SheetHeader>
               <div className="flex-1 overflow-hidden px-2 pr-1">
                 <ScrollArea className="h-full px-2 pr-3">
                   <div className="space-y-6 px-1 pb-4">
-                  <FormFieldItem
-                    control={control}
-                    name="name"
-                    render={({ field }) => (
-                      <div className="flex flex-col gap-2">
-                        <FormLabel>Name</FormLabel>
-                        <Input
-                          type="text"
-                          autoComplete="off"
-                          placeholder="Name"
-                          {...field}
-                        />
-                      </div>
-                    )}
-                  />
+                    <FormFieldItem
+                      control={control}
+                      name="name"
+                      render={({ field }) => (
+                        <div className="flex flex-col gap-2">
+                          <FormLabel>Name</FormLabel>
+                          <Input
+                            type="text"
+                            autoComplete="off"
+                            placeholder="Name"
+                            {...field}
+                          />
+                        </div>
+                      )}
+                    />
 
-                  <FormFieldItem
-                    control={control}
-                    name="points_required"
-                    label={<>Point yang diperlukan</>}
-                    render={({ field }) => (
-                      <InputGroup>
-                        <InputGroupInput
-                          type="number"
-                          autoComplete="off"
-                          placeholder="1000"
-                          {...field}
-                          value={field.value === 0 ? "" : field.value}
-                          onChange={(e) => {
-                            const value =
+                    <FormFieldItem
+                      control={control}
+                      name="points_required"
+                      label={<>Point yang diperlukan</>}
+                      render={({ field }) => (
+                        <InputGroup>
+                          <InputGroupInput
+                            type="number"
+                            autoComplete="off"
+                            placeholder="1000"
+                            {...field}
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) => {
+                              const value =
                                 e.target.value === ""
                                   ? 0
                                   : Number(e.target.value)
-                            field.onChange(value)
-                          }}
-                        />
-                        <InputGroupAddon align="inline-end">
-                          Pts
-                        </InputGroupAddon>
-                      </InputGroup>
-                    )}
-                  />
-
-                  <FormFieldItem
-                    control={control}
-                    name="is_forever"
-                    render={({ field }) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="is_forever"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <FormLabel
-                          htmlFor="is_forever"
-                          className="text-sm font-normal"
-                        >
-                          Aktif selamanya
-                        </FormLabel>
-                      </div>
-                    )}
-                  />
-
-                  {!watchData.is_forever && (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormFieldItem
-                        control={control}
-                        name="start_date"
-                        render={({ field }) => (
-                          <div className="flex flex-col gap-2">
-                            <FormLabel>Tanggal Mulai</FormLabel>
-                              <DateTimePicker
-                                value={
-                                  field.value
-                                    ? (field.value as unknown as Date)
-                                    : undefined
-                                }
-                                onChange={field.onChange}
-                                hideTime={true}
-                                clearable
-                            />
-                          </div>
-                        )}
-                      />
-
-                      <FormFieldItem
-                        control={control}
-                        name="end_date"
-                        render={({ field }) => (
-                          <div className="flex flex-col gap-2">
-                            <FormLabel>Tanggal Berakhir</FormLabel>
-                              <DateTimePicker
-                                value={
-                                  field.value
-                                    ? (field.value as unknown as Date)
-                                    : undefined
-                                }
-                                onChange={field.onChange}
-                                hideTime={true}
-                                clearable
-                            />
-                          </div>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  <FormFieldItem
-                    control={control}
-                    name="reward_items"
-                    render={() => (
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <InputDebounce
-                            placeholder="Cari package dan produk..."
-                            handleOnchange={(value) => {
-                              setSearch(value)
+                              field.onChange(value)
                             }}
-                            onFocus={() => setShowTab(true)}
                           />
-                          {showTab && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setShowTab(false)}
-                            >
-                              <X className="size-4" />
-                            </Button>
-                          )}
+                          <InputGroupAddon align="inline-end">
+                            Pts
+                          </InputGroupAddon>
+                        </InputGroup>
+                      )}
+                    />
+
+                    <FormFieldItem
+                      control={control}
+                      name="is_forever"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="is_forever"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <FormLabel
+                            htmlFor="is_forever"
+                            className="text-sm font-normal"
+                          >
+                            Aktif selamanya
+                          </FormLabel>
                         </div>
+                      )}
+                    />
+
+                    {!watchData.is_forever && (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormFieldItem
+                          control={control}
+                          name="start_date"
+                          render={({ field }) => (
+                            <div className="flex flex-col gap-2">
+                              <FormLabel>Tanggal Mulai</FormLabel>
+                              <DateTimePicker
+                                value={
+                                  field.value
+                                    ? (field.value as unknown as Date)
+                                    : undefined
+                                }
+                                onChange={field.onChange}
+                                hideTime={true}
+                                clearable
+                              />
+                            </div>
+                          )}
+                        />
+
+                        <FormFieldItem
+                          control={control}
+                          name="end_date"
+                          render={({ field }) => (
+                            <div className="flex flex-col gap-2">
+                              <FormLabel>Tanggal Berakhir</FormLabel>
+                              <DateTimePicker
+                                value={
+                                  field.value
+                                    ? (field.value as unknown as Date)
+                                    : undefined
+                                }
+                                onChange={field.onChange}
+                                hideTime={true}
+                                clearable
+                              />
+                            </div>
+                          )}
+                        />
                       </div>
                     )}
-                  />
 
-                  <div className="flex flex-col gap-3">
-                    {showTab ? (
-                      <Tabs
-                        value={tab}
-                        onValueChange={(value) =>
-                          setTab(value as "package" | "product")
-                        }
-                      >
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="package" className="gap-2">
-                            <FilterIcon className="size-4" />
-                            Package Plan
-                          </TabsTrigger>
-                          <TabsTrigger value="product" className="gap-2">
-                            <Package className="size-4" />
-                            Product
-                          </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="package" className="mt-4">
-                          <div
-                            ref={containerRefPackage}
-                            className="border-border max-h-56 overflow-y-auto rounded-md border"
-                          >
-                            {listPackages.map((i, index) => {
-                              const isExist = (
-                                formProps.getValues("reward_items") || []
-                              ).some((item) => item.package_id === i.id)
-                              return (
-                                <div
-                                  key={index}
-                                  className={cn(
-                                    "border-border flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0",
-                                    isExist
-                                      ? "bg-primary/5 hover:bg-primary/10"
-                                      : "hover:bg-muted/50"
-                                  )}
-                                  onClick={() => {
-                                    const currentItems =
-                                        formProps.getValues("reward_items") ||
-                                        []
-                                    const existingItemIndex =
-                                      currentItems.findIndex(
-                                        (item) => item.package_id === i.id
-                                      )
-
-                                    if (existingItemIndex === -1) {
-                                      formProps.setValue("reward_items", [
-                                        ...currentItems,
-                                        {
-                                          package_id: i.id,
-                                          product_id: null,
-                                          quantity: 1,
-                                          name: i.name,
-                                          foriginal_price: i.fprice,
-                                          fprice: i.fprice,
-                                          price: i.price,
-                                        },
-                                      ])
-                                    }
-                                    setShowTab(false)
-                                    formProps.clearErrors("reward_items")
-                                  }}
-                                >
-                                  <div className="bg-muted flex size-8 items-center justify-center rounded-full">
-                                    <BookOpen className="text-muted-foreground size-4" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="text-foreground text-sm font-medium">
-                                      {i.name}
-                                    </div>
-                                    <div className="text-muted-foreground text-xs">
-                                      {i.fprice}
-                                    </div>
-                                  </div>
-                                  {isExist && (
-                                    <span className="text-primary font-bold">
-                                      ✓
-                                    </span>
-                                  )}
-                                </div>
-                              )
-                            })}
-                            {isFetchingNextPagePackages &&
-                              Array.from({ length: 3 }, (_, i) => i + 1).map(
-                                (_, i) => (
-                                  <Skeleton
-                                    key={i}
-                                    className="h-[60px] rounded-md"
-                                  />
-                                )
-                              )}
-                            {totalPackage === listPackages.length &&
-                              listPackages.length > 0 && (
-                                <p className="text-muted-foreground py-4 text-center text-sm">
-                                  Semua item telah dimuat
-                                </p>
-                              )}
+                    <FormFieldItem
+                      control={control}
+                      name="reward_items"
+                      render={() => (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <InputDebounce
+                              placeholder="Cari package dan produk..."
+                              handleOnchange={(value) => {
+                                setSearch(value)
+                              }}
+                              onFocus={() => setShowTab(true)}
+                            />
+                            {showTab && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowTab(false)}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            )}
                           </div>
-                        </TabsContent>
-                        <TabsContent value="product" className="mt-4">
-                          <div
-                            ref={containerRefProduct}
-                            className="border-border max-h-56 overflow-y-auto rounded-md border"
-                          >
-                            {listProducts.map((i, index) => {
-                              const isExist = (
-                                formProps.getValues("reward_items") || []
-                              ).some((item) => item.product_id === i.id)
-                              return (
-                                <div
-                                  key={index}
-                                  className={cn(
-                                    "border-border flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0",
-                                    isExist
-                                      ? "bg-primary/5 hover:bg-primary/10"
-                                      : "hover:bg-muted/50"
-                                  )}
-                                  onClick={() => {
-                                    const currentItems =
-                                        formProps.getValues("reward_items") ||
-                                        []
-                                    const existingItemIndex =
-                                      currentItems.findIndex(
-                                        (item) => item.product_id === i.id
-                                      )
+                        </div>
+                      )}
+                    />
 
-                                    if (existingItemIndex === -1) {
-                                      formProps.setValue("reward_items", [
-                                        ...currentItems,
-                                        {
-                                          package_id: null,
-                                          product_id: i.id,
-                                          quantity: 1,
-                                          name: i.name,
-                                          foriginal_price: i.fprice,
-                                          fprice: i.fprice,
-                                          price: i.price,
-                                        },
-                                      ])
-                                    }
-                                    setShowTab(false)
-                                    formProps.clearErrors("reward_items")
-                                  }}
-                                >
-                                  <div className="bg-muted flex size-8 items-center justify-center rounded-full">
-                                    <Package className="text-muted-foreground size-4" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="text-foreground text-sm font-medium">
-                                      {i.name}
-                                    </div>
-                                    <div className="text-muted-foreground text-xs">
-                                      {i.fprice}
-                                    </div>
-                                  </div>
-                                  {isExist && (
-                                    <span className="text-primary font-bold">
-                                      ✓
-                                    </span>
-                                  )}
-                                </div>
-                              )
-                            })}
-                            {isFetchingNextPageProducts &&
-                              Array.from({ length: 3 }, (_, i) => i + 1).map(
-                                (_, i) => (
-                                  <Skeleton
-                                    key={i}
-                                    className="h-[60px] rounded-md"
-                                  />
-                                )
-                              )}
-                            {totalProduct === listProducts.length &&
-                              listProducts.length > 0 && (
-                                <p className="text-muted-foreground py-4 text-center text-sm">
-                                  Semua item telah dimuat
-                                </p>
-                              )}
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {watchData.reward_items?.map((i, index) => {
-                          return (
+                    <div className="flex flex-col gap-3">
+                      {showTab ? (
+                        <Tabs
+                          value={tab}
+                          onValueChange={(value) =>
+                            setTab(value as "package" | "product")
+                          }
+                        >
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="package" className="gap-2">
+                              <FilterIcon className="size-4" />
+                              Package Plan
+                            </TabsTrigger>
+                            <TabsTrigger value="product" className="gap-2">
+                              <Package className="size-4" />
+                              Product
+                            </TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="package" className="mt-4">
                             <div
-                              key={index}
-                              className="border-border flex items-center gap-3 rounded-lg border p-3"
+                              ref={containerRefPackage}
+                              className="border-border max-h-56 overflow-y-auto rounded-md border"
                             >
-                              <div className="bg-muted flex size-8 items-center justify-center rounded-full">
-                                {i.product_id !== null ? (
-                                  <Package className="text-muted-foreground size-4" />
-                                ) : i.package_id !== null ? (
-                                  <BookOpen className="text-muted-foreground size-4" />
-                                ) : (
-                                  <Archive className="text-muted-foreground size-4" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-foreground text-sm font-medium">
-                                  {i.name}
-                                </div>
-                                <div className="text-muted-foreground text-xs">
-                                  {i.foriginal_price}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => {
-                                    const currentItems =
+                              {listPackages.map((i, index) => {
+                                const isExist = (
+                                  formProps.getValues("reward_items") || []
+                                ).some((item) => item.package_id === i.id)
+                                return (
+                                  <div
+                                    key={index}
+                                    className={cn(
+                                      "border-border flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0",
+                                      isExist
+                                        ? "bg-primary/5 hover:bg-primary/10"
+                                        : "hover:bg-muted/50"
+                                    )}
+                                    onClick={() => {
+                                      const currentItems =
                                         formProps.getValues("reward_items") ||
                                         []
-                                    const itemIndex = currentItems.findIndex(
-                                      (item) =>
-                                        (item.product_id === i.product_id &&
-                                          item.product_id !== null) ||
-                                        (item.package_id === i.package_id &&
-                                          item.package_id !== null)
-                                    )
-
-                                    if (itemIndex !== -1) {
-                                      const newQty =
-                                        currentItems[itemIndex].quantity - 1
-
-                                      if (newQty <= 0) {
-                                        const newItems = [...currentItems]
-                                        newItems.splice(itemIndex, 1)
-                                        formProps.setValue(
-                                          "reward_items",
-                                          newItems
+                                      const existingItemIndex =
+                                        currentItems.findIndex(
+                                          (item) => item.package_id === i.id
                                         )
-                                      } else {
+
+                                      if (existingItemIndex === -1) {
+                                        formProps.setValue("reward_items", [
+                                          ...currentItems,
+                                          {
+                                            package_id: i.id,
+                                            product_id: null,
+                                            quantity: 1,
+                                            name: i.name,
+                                            foriginal_price: i.fprice,
+                                            fprice: i.fprice,
+                                            price: i.price,
+                                          },
+                                        ])
+                                      }
+                                      setShowTab(false)
+                                      formProps.clearErrors("reward_items")
+                                    }}
+                                  >
+                                    <div className="bg-muted flex size-8 items-center justify-center rounded-full">
+                                      <BookOpen className="text-muted-foreground size-4" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-foreground text-sm font-medium">
+                                        {i.name}
+                                      </div>
+                                      <div className="text-muted-foreground text-xs">
+                                        {i.fprice}
+                                      </div>
+                                    </div>
+                                    {isExist && (
+                                      <span className="text-primary font-bold">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                              {isFetchingNextPagePackages &&
+                                Array.from({ length: 3 }, (_, i) => i + 1).map(
+                                  (_, i) => (
+                                    <Skeleton
+                                      key={i}
+                                      className="h-[60px] rounded-md"
+                                    />
+                                  )
+                                )}
+                              {totalPackage === listPackages.length &&
+                                listPackages.length > 0 && (
+                                  <p className="text-muted-foreground py-4 text-center text-sm">
+                                    Semua item telah dimuat
+                                  </p>
+                                )}
+                            </div>
+                          </TabsContent>
+                          <TabsContent value="product" className="mt-4">
+                            <div
+                              ref={containerRefProduct}
+                              className="border-border max-h-56 overflow-y-auto rounded-md border"
+                            >
+                              {listProducts.map((i, index) => {
+                                const isExist = (
+                                  formProps.getValues("reward_items") || []
+                                ).some((item) => item.product_id === i.id)
+                                return (
+                                  <div
+                                    key={index}
+                                    className={cn(
+                                      "border-border flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0",
+                                      isExist
+                                        ? "bg-primary/5 hover:bg-primary/10"
+                                        : "hover:bg-muted/50"
+                                    )}
+                                    onClick={() => {
+                                      const currentItems =
+                                        formProps.getValues("reward_items") ||
+                                        []
+                                      const existingItemIndex =
+                                        currentItems.findIndex(
+                                          (item) => item.product_id === i.id
+                                        )
+
+                                      if (existingItemIndex === -1) {
+                                        formProps.setValue("reward_items", [
+                                          ...currentItems,
+                                          {
+                                            package_id: null,
+                                            product_id: i.id,
+                                            quantity: 1,
+                                            name: i.name,
+                                            foriginal_price: i.fprice,
+                                            fprice: i.fprice,
+                                            price: i.price,
+                                          },
+                                        ])
+                                      }
+                                      setShowTab(false)
+                                      formProps.clearErrors("reward_items")
+                                    }}
+                                  >
+                                    <div className="bg-muted flex size-8 items-center justify-center rounded-full">
+                                      <Package className="text-muted-foreground size-4" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-foreground text-sm font-medium">
+                                        {i.name}
+                                      </div>
+                                      <div className="text-muted-foreground text-xs">
+                                        {i.fprice}
+                                      </div>
+                                    </div>
+                                    {isExist && (
+                                      <span className="text-primary font-bold">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                              {isFetchingNextPageProducts &&
+                                Array.from({ length: 3 }, (_, i) => i + 1).map(
+                                  (_, i) => (
+                                    <Skeleton
+                                      key={i}
+                                      className="h-[60px] rounded-md"
+                                    />
+                                  )
+                                )}
+                              {totalProduct === listProducts.length &&
+                                listProducts.length > 0 && (
+                                  <p className="text-muted-foreground py-4 text-center text-sm">
+                                    Semua item telah dimuat
+                                  </p>
+                                )}
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          {watchData.reward_items?.map((i, index) => {
+                            return (
+                              <div
+                                key={index}
+                                className="border-border flex items-center gap-3 rounded-lg border p-3"
+                              >
+                                <div className="bg-muted flex size-8 items-center justify-center rounded-full">
+                                  {i.product_id !== null ? (
+                                    <Package className="text-muted-foreground size-4" />
+                                  ) : i.package_id !== null ? (
+                                    <BookOpen className="text-muted-foreground size-4" />
+                                  ) : (
+                                    <Archive className="text-muted-foreground size-4" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-foreground text-sm font-medium">
+                                    {i.name}
+                                  </div>
+                                  <div className="text-muted-foreground text-xs">
+                                    {i.foriginal_price}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => {
+                                      const currentItems =
+                                        formProps.getValues("reward_items") ||
+                                        []
+                                      const itemIndex = currentItems.findIndex(
+                                        (item) =>
+                                          (item.product_id === i.product_id &&
+                                            item.product_id !== null) ||
+                                          (item.package_id === i.package_id &&
+                                            item.package_id !== null)
+                                      )
+
+                                      if (itemIndex !== -1) {
+                                        const newQty =
+                                          currentItems[itemIndex].quantity - 1
+
+                                        if (newQty <= 0) {
+                                          const newItems = [...currentItems]
+                                          newItems.splice(itemIndex, 1)
+                                          formProps.setValue(
+                                            "reward_items",
+                                            newItems
+                                          )
+                                        } else {
+                                          const newItems = [...currentItems]
+                                          newItems[itemIndex] = {
+                                            ...newItems[itemIndex],
+                                            quantity: newQty,
+                                          }
+                                          formProps.setValue(
+                                            "reward_items",
+                                            newItems
+                                          )
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <Minus className="size-4" />
+                                  </Button>
+
+                                  <span className="text-foreground mx-2 font-medium">
+                                    {i.quantity}
+                                  </span>
+
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => {
+                                      const currentItems =
+                                        formProps.getValues("reward_items") ||
+                                        []
+                                      const itemIndex = currentItems.findIndex(
+                                        (item) =>
+                                          (item.product_id === i.product_id &&
+                                            item.product_id !== null) ||
+                                          (item.package_id === i.package_id &&
+                                            item.package_id !== null)
+                                      )
+
+                                      if (itemIndex !== -1) {
+                                        const newQty =
+                                          currentItems[itemIndex].quantity + 1
                                         const newItems = [...currentItems]
                                         newItems[itemIndex] = {
                                           ...newItems[itemIndex],
@@ -656,72 +695,33 @@ const DialogFormFreeItem: React.FC<DialogFormFreeItemProps> = ({
                                           newItems
                                         )
                                       }
-                                    }
-                                  }}
-                                >
-                                  <Minus className="size-4" />
-                                </Button>
-
-                                <span className="text-foreground mx-2 font-medium">
-                                  {i.quantity}
-                                </span>
-
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => {
-                                    const currentItems =
-                                        formProps.getValues("reward_items") ||
-                                        []
-                                    const itemIndex = currentItems.findIndex(
-                                      (item) =>
-                                        (item.product_id === i.product_id &&
-                                          item.product_id !== null) ||
-                                        (item.package_id === i.package_id &&
-                                          item.package_id !== null)
-                                    )
-
-                                    if (itemIndex !== -1) {
-                                      const newQty =
-                                        currentItems[itemIndex].quantity + 1
-                                      const newItems = [...currentItems]
-                                      newItems[itemIndex] = {
-                                        ...newItems[itemIndex],
-                                        quantity: newQty,
-                                      }
-                                      formProps.setValue(
-                                        "reward_items",
-                                        newItems
-                                      )
-                                    }
-                                  }}
-                                >
-                                  <Plus className="size-4" />
-                                </Button>
+                                    }}
+                                  >
+                                    <Plus className="size-4" />
+                                  </Button>
+                                </div>
                               </div>
+                            )
+                          })}
+                          {watchData.reward_items?.length === 0 && (
+                            <div className="bg-muted flex flex-col items-center justify-center rounded-lg py-10 text-center">
+                              <div className="text-muted-foreground mb-4 text-5xl">
+                                <Search className="size-16" />
+                              </div>
+                              <h6 className="text-foreground text-lg font-medium">
+                                Belum ada item gratis
+                              </h6>
+                              <p className="text-muted-foreground mt-1 text-sm">
+                                Cari item yang ingin anda tambahkan sebagai item
+                                gratis
+                              </p>
                             </div>
-                          )
-                        })}
-                        {watchData.reward_items?.length === 0 && (
-                          <div className="bg-muted flex flex-col items-center justify-center rounded-lg py-10 text-center">
-                            <div className="text-muted-foreground mb-4 text-5xl">
-                              <Search className="size-16" />
-                            </div>
-                            <h6 className="text-foreground text-lg font-medium">
-                              Belum ada item gratis
-                            </h6>
-                            <p className="text-muted-foreground mt-1 text-sm">
-                              Cari item yang ingin anda tambahkan sebagai item
-                              gratis
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </ScrollArea>
+                </ScrollArea>
               </div>
               <SheetFooter className="px-4 py-2">
                 <div className="flex items-center justify-between">

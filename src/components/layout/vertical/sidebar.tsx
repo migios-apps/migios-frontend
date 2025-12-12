@@ -616,9 +616,9 @@ function SidebarMenuButton({
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
   const activeClassNameValue =
-        themeConfig.layout === "inset"
-          ? sidebarMenuButtonActiveVariantsInset({ variant })
-          : sidebarMenuButtonActiveVariants({ variant })
+    themeConfig.layout === "inset"
+      ? sidebarMenuButtonActiveVariantsInset({ variant })
+      : sidebarMenuButtonActiveVariants({ variant })
 
   const activeIndicatorClassName =
     themeConfig.layout === "inset"
@@ -644,21 +644,21 @@ function SidebarMenuButton({
             />
           )}
         </AnimatePresence>
-      <Comp
-        data-slot="sidebar-menu-button"
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(
+        <Comp
+          data-slot="sidebar-menu-button"
+          data-sidebar="menu-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(
             "relative",
-          themeConfig.layout === "inset"
-            ? sidebarMenuButtonVariantsInset({ size })
-            : sidebarMenuButtonVariants({ variant, size }),
-          className
-        )}
+            themeConfig.layout === "inset"
+              ? sidebarMenuButtonVariantsInset({ size })
+              : sidebarMenuButtonVariants({ variant, size }),
+            className
+          )}
           style={{ zIndex: 1 }}
-        {...props}
-      />
+          {...props}
+        />
       </div>
     </HighlightItem>
   )
@@ -892,9 +892,9 @@ function SidebarMenuSubButton({
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
   const activeClassNameValue =
-        themeConfig.layout === "inset"
+    themeConfig.layout === "inset"
       ? sidebarMenuSubButtonActiveVariantsInset({ variant })
-          : "bg-sidebar-accent text-sidebar-accent-foreground rounded-md"
+      : "bg-sidebar-accent text-sidebar-accent-foreground rounded-md"
 
   const activeIndicatorClassName =
     themeConfig.layout === "inset"
@@ -920,24 +920,24 @@ function SidebarMenuSubButton({
             />
           )}
         </AnimatePresence>
-      <Comp
-        data-slot="sidebar-menu-sub-button"
-        data-sidebar="menu-sub-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(
+        <Comp
+          data-slot="sidebar-menu-sub-button"
+          data-sidebar="menu-sub-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(
             "relative",
-          themeConfig.layout === "inset"
-            ? sidebarMenuSubButtonVariantsInset({ size })
-            : sidebarMenuSubButtonVariants({ size }),
+            themeConfig.layout === "inset"
+              ? sidebarMenuSubButtonVariantsInset({ size })
+              : sidebarMenuSubButtonVariants({ size }),
             themeConfig.layout !== "inset" &&
-          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-          "group-data-[collapsible=icon]:hidden",
-          className
-        )}
+              "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
+            "group-data-[collapsible=icon]:hidden",
+            className
+          )}
           style={{ zIndex: 1 }}
-        {...props}
-      />
+          {...props}
+        />
       </div>
     </HighlightItem>
   )

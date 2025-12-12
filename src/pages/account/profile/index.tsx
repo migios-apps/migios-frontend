@@ -208,12 +208,12 @@ const ProfilePage = () => {
                       identityType={watchData.identity_type}
                       onIdentityTypeChange={(value) => {
                         form.setValue("identity_type", value as any)
-                            }}
+                      }}
                       identityNumber={field.value}
                       onIdentityNumberChange={field.onChange}
                       error={!!fieldState.error}
-                        placeholder="No. Identitas"
-                      />
+                      placeholder="No. Identitas"
+                    />
                   )
                 }}
               />

@@ -300,16 +300,16 @@ const FormEmployee: React.FC<FormProps> = ({
                       <InputIdentity
                         identityType={watchData.identity_type}
                         onIdentityTypeChange={(value) => {
-                                formProps.setValue(
-                                  "identity_type",
+                          formProps.setValue(
+                            "identity_type",
                             value as "ktp" | "sim" | "passport"
-                                )
-                              }}
+                          )
+                        }}
                         identityNumber={field.value}
                         onIdentityNumberChange={field.onChange}
                         error={!!fieldState.error}
-                          placeholder="No. Identity"
-                        />
+                        placeholder="No. Identity"
+                      />
                     )
                   }}
                 />

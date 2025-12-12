@@ -477,12 +477,12 @@ const FormCuttingSession: React.FC<FormProps> = ({
                       }
                       render={({ field, fieldState }) => (
                         <DateTimePicker
-                            error={!!fieldState.error}
+                          error={!!fieldState.error}
                           value={
-                              field.value
+                            field.value
                               ? (field.value as unknown as Date)
-                                : undefined
-                            }
+                              : undefined
+                          }
                           onChange={field.onChange}
                           clearable
                         />
@@ -499,12 +499,12 @@ const FormCuttingSession: React.FC<FormProps> = ({
                       }
                       render={({ field, fieldState }) => (
                         <DateTimePicker
-                            error={!!fieldState.error}
+                          error={!!fieldState.error}
                           value={
-                              field.value
+                            field.value
                               ? (field.value as unknown as Date)
-                                : undefined
-                            }
+                              : undefined
+                          }
                           onChange={field.onChange}
                           clearable
                         />

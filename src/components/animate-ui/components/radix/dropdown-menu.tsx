@@ -100,7 +100,7 @@ function DropdownMenuItem({
           ? "bg-destructive/10 dark:bg-destructive/20"
           : activeClassName !== undefined
             ? activeClassName
-          : ""
+            : ""
       }
       className={highlightClassName}
       disabled={disabled}

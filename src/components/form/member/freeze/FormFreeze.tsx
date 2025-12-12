@@ -168,164 +168,164 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
             <div className="flex-1 overflow-hidden px-2 pr-1">
               <ScrollArea className="h-full px-2 pr-3">
                 <div className="space-y-6 px-1 pb-4">
-                {/* Member Info */}
-                <Card className="shadow-none">
-                  <CardHeader>
-                    <CardTitle>Informasi Member</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col">
-                        <span className="text-foreground font-semibold capitalize">
-                          {member?.name}
-                        </span>
-                        <span className="text-muted-foreground text-sm font-bold">
-                          {member?.code}
-                        </span>
+                  {/* Member Info */}
+                  <Card className="shadow-none">
+                    <CardHeader>
+                      <CardTitle>Informasi Member</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-semibold capitalize">
+                            {member?.name}
+                          </span>
+                          <span className="text-muted-foreground text-sm font-bold">
+                            {member?.code}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Freeze Period */}
-                <Card className="shadow-none">
-                  <CardHeader>
-                    <CardTitle>Periode Freeze</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormFieldItem
-                      control={control}
-                      name={`items.${0}.start_date`}
-                      label={<FormLabel>Tanggal Mulai</FormLabel>}
-                      render={({ field }) => (
+                  {/* Freeze Period */}
+                  <Card className="shadow-none">
+                    <CardHeader>
+                      <CardTitle>Periode Freeze</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FormFieldItem
+                        control={control}
+                        name={`items.${0}.start_date`}
+                        label={<FormLabel>Tanggal Mulai</FormLabel>}
+                        render={({ field }) => (
                           <DateTimePicker
                             value={
-                            field.value
+                              field.value
                                 ? (field.value as unknown as Date)
-                              : undefined
-                          }
-                            onChange={(date) => {
-                            field.onChange(
-                              date ? dayjs(date).format("YYYY-MM-DD") : null
-                            )
-                          }}
-                            hideTime={true}
-                            clearable
-                        />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name={`items.${0}.end_date`}
-                      label={<FormLabel>Tanggal Selesai</FormLabel>}
-                      render={({ field }) => (
-                          <DateTimePicker
-                            value={
-                            field.value
-                                ? (field.value as unknown as Date)
-                              : undefined
-                          }
-                            onChange={(date) => {
-                            field.onChange(
-                              date ? dayjs(date).format("YYYY-MM-DD") : null
-                            )
-                          }}
-                            hideTime={true}
-                            clearable
-                        />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="notes"
-                      label={<FormLabel>Keterangan</FormLabel>}
-                      render={({ field }) => (
-                        <Textarea
-                          placeholder="Tambahkan keterangan freeze"
-                          autoComplete="off"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-
-                {/* Payment */}
-                <Card className="shadow-none">
-                  <CardHeader>
-                    <CardTitle>Pembayaran</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormFieldItem
-                      control={control}
-                      name="balance_amount"
-                      label={
-                        <FormLabel>
-                          Jumlah Pembayaran{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      render={({ field }) => (
-                        <InputCurrency
-                          value={field.value}
-                          placeholder="0"
-                          className="bg-primary/10 text-primary focus:bg-primary/10 h-20 text-center text-2xl font-bold"
-                          onValueChange={(_value, _name, values) => {
-                            field.onChange(values?.float)
-                          }}
-                        />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="payments"
-                      label={
-                        <FormLabel>
-                          Metode Pembayaran{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      render={({ field }) => (
-                        <SelectAsyncPaginate
-                          isClearable
-                          loadOptions={getRekeningList as any}
-                          additional={{ page: 1 }}
-                          placeholder="Pilih metode pembayaran"
-                          value={field.value[0]}
-                          cacheUniqs={[watchTransaction.payments[0]]}
-                          getOptionLabel={(option) => option.name!}
-                          getOptionValue={(option) => option.id?.toString()}
-                          debounceTimeout={500}
-                          onChange={(val, ctx) => {
-                            if (ctx.action === "clear") {
-                              field.onChange([])
-                              formProps.setValue(
-                                "balance_amount",
-                                watchTransaction.balance_amount
-                              )
-                              formProps.setError("payments", {
-                                type: "custom",
-                                message: "Payment method is required",
-                              })
-                            } else {
-                              field.onChange([
-                                {
-                                  id: val?.id,
-                                  name: val?.name,
-                                  amount: watchTransaction.balance_amount,
-                                },
-                              ])
-                              formProps.clearErrors("payments")
+                                : undefined
                             }
-                          }}
-                        />
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </ScrollArea>
+                            onChange={(date) => {
+                              field.onChange(
+                                date ? dayjs(date).format("YYYY-MM-DD") : null
+                              )
+                            }}
+                            hideTime={true}
+                            clearable
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name={`items.${0}.end_date`}
+                        label={<FormLabel>Tanggal Selesai</FormLabel>}
+                        render={({ field }) => (
+                          <DateTimePicker
+                            value={
+                              field.value
+                                ? (field.value as unknown as Date)
+                                : undefined
+                            }
+                            onChange={(date) => {
+                              field.onChange(
+                                date ? dayjs(date).format("YYYY-MM-DD") : null
+                              )
+                            }}
+                            hideTime={true}
+                            clearable
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="notes"
+                        label={<FormLabel>Keterangan</FormLabel>}
+                        render={({ field }) => (
+                          <Textarea
+                            placeholder="Tambahkan keterangan freeze"
+                            autoComplete="off"
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {/* Payment */}
+                  <Card className="shadow-none">
+                    <CardHeader>
+                      <CardTitle>Pembayaran</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FormFieldItem
+                        control={control}
+                        name="balance_amount"
+                        label={
+                          <FormLabel>
+                            Jumlah Pembayaran{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        render={({ field }) => (
+                          <InputCurrency
+                            value={field.value}
+                            placeholder="0"
+                            className="bg-primary/10 text-primary focus:bg-primary/10 h-20 text-center text-2xl font-bold"
+                            onValueChange={(_value, _name, values) => {
+                              field.onChange(values?.float)
+                            }}
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="payments"
+                        label={
+                          <FormLabel>
+                            Metode Pembayaran{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        render={({ field }) => (
+                          <SelectAsyncPaginate
+                            isClearable
+                            loadOptions={getRekeningList as any}
+                            additional={{ page: 1 }}
+                            placeholder="Pilih metode pembayaran"
+                            value={field.value[0]}
+                            cacheUniqs={[watchTransaction.payments[0]]}
+                            getOptionLabel={(option) => option.name!}
+                            getOptionValue={(option) => option.id?.toString()}
+                            debounceTimeout={500}
+                            onChange={(val, ctx) => {
+                              if (ctx.action === "clear") {
+                                field.onChange([])
+                                formProps.setValue(
+                                  "balance_amount",
+                                  watchTransaction.balance_amount
+                                )
+                                formProps.setError("payments", {
+                                  type: "custom",
+                                  message: "Payment method is required",
+                                })
+                              } else {
+                                field.onChange([
+                                  {
+                                    id: val?.id,
+                                    name: val?.name,
+                                    amount: watchTransaction.balance_amount,
+                                  },
+                                ])
+                                formProps.clearErrors("payments")
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </ScrollArea>
             </div>
             <SheetFooter className="px-4 py-2">
               <div className="flex w-full items-center justify-end gap-2">
