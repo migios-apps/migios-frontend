@@ -15,7 +15,7 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
@@ -390,17 +390,20 @@ const FormMember: React.FC<FormProps> = ({
                     invalid={Boolean(errors.birth_date)}
                     errorMessage={errors.birth_date?.message}
                     render={({ field, fieldState }) => (
-                      <DatePicker
-                        selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (field.value as unknown as Date)
+                            : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD") : null
                           )
                         }}
-                        placeholder="Date"
                         error={!!fieldState.error}
+                        hideTime={true}
+                        clearable
                       />
                     )}
                   />
@@ -466,17 +469,20 @@ const FormMember: React.FC<FormProps> = ({
                   invalid={Boolean(errors.join_date)}
                   errorMessage={errors.join_date?.message}
                   render={({ field, fieldState }) => (
-                    <DatePicker
-                      selected={
-                        field.value ? dayjs(field.value).toDate() : undefined
+                    <DateTimePicker
+                      value={
+                        field.value
+                          ? (field.value as unknown as Date)
+                          : undefined
                       }
-                      onSelect={(date) => {
+                      onChange={(date) => {
                         field.onChange(
                           date ? dayjs(date).format("YYYY-MM-DD") : null
                         )
                       }}
-                      placeholder="Date"
                       error={!!fieldState.error}
+                      hideTime={true}
+                      clearable
                     />
                   )}
                 />

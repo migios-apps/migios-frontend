@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputGroup } from "@/components/ui/input-group"
@@ -171,16 +171,15 @@ const ProfilePage = () => {
                 invalid={Boolean(form.formState.errors.birth_date)}
                 errorMessage={form.formState.errors.birth_date?.message}
                 render={({ field, fieldState }) => (
-                  <DatePicker
-                    selected={
-                      field.value
-                        ? new Date(field.value as unknown as string)
-                        : undefined
+                  <DateTimePicker
+                    value={
+                      field.value ? (field.value as unknown as Date) : undefined
                     }
-                    onSelect={field.onChange}
-                    placeholder="Birth Date"
+                    onChange={field.onChange}
                     className="w-full"
                     error={!!fieldState.error}
+                    hideTime={true}
+                    clearable
                   />
                 )}
               />

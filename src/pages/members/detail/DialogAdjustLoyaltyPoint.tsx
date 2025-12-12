@@ -3,14 +3,13 @@ import { useForm } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiAdjustMemberLoyaltyPoint } from "@/services/api/MembeService"
 import { yupResolver } from "@hookform/resolvers/yup"
-import dayjs from "dayjs"
 import { Minus, Plus } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import {
   InputGroup,
@@ -271,17 +270,22 @@ const DialogAdjustLoyaltyPoint: React.FC<DialogAdjustLoyaltyPointProps> = ({
                     invalid={Boolean(formState.errors.expired_at)}
                     errorMessage={formState.errors.expired_at?.message}
                     render={({ field }) => (
-                      <DatePicker
-                        selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (field.value as unknown as Date)
+                            : undefined
                         }
-                        onSelect={(date: Date | undefined) => {
+                        onChange={(date: Date | null | undefined) => {
                           if (date) {
                             field.onChange(date)
+                          } else {
+                            field.onChange(undefined)
                           }
                         }}
-                        placeholder="Pilih tanggal kadaluarsa"
                         error={!!formState.errors.expired_at}
+                        hideTime={true}
+                        clearable
                       />
                     )}
                   />

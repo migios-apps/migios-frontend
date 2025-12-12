@@ -5,7 +5,7 @@ import dayjs from "dayjs"
 import * as yup from "yup"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
@@ -175,10 +175,15 @@ const EventDialog = (props: EventDialogProps) => {
                 <FormItem>
                   <FormLabel>Start date</FormLabel>
                   <FormControl>
-                    <DatePicker
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      placeholder="Pick a date"
+                    <DateTimePicker
+                      value={
+                        field.value
+                          ? (field.value as unknown as Date)
+                          : undefined
+                      }
+                      onChange={field.onChange}
+                      hideTime={true}
+                      clearable
                     />
                   </FormControl>
                   <FormMessage />
@@ -192,10 +197,15 @@ const EventDialog = (props: EventDialogProps) => {
                 <FormItem>
                   <FormLabel>End date</FormLabel>
                   <FormControl>
-                    <DatePicker
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      placeholder="Pick a date"
+                    <DateTimePicker
+                      value={
+                        field.value
+                          ? (field.value as unknown as Date)
+                          : undefined
+                      }
+                      onChange={field.onChange}
+                      hideTime={true}
+                      clearable
                     />
                   </FormControl>
                   <FormMessage />

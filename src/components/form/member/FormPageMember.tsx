@@ -19,7 +19,7 @@ import BottomStickyBar from "@/components/ui/bottom-sticky-bar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
@@ -329,19 +329,20 @@ const FormPageMember: React.FC<FormProps> = ({
                       invalid={Boolean(errors.birth_date)}
                       errorMessage={errors.birth_date?.message}
                       render={({ field, fieldState }) => (
-                        <DatePicker
-                          selected={
+                        <DateTimePicker
+                          value={
                             field.value
-                              ? dayjs(field.value).toDate()
+                              ? (field.value as unknown as Date)
                               : undefined
                           }
-                          onSelect={(date) => {
+                          onChange={(date) => {
                             field.onChange(
                               date ? dayjs(date).format("YYYY-MM-DD") : null
                             )
                           }}
-                          placeholder="Date"
                           error={!!fieldState.error}
+                          hideTime={true}
+                          clearable
                         />
                       )}
                     />
@@ -467,17 +468,20 @@ const FormPageMember: React.FC<FormProps> = ({
                     invalid={Boolean(errors.join_date)}
                     errorMessage={errors.join_date?.message}
                     render={({ field, fieldState }) => (
-                      <DatePicker
-                        selected={
-                          field.value ? dayjs(field.value).toDate() : undefined
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (field.value as unknown as Date)
+                            : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD") : null
                           )
                         }}
-                        placeholder="Date"
                         error={!!fieldState.error}
+                        hideTime={true}
+                        clearable
                       />
                     )}
                   />

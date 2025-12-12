@@ -12,7 +12,7 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
 import {
@@ -281,10 +281,15 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
                           render={({ field }) => (
                             <div className="flex flex-col gap-2">
                               <FormLabel>Tanggal Mulai</FormLabel>
-                              <DatePicker
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                placeholder="Pilih tanggal mulai"
+                              <DateTimePicker
+                                value={
+                                  field.value
+                                    ? (field.value as unknown as Date)
+                                    : undefined
+                                }
+                                onChange={field.onChange}
+                                hideTime={true}
+                                clearable
                               />
                             </div>
                           )}
@@ -296,10 +301,15 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
                           render={({ field }) => (
                             <div className="flex flex-col gap-2">
                               <FormLabel>Tanggal Berakhir</FormLabel>
-                              <DatePicker
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                placeholder="Pilih tanggal berakhir"
+                              <DateTimePicker
+                                value={
+                                  field.value
+                                    ? (field.value as unknown as Date)
+                                    : undefined
+                                }
+                                onChange={field.onChange}
+                                hideTime={true}
+                                clearable
                               />
                             </div>
                           )}

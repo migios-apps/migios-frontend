@@ -21,7 +21,7 @@ import BottomStickyBar from "@/components/ui/bottom-sticky-bar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
@@ -401,12 +401,17 @@ const FormPageEmployee: React.FC<FormProps> = ({
                       invalid={Boolean(errors.birth_date)}
                       errorMessage={errors.birth_date?.message}
                       render={({ field, fieldState }) => (
-                        <DatePicker
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          placeholder="Birth Date"
+                        <DateTimePicker
+                          value={
+                            field.value
+                              ? (field.value as unknown as Date)
+                              : undefined
+                          }
+                          onChange={field.onChange}
                           className="w-full"
                           error={!!fieldState.error}
+                          hideTime={true}
+                          clearable
                         />
                       )}
                     />
@@ -712,10 +717,15 @@ const FormPageEmployee: React.FC<FormProps> = ({
                     invalid={Boolean(errors.join_date)}
                     errorMessage={errors.join_date?.message}
                     render={({ field }) => (
-                      <DatePicker
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        placeholder="Join Date"
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (field.value as unknown as Date)
+                            : undefined
+                        }
+                        onChange={field.onChange}
+                        hideTime={true}
+                        clearable
                       />
                     )}
                   />

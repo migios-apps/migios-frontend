@@ -14,7 +14,7 @@ import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DatePicker } from "@/components/ui/date-picker/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
 import {
@@ -198,18 +198,19 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
                         name={`items.${0}.start_date`}
                         label={<FormLabel>Tanggal Mulai</FormLabel>}
                         render={({ field }) => (
-                          <DatePicker
-                            selected={
+                          <DateTimePicker
+                            value={
                               field.value
-                                ? dayjs(field.value).toDate()
+                                ? (field.value as unknown as Date)
                                 : undefined
                             }
-                            onSelect={(date) => {
+                            onChange={(date) => {
                               field.onChange(
                                 date ? dayjs(date).format("YYYY-MM-DD") : null
                               )
                             }}
-                            placeholder="Pilih tanggal mulai"
+                            hideTime={true}
+                            clearable
                           />
                         )}
                       />
@@ -218,18 +219,19 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
                         name={`items.${0}.end_date`}
                         label={<FormLabel>Tanggal Selesai</FormLabel>}
                         render={({ field }) => (
-                          <DatePicker
-                            selected={
+                          <DateTimePicker
+                            value={
                               field.value
-                                ? dayjs(field.value).toDate()
+                                ? (field.value as unknown as Date)
                                 : undefined
                             }
-                            onSelect={(date) => {
+                            onChange={(date) => {
                               field.onChange(
                                 date ? dayjs(date).format("YYYY-MM-DD") : null
                               )
                             }}
-                            placeholder="Pilih tanggal selesai"
+                            hideTime={true}
+                            clearable
                           />
                         )}
                       />

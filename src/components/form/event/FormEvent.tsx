@@ -4,11 +4,7 @@ import dayjs from "dayjs"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DatePicker,
-  DateTimePicker,
-  SimpleTimePicker,
-} from "@/components/ui/date-picker"
+import { DateTimePicker, SimpleTimePicker } from "@/components/ui/date-picker"
 import {
   FormField,
   FormFieldItem,
@@ -194,19 +190,20 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                     )
                   } else {
                     return (
-                      <DatePicker
-                        placeholder="Start Date"
-                        selected={
+                      <DateTimePicker
+                        value={
                           field.value
                             ? (dayjs(field.value).toDate() as Date)
                             : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD") : null
                           )
                         }}
                         error={!!fieldState.error}
+                        hideTime={true}
+                        clearable
                       />
                     )
                   }
@@ -243,19 +240,20 @@ const FormEvent: React.FC<FormSectionBaseProps> = ({
                     )
                   } else {
                     return (
-                      <DatePicker
-                        placeholder="End Date"
-                        selected={
+                      <DateTimePicker
+                        value={
                           field.value
                             ? (dayjs(field.value).toDate() as Date)
                             : undefined
                         }
-                        onSelect={(date) => {
+                        onChange={(date) => {
                           field.onChange(
                             date ? dayjs(date).format("YYYY-MM-DD") : null
                           )
                         }}
                         error={!!fieldState.error}
+                        hideTime={true}
+                        clearable
                       />
                     )
                   }

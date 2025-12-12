@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { currencyFormat } from "@/components/ui/input-currency"
 import InputCurrency from "@/components/ui/input-currency"
@@ -228,9 +228,9 @@ const CartDetail: React.FC<CartDetailProps> = ({
               </Alert>
             ) : null}
             {/* Bagian atas: Lokasi & Tanggal */}
-            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-0">
+            <div className="flex items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-0">
               {/* Lokasi */}
-              <div className="flex w-full items-center gap-2 font-medium">
+              <div className="flex items-center gap-2 font-medium">
                 <Location size="20" color="currentColor" variant="Outline" />
                 <span className="text-sm font-semibold sm:text-base">
                   {club?.name}
@@ -245,24 +245,21 @@ const CartDetail: React.FC<CartDetailProps> = ({
                   invalid={Boolean(errors.due_date)}
                   errorMessage={errors.due_date?.message}
                   render={({ field, fieldState }) => (
-                    <DatePicker
-                      selected={
-                        field.value ? dayjs(field.value).toDate() : undefined
+                    <DateTimePicker
+                      value={
+                        field.value
+                          ? (field.value as unknown as Date)
+                          : undefined
                       }
-                      onSelect={(date) => {
+                      onChange={(date) => {
                         field.onChange(
                           date ? dayjs(date).format("YYYY-MM-DD") : null
                         )
                       }}
-                      placeholder="Start Date"
                       error={!!fieldState.error}
-                      classNameBtn="w-fit justify-end"
-                      disabled={
-                        isPaid !== 0
-                          ? () => true
-                          : (date: Date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                      }
+                      hideTime={true}
+                      clearable
+                      disabled={isPaid !== 0}
                     />
                   )}
                 />

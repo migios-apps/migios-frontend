@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
 import {
@@ -243,11 +243,14 @@ const FinanceRecord: React.FC<FormProps> = ({
                 invalid={Boolean(errors.date)}
                 errorMessage={errors.date?.message}
                 render={({ field, fieldState }) => (
-                  <DatePicker
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    placeholder="Date"
+                  <DateTimePicker
+                    value={
+                      field.value ? (field.value as unknown as Date) : undefined
+                    }
+                    onChange={field.onChange}
                     error={!!fieldState.error}
+                    hideTime={true}
+                    clearable
                   />
                 )}
               />

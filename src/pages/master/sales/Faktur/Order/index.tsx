@@ -649,11 +649,11 @@ const PointOfSales = () => {
           </div>
         }
         closable
-        title="Tutup Halaman"
-        description="Apakah Anda yakin ingin menutup halaman ini?"
+        title="Tutup Pesanan"
+        description="Apakah Anda yakin ingin menutup pesanan ini?"
         type="delete"
-        leftTitle="Tetap di halaman ini"
-        rightTitle="Tutup halaman"
+        leftTitle="Tutup dan simpan sementara"
+        rightTitle="Hapus semua data pesanan"
         onClose={() => setConfirmClose(false)}
         onLeftClick={() => {
           setConfirmClose(false)

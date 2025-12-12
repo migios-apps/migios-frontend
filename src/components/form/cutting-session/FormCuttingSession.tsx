@@ -22,7 +22,7 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
@@ -476,32 +476,16 @@ const FormCuttingSession: React.FC<FormProps> = ({
                         </FormLabel>
                       }
                       render={({ field, fieldState }) => (
-                        <div className="flex w-full gap-2">
-                          <DatePicker
-                            placeholder="Start Date"
-                            error={!!fieldState.error}
-                            selected={
-                              field.value
-                                ? dayjs(field.value).toDate()
-                                : undefined
-                            }
-                            onSelect={(date) => {
-                              if (date) {
-                                const currentTime = field.value
-                                  ? dayjs(field.value).format("HH:mm")
-                                  : "09:00"
-                                field.onChange(
-                                  dayjs(date)
-                                    .hour(parseInt(currentTime.split(":")[0]))
-                                    .minute(parseInt(currentTime.split(":")[1]))
-                                    .toISOString()
-                                )
-                              } else {
-                                field.onChange("")
-                              }
-                            }}
-                          />
-                        </div>
+                        <DateTimePicker
+                          error={!!fieldState.error}
+                          value={
+                            field.value
+                              ? (field.value as unknown as Date)
+                              : undefined
+                          }
+                          onChange={field.onChange}
+                          clearable
+                        />
                       )}
                     />
 
@@ -514,32 +498,16 @@ const FormCuttingSession: React.FC<FormProps> = ({
                         </FormLabel>
                       }
                       render={({ field, fieldState }) => (
-                        <div className="flex w-full gap-2">
-                          <DatePicker
-                            placeholder="End Date"
-                            error={!!fieldState.error}
-                            selected={
-                              field.value
-                                ? dayjs(field.value).toDate()
-                                : undefined
-                            }
-                            onSelect={(date) => {
-                              if (date) {
-                                const currentTime = field.value
-                                  ? dayjs(field.value).format("HH:mm")
-                                  : "10:00"
-                                field.onChange(
-                                  dayjs(date)
-                                    .hour(parseInt(currentTime.split(":")[0]))
-                                    .minute(parseInt(currentTime.split(":")[1]))
-                                    .toISOString()
-                                )
-                              } else {
-                                field.onChange("")
-                              }
-                            }}
-                          />
-                        </div>
+                        <DateTimePicker
+                          error={!!fieldState.error}
+                          value={
+                            field.value
+                              ? (field.value as unknown as Date)
+                              : undefined
+                          }
+                          onChange={field.onChange}
+                          clearable
+                        />
                       )}
                     />
 
@@ -552,19 +520,20 @@ const FormCuttingSession: React.FC<FormProps> = ({
                         </FormLabel>
                       }
                       render={({ field, fieldState }) => (
-                        <DatePicker
-                          placeholder="Due Date"
+                        <DateTimePicker
                           error={!!fieldState.error}
-                          selected={
+                          value={
                             field.value
-                              ? dayjs(field.value).toDate()
+                              ? (field.value as unknown as Date)
                               : undefined
                           }
-                          onSelect={(date) => {
+                          onChange={(date) => {
                             field.onChange(
                               date ? dayjs(date).format("YYYY-MM-DD") : ""
                             )
                           }}
+                          hideTime={true}
+                          clearable
                         />
                       )}
                     />

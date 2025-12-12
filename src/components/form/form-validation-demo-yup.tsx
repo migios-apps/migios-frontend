@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { id } from "date-fns/locale"
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
@@ -24,7 +23,6 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import {
-  DatePicker,
   DateTimeInput,
   DateTimePicker,
   SimpleTimePicker,
@@ -120,7 +118,6 @@ const formSchema = yup.object({
     .nullable()
     .test("required", "Kota remote harus dipilih", (value) => value !== null),
   language: yup.string().required("Bahasa harus dipilih"),
-  dateOfBirth: yup.date().required("Tanggal lahir harus diisi"),
   datePicker: yup.date().required("Tanggal harus diisi"),
   appointmentDateTime: yup.date().optional(),
   meetingDateTime: yup.date().optional(),
@@ -230,7 +227,6 @@ export default function FormValidationDemo() {
       notifications: [],
       gender: null,
       newsletter: false,
-      dateOfBirth: null,
       datePicker: null,
       appointmentDateTime: null,
       meetingDateTime: null,
@@ -494,25 +490,6 @@ export default function FormValidationDemo() {
             <CardDescription>Input tanggal dan input khusus</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <FormFieldItem
-                control={form.control}
-                name="dateOfBirth"
-                label="Tanggal Lahir"
-                render={({ field, fieldState }) => (
-                  <DatePicker
-                    selected={
-                      field.value ? (field.value as unknown as Date) : undefined
-                    }
-                    onSelect={field.onChange}
-                    placeholder="Pilih tanggal"
-                    error={!!fieldState.error}
-                    locale={id}
-                  />
-                )}
-              />
-            </div>
-
             <FormFieldItem
               control={form.control}
               name="otp"
@@ -555,7 +532,6 @@ export default function FormValidationDemo() {
                   }
                   hideTime={true}
                   onChange={field.onChange}
-                  use12HourFormat={false}
                   clearable
                   error={!!fieldState.error}
                 />

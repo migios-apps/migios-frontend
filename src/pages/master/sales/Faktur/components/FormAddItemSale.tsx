@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { Card, CardContent } from "@/components/ui/card"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
@@ -285,21 +285,22 @@ const FormAddItemSale: React.FC<FormProps> = ({
                             invalid={Boolean(errors.start_date)}
                             errorMessage={errors.start_date?.message}
                             render={({ field, fieldState }) => (
-                              <DatePicker
-                                selected={
+                              <DateTimePicker
+                                value={
                                   field.value
-                                    ? dayjs(field.value).toDate()
+                                    ? (field.value as unknown as Date)
                                     : undefined
                                 }
-                                onSelect={(date) => {
+                                onChange={(date) => {
                                   field.onChange(
                                     date
                                       ? dayjs(date).format("YYYY-MM-DD")
                                       : null
                                   )
                                 }}
-                                placeholder="Start Date"
                                 error={!!fieldState.error}
+                                hideTime={true}
+                                clearable
                               />
                             )}
                           />
@@ -427,21 +428,22 @@ const FormAddItemSale: React.FC<FormProps> = ({
                             invalid={Boolean(errors.start_date)}
                             errorMessage={errors.start_date?.message}
                             render={({ field, fieldState }) => (
-                              <DatePicker
-                                selected={
+                              <DateTimePicker
+                                value={
                                   field.value
-                                    ? dayjs(field.value).toDate()
+                                    ? (field.value as unknown as Date)
                                     : undefined
                                 }
-                                onSelect={(date) => {
+                                onChange={(date) => {
                                   field.onChange(
                                     date
                                       ? dayjs(date).format("YYYY-MM-DD")
                                       : null
                                   )
                                 }}
-                                placeholder="Start Date"
                                 error={!!fieldState.error}
+                                hideTime={true}
+                                clearable
                               />
                             )}
                           />
