@@ -8,7 +8,7 @@ import {
   apiUpdateMember,
 } from "@/services/api/MembeService"
 import dayjs from "dayjs"
-import { ArrowDown2, Trash, UserCirlceAdd } from "iconsax-reactjs"
+import { Trash, UserCirlceAdd } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -24,11 +24,7 @@ import {
   FormLabel,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
+import { InputIdentity } from "@/components/ui/input-identity"
 import PhoneInput from "@/components/ui/phone-input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
@@ -41,12 +37,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/animate-ui/components/radix/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
 import {
   CreateMemberSchema,
   ReturnMemberSchema,
@@ -271,8 +261,12 @@ const FormMember: React.FC<FormProps> = ({
                   }
                   invalid={Boolean(errors.phone)}
                   errorMessage={errors.phone?.message}
-                  render={({ field }) => (
-                    <PhoneInput placeholder="+62 *** *** ***" {...field} />
+                  render={({ field, fieldState }) => (
+                    <PhoneInput
+                      placeholder="+62 *** *** ***"
+                      {...field}
+                      error={!!fieldState.error}
+                    />
                   )}
                 />
                 <FormFieldItem
@@ -291,59 +285,22 @@ const FormMember: React.FC<FormProps> = ({
                     errors.identity_type?.message ||
                     errors.identity_number?.message
                   }
-                  render={({ field }) => {
-                    const dropdownItems = [
-                      { key: "ktp", name: "KTP" },
-                      { key: "sim", name: "SIM" },
-                      { key: "passport", name: "Passport" },
-                    ]
+                  render={({ field, fieldState }) => {
                     return (
-                      <InputGroup>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <InputGroupAddon className="rounded-tr-none rounded-br-none">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="flex items-center gap-2"
-                              >
-                                <span>
-                                  {dropdownItems.find(
-                                    (item) =>
-                                      item.key === watchData.identity_type
-                                  )?.name || "Pilih"}
-                                </span>
-                                <ArrowDown2
-                                  color="currentColor"
-                                  variant="Outline"
-                                  size={14}
-                                />
-                              </Button>
-                            </InputGroupAddon>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            {dropdownItems.map((item) => (
-                              <DropdownMenuItem
-                                key={item.key}
-                                onClick={() => {
-                                  formProps.setValue(
-                                    "identity_type",
-                                    item.key as any
-                                  )
+                      <InputIdentity
+                        identityType={watchData.identity_type}
+                        onIdentityTypeChange={(value) => {
+                          formProps.setValue("identity_type", value as any)
                                 }}
-                              >
-                                {item.name}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <InputGroupInput
-                          type="text"
-                          autoComplete="off"
+                        identityNumber={field.value}
+                        onIdentityNumberChange={field.onChange}
+                        error={
+                          !!fieldState.error ||
+                          Boolean(errors.identity_type) ||
+                          Boolean(errors.identity_number)
+                        }
                           placeholder="No. Identity"
-                          {...field}
                         />
-                      </InputGroup>
                     )
                   }}
                 />

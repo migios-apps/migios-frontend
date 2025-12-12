@@ -105,7 +105,7 @@ type DialogContentProps = Omit<
 
 function DialogContent({
   from = "bottom",
-  animation = "slide",
+  animation = "zoom",
   onOpenAutoFocus,
   onCloseAutoFocus,
   onEscapeKeyDown,
@@ -126,7 +126,7 @@ function DialogContent({
   // Set transition based on bounce
   const defaultTransition = isBounce
     ? ({ type: "spring", stiffness: 400, damping: 20 } as const)
-    : ({ duration: 0.2, ease: "easeOut" } as const)
+    : ({ duration: 0.2, ease: "easeInOut" } as const)
 
   const finalTransition = transition || defaultTransition
 

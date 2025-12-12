@@ -8,7 +8,7 @@ import {
   apiUpdateMember,
 } from "@/services/api/MembeService"
 import dayjs from "dayjs"
-import { ArrowDown2, Trash } from "iconsax-reactjs"
+import { Trash } from "iconsax-reactjs"
 import { ArrowLeft, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useSessionUser } from "@/stores/auth-store"
@@ -28,21 +28,11 @@ import {
   FormLabel,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
+import { InputIdentity } from "@/components/ui/input-identity"
 import PhoneInput from "@/components/ui/phone-input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import Upload from "@/components/ui/upload"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
 import Container from "@/components/container"
 import {
   CreateMemberSchema,
@@ -147,315 +137,275 @@ const FormPageMember: React.FC<FormProps> = ({
     <>
       <Form {...formProps}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="flex flex-auto flex-col gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Data diri</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormFieldItem
-                      control={control}
-                      name="name"
-                      label={
-                        <FormLabel>
-                          Nama <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.name)}
-                      errorMessage={errors.name?.message}
-                      render={({ field }) => (
-                        <Input
-                          type="text"
-                          autoComplete="off"
-                          placeholder="Nama"
-                          {...field}
-                        />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="email"
-                      label={
-                        <FormLabel>
-                          Email <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.email)}
-                      errorMessage={errors.email?.message}
-                      render={({ field }) => (
-                        <Input
-                          type="email"
-                          autoComplete="off"
-                          placeholder="Email"
-                          {...field}
-                        />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="phone"
-                      label={
-                        <FormLabel>
-                          Nomor Telepon{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.phone)}
-                      errorMessage={errors.phone?.message}
-                      render={({ field }) => (
-                        <PhoneInput placeholder="+62 *** *** ***" {...field} />
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="identity_number"
-                      label={
-                        <FormLabel>
-                          Nomor Identitas{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={
-                        Boolean(errors.identity_type) ||
-                        Boolean(errors.identity_number)
-                      }
-                      errorMessage={
-                        errors.identity_type?.message ||
-                        errors.identity_number?.message
-                      }
-                      render={({ field }) => {
-                        const dropdownItems = [
-                          { key: "ktp", name: "KTP" },
-                          { key: "sim", name: "SIM" },
-                          { key: "passport", name: "Passport" },
-                        ]
-                        return (
-                          <InputGroup>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <InputGroupAddon className="rounded-tr-none rounded-br-none">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="flex items-center gap-2"
-                                  >
-                                    <span>
-                                      {dropdownItems.find(
-                                        (item) =>
-                                          item.key === watchData.identity_type
-                                      )?.name || "Pilih"}
-                                    </span>
-                                    <ArrowDown2
-                                      color="currentColor"
-                                      variant="Outline"
-                                      size={14}
-                                    />
-                                  </Button>
-                                </InputGroupAddon>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                {dropdownItems.map((item) => (
-                                  <DropdownMenuItem
-                                    key={item.key}
-                                    onClick={() => {
-                                      formProps.setValue(
-                                        "identity_type",
-                                        item.key as any
-                                      )
-                                    }}
-                                  >
-                                    {item.name}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                            <InputGroupInput
-                              type="text"
-                              autoComplete="off"
-                              placeholder="No. Identity"
-                              {...field}
-                            />
-                          </InputGroup>
-                        )
-                      }}
-                    />
-                  </div>
-                  <div className="flex w-full flex-col items-center gap-0 md:flex-row md:gap-6">
-                    <FormFieldItem
-                      control={control}
-                      name="gender"
-                      label={
-                        <FormLabel>
-                          Jenis Kelamin{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.gender)}
-                      errorMessage={errors.gender?.message}
-                      render={({ field }) => (
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value ? String(field.value) : undefined}
-                          className="flex space-y-1"
-                        >
-                          <FormItem className="flex items-center space-y-0 space-x-3">
-                            <FormControl>
-                              <RadioGroupItem value="m" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Male</FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-y-0 space-x-3">
-                            <FormControl>
-                              <RadioGroupItem value="f" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Female
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      )}
-                    />
-                    <FormFieldItem
-                      control={control}
-                      name="birth_date"
-                      label={
-                        <FormLabel>
-                          Tanggal Lahir{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.birth_date)}
-                      errorMessage={errors.birth_date?.message}
-                      render={({ field, fieldState }) => (
-                        <DateTimePicker
-                          value={
-                            field.value
-                              ? (field.value as unknown as Date)
-                              : undefined
-                          }
-                          onChange={(date) => {
-                            field.onChange(
-                              date ? dayjs(date).format("YYYY-MM-DD") : null
-                            )
-                          }}
-                          error={!!fieldState.error}
-                          hideTime={true}
-                          clearable
-                        />
-                      )}
-                    />
-                  </div>
+          <div className="mx-auto flex max-w-5xl flex-col gap-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Data diri</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div className="flex w-full items-center justify-center">
                   <FormFieldItem
                     control={control}
-                    name="address"
+                    name="photo"
+                    label={<FormLabel></FormLabel>}
+                    invalid={Boolean(errors.photo)}
+                    errorMessage={errors.photo?.message}
+                    render={({ field }) => (
+                      <div className="flex w-full flex-col items-center justify-center">
+                        <div className="flex items-center justify-center">
+                          {field.value ? (
+                            <Avatar className="border-background bg-muted size-24 border-4 shadow-lg">
+                              <AvatarImage src={field.value} alt="Profile" />
+                              <AvatarFallback>
+                                <User className="text-muted-foreground size-12" />
+                              </AvatarFallback>
+                            </Avatar>
+                          ) : (
+                            <div className="border-border bg-muted flex size-24 items-center justify-center rounded-full border-4">
+                              <User className="text-muted-foreground size-12" />
+                            </div>
+                          )}
+                        </div>
+                        <Upload
+                          showList={false}
+                          uploadLimit={1}
+                          onChange={(files) => {
+                            if (files.length > 0) {
+                              const file = files[0]
+                              const reader = new FileReader()
+                              reader.onloadend = () => {
+                                field.onChange(reader.result as string)
+                              }
+                              reader.readAsDataURL(file)
+                            }
+                          }}
+                        >
+                          <Button
+                            variant="default"
+                            className="mt-4"
+                            type="button"
+                          >
+                            Upload Image
+                          </Button>
+                        </Upload>
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormFieldItem
+                    control={control}
+                    name="name"
                     label={
                       <FormLabel>
-                        Alamat <span className="text-destructive">*</span>
+                        Nama <span className="text-destructive">*</span>
                       </FormLabel>
                     }
-                    invalid={Boolean(errors.address)}
-                    errorMessage={errors.address?.message}
-                    render={({ field }) => (
-                      <Textarea
-                        autoComplete="off"
-                        placeholder="Address"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="goals"
-                    label={<FormLabel>Goals (Optional)</FormLabel>}
-                    invalid={Boolean(errors.goals)}
-                    errorMessage={errors.goals?.message}
-                    render={({ field }) => (
-                      <Textarea
-                        autoComplete="off"
-                        placeholder="Diet, Exercise, etc"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
-                    name="height_cm"
-                    label={<FormLabel>Tinggi Badan (Cm)</FormLabel>}
-                    invalid={Boolean(errors.height_cm)}
-                    errorMessage={errors.height_cm?.message}
+                    invalid={Boolean(errors.name)}
+                    errorMessage={errors.name?.message}
                     render={({ field }) => (
                       <Input
-                        type="number"
+                        type="text"
                         autoComplete="off"
-                        placeholder="Tinggi Badan (Cm)"
+                        placeholder="Nama"
                         {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || null
-                          field.onChange(value)
-                        }}
                       />
                     )}
                   />
-                </CardContent>
-              </Card>
-            </div>
-            <div className="flex flex-col gap-4 md:w-[370px]">
-              <Card>
-                <CardContent className="flex flex-col gap-4">
-                  <div className="flex w-full items-center justify-center">
-                    <FormFieldItem
-                      control={control}
-                      name="photo"
-                      label={<FormLabel></FormLabel>}
-                      invalid={Boolean(errors.photo)}
-                      errorMessage={errors.photo?.message}
-                      render={({ field }) => (
-                        <div className="flex w-full flex-col items-center justify-center">
-                          <div className="flex items-center justify-center">
-                            {field.value ? (
-                              <Avatar className="border-background bg-muted size-24 border-4 shadow-lg">
-                                <AvatarImage src={field.value} alt="Profile" />
-                                <AvatarFallback>
-                                  <User className="text-muted-foreground size-12" />
-                                </AvatarFallback>
-                              </Avatar>
-                            ) : (
-                              <div className="border-border bg-muted flex size-24 items-center justify-center rounded-full border-4">
-                                <User className="text-muted-foreground size-12" />
-                              </div>
-                            )}
-                          </div>
-                          <Upload
-                            showList={false}
-                            uploadLimit={1}
-                            onChange={(files) => {
-                              if (files.length > 0) {
-                                const file = files[0]
-                                const reader = new FileReader()
-                                reader.onloadend = () => {
-                                  field.onChange(reader.result as string)
-                                }
-                                reader.readAsDataURL(file)
-                              }
-                            }}
-                          >
-                            <Button
-                              variant="default"
-                              className="mt-4"
-                              type="button"
-                            >
-                              Upload Image
-                            </Button>
-                          </Upload>
-                        </div>
-                      )}
+                  <FormFieldItem
+                    control={control}
+                    name="email"
+                    label={
+                      <FormLabel>
+                        Email <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.email)}
+                    errorMessage={errors.email?.message}
+                    render={({ field }) => (
+                      <Input
+                        type="email"
+                        autoComplete="off"
+                        placeholder="Email"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <FormFieldItem
+                    control={control}
+                    name="phone"
+                    label={
+                      <FormLabel>
+                        Nomor Telepon{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.phone)}
+                    errorMessage={errors.phone?.message}
+                    render={({ field, fieldState }) => (
+                      <PhoneInput
+                        placeholder="+62 *** *** ***"
+                        {...field}
+                        error={!!fieldState.error}
+                      />
+                    )}
+                  />
+                  <FormFieldItem
+                    control={control}
+                    name="identity_number"
+                    label={
+                      <FormLabel>
+                        Nomor Identitas{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={
+                      Boolean(errors.identity_type) ||
+                      Boolean(errors.identity_number)
+                    }
+                    errorMessage={
+                      errors.identity_type?.message ||
+                      errors.identity_number?.message
+                    }
+                    render={({ field, fieldState }) => {
+                      return (
+                        <InputIdentity
+                          identityType={watchData.identity_type}
+                          onIdentityTypeChange={(value) => {
+                            formProps.setValue("identity_type", value as any)
+                          }}
+                          identityNumber={field.value}
+                          onIdentityNumberChange={field.onChange}
+                          error={!!fieldState.error}
+                          placeholder="No. Identity"
+                        />
+                      )
+                    }}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormFieldItem
+                    control={control}
+                    name="gender"
+                    label={
+                      <FormLabel>
+                        Jenis Kelamin{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.gender)}
+                    errorMessage={errors.gender?.message}
+                    render={({ field }) => (
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value ? String(field.value) : undefined}
+                        className="flex space-y-1"
+                      >
+                        <FormItem className="flex items-center space-y-0 space-x-3">
+                          <FormControl>
+                            <RadioGroupItem value="m" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Male</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-y-0 space-x-3">
+                          <FormControl>
+                            <RadioGroupItem value="f" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Female</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    )}
+                  />
+                  <FormFieldItem
+                    control={control}
+                    name="birth_date"
+                    label={
+                      <FormLabel>
+                        Tanggal Lahir{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.birth_date)}
+                    errorMessage={errors.birth_date?.message}
+                    render={({ field, fieldState }) => (
+                      <DateTimePicker
+                        value={
+                          field.value
+                            ? (field.value as unknown as Date)
+                            : undefined
+                        }
+                        onChange={(date) => {
+                          field.onChange(
+                            date ? dayjs(date).format("YYYY-MM-DD") : null
+                          )
+                        }}
+                        error={!!fieldState.error}
+                        hideTime={true}
+                        clearable
+                      />
+                    )}
+                  />
+                </div>
+                <FormFieldItem
+                  control={control}
+                  name="address"
+                  label={
+                    <FormLabel>
+                      Alamat <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.address)}
+                  errorMessage={errors.address?.message}
+                  render={({ field }) => (
+                    <Textarea
+                      autoComplete="off"
+                      placeholder="Address"
+                      {...field}
+                      value={field.value ?? ""}
                     />
-                  </div>
+                  )}
+                />
+                <FormFieldItem
+                  control={control}
+                  name="goals"
+                  label={<FormLabel>Goals (Optional)</FormLabel>}
+                  invalid={Boolean(errors.goals)}
+                  errorMessage={errors.goals?.message}
+                  render={({ field }) => (
+                    <Textarea
+                      autoComplete="off"
+                      placeholder="Diet, Exercise, etc"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  )}
+                />
+                <FormFieldItem
+                  control={control}
+                  name="height_cm"
+                  label={
+                    <FormLabel>
+                      Tinggi Badan (Cm){" "}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.height_cm)}
+                  errorMessage={errors.height_cm?.message}
+                  render={({ field }) => (
+                    <Input
+                      type="number"
+                      autoComplete="off"
+                      placeholder="Tinggi Badan (Cm)"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value) || null
+                        field.onChange(value)
+                      }}
+                    />
+                  )}
+                />
+                <div className="grid gap-4 md:grid-cols-2">
                   <FormFieldItem
                     control={control}
                     name="join_date"
@@ -505,9 +455,9 @@ const FormPageMember: React.FC<FormProps> = ({
                       </FormItem>
                     )}
                   />
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           <BottomStickyBar>
             <Container>

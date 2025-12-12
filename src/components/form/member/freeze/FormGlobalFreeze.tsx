@@ -219,217 +219,217 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
             <div className="flex-1 overflow-hidden px-2 pr-1">
               <ScrollArea className="h-full px-2 pr-3">
                 <div className="space-y-6 px-1 pb-4">
-                  {/* Select Member - Hidden when member selected */}
-                  {!selectedMember && (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">Pilih Member</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Cari dan pilih member untuk freeze
-                        </p>
-                      </div>
-                      <SelectAsyncPaginate<MemberDetail>
-                        isClearable
-                        loadOptions={getMemberList as any}
-                        additional={{ page: 1 }}
-                        placeholder="Cari nama atau kode member..."
-                        value={selectedMember}
-                        cacheUniqs={[selectedMember]}
-                        getOptionLabel={(option) =>
-                          `${option?.name} - ${option?.code}`
-                        }
+                {/* Select Member - Hidden when member selected */}
+                {!selectedMember && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Pilih Member</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Cari dan pilih member untuk freeze
+                      </p>
+                    </div>
+                    <SelectAsyncPaginate<MemberDetail>
+                      isClearable
+                      loadOptions={getMemberList as any}
+                      additional={{ page: 1 }}
+                      placeholder="Cari nama atau kode member..."
+                      value={selectedMember}
+                      cacheUniqs={[selectedMember]}
+                      getOptionLabel={(option) =>
+                        `${option?.name} - ${option?.code}`
+                      }
                         getOptionValue={(option) =>
                           option?.id?.toString() || ""
                         }
-                        debounceTimeout={500}
-                        onChange={(val) => {
-                          setSelectedMember(val)
-                        }}
+                      debounceTimeout={500}
+                      onChange={(val) => {
+                        setSelectedMember(val)
+                      }}
+                    />
+                  </div>
+                )}
+
+                {selectedMember && (
+                  <>
+                    {/* Member Info with Remove Button */}
+                    <div className="bg-muted/50 relative rounded-lg p-4">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-2 right-2 size-8"
+                        onClick={() => setSelectedMember(null)}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                      <div className="flex items-center gap-3">
+                        {selectedMember.photo && (
+                          <img
+                            src={selectedMember.photo}
+                            alt={selectedMember.name}
+                            className="size-12 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-semibold capitalize">
+                            {selectedMember.name}
+                          </span>
+                          <span className="text-muted-foreground text-sm">
+                            {selectedMember.code}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Freeze Period */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">
+                          Periode Freeze
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          Tentukan durasi freeze member
+                        </p>
+                      </div>
+                      <FormFieldItem
+                        control={control}
+                        name={`items.${0}.start_date`}
+                        label={<FormLabel>Tanggal Mulai</FormLabel>}
+                        render={({ field }) => (
+                            <DateTimePicker
+                              value={
+                              field.value
+                                  ? (field.value as unknown as Date)
+                                : undefined
+                            }
+                              onChange={(date) => {
+                              field.onChange(
+                                date ? dayjs(date).format("YYYY-MM-DD") : null
+                              )
+                            }}
+                              hideTime={true}
+                              clearable
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name={`items.${0}.end_date`}
+                        label={<FormLabel>Tanggal Selesai</FormLabel>}
+                        render={({ field }) => (
+                            <DateTimePicker
+                              value={
+                              field.value
+                                  ? (field.value as unknown as Date)
+                                : undefined
+                            }
+                              onChange={(date) => {
+                              field.onChange(
+                                date ? dayjs(date).format("YYYY-MM-DD") : null
+                              )
+                            }}
+                              hideTime={true}
+                              clearable
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="notes"
+                        label={<FormLabel>Keterangan</FormLabel>}
+                        render={({ field }) => (
+                          <Textarea
+                            placeholder="Tambahkan keterangan freeze"
+                            autoComplete="off"
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        )}
                       />
                     </div>
-                  )}
 
-                  {selectedMember && (
-                    <>
-                      {/* Member Info with Remove Button */}
-                      <div className="bg-muted/50 relative rounded-lg p-4">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="absolute top-2 right-2 size-8"
-                          onClick={() => setSelectedMember(null)}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                        <div className="flex items-center gap-3">
-                          {selectedMember.photo && (
-                            <img
-                              src={selectedMember.photo}
-                              alt={selectedMember.name}
-                              className="size-12 rounded-full object-cover"
-                            />
-                          )}
-                          <div className="flex flex-col">
-                            <span className="text-foreground font-semibold capitalize">
-                              {selectedMember.name}
-                            </span>
-                            <span className="text-muted-foreground text-sm">
-                              {selectedMember.code}
-                            </span>
-                          </div>
-                        </div>
+                    <Separator />
+
+                    {/* Payment */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Pembayaran</h3>
+                        <p className="text-muted-foreground text-sm">
+                          Tentukan jumlah dan metode pembayaran
+                        </p>
                       </div>
-
-                      <Separator />
-
-                      {/* Freeze Period */}
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold">
-                            Periode Freeze
-                          </h3>
-                          <p className="text-muted-foreground text-sm">
-                            Tentukan durasi freeze member
-                          </p>
-                        </div>
-                        <FormFieldItem
-                          control={control}
-                          name={`items.${0}.start_date`}
-                          label={<FormLabel>Tanggal Mulai</FormLabel>}
-                          render={({ field }) => (
-                            <DateTimePicker
-                              value={
-                                field.value
-                                  ? (field.value as unknown as Date)
-                                  : undefined
-                              }
-                              onChange={(date) => {
-                                field.onChange(
-                                  date ? dayjs(date).format("YYYY-MM-DD") : null
+                      <FormFieldItem
+                        control={control}
+                        name="balance_amount"
+                        label={
+                          <FormLabel>
+                            Jumlah Pembayaran{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        render={({ field }) => (
+                          <InputCurrency
+                            value={field.value}
+                            placeholder="0"
+                            className="bg-primary/10 text-primary focus:bg-primary/10 h-20 text-center text-2xl font-bold"
+                            onValueChange={(_value, _name, values) => {
+                              field.onChange(values?.float)
+                            }}
+                          />
+                        )}
+                      />
+                      <FormFieldItem
+                        control={control}
+                        name="payments"
+                        label={
+                          <FormLabel>
+                            Metode Pembayaran{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        render={({ field }) => (
+                          <SelectAsyncPaginate
+                            isClearable
+                            loadOptions={getRekeningList as any}
+                            additional={{ page: 1 }}
+                            placeholder="Pilih metode pembayaran"
+                            value={field.value[0]}
+                            cacheUniqs={[watchTransaction.payments[0]]}
+                            getOptionLabel={(option) => option.name!}
+                            getOptionValue={(option) => option.id?.toString()}
+                            debounceTimeout={500}
+                            onChange={(val, ctx) => {
+                              if (ctx.action === "clear") {
+                                field.onChange([])
+                                setValue(
+                                  "balance_amount",
+                                  watchTransaction.balance_amount
                                 )
-                              }}
-                              hideTime={true}
-                              clearable
-                            />
-                          )}
-                        />
-                        <FormFieldItem
-                          control={control}
-                          name={`items.${0}.end_date`}
-                          label={<FormLabel>Tanggal Selesai</FormLabel>}
-                          render={({ field }) => (
-                            <DateTimePicker
-                              value={
-                                field.value
-                                  ? (field.value as unknown as Date)
-                                  : undefined
+                                formProps.setError("payments", {
+                                  type: "custom",
+                                  message: "Payment method is required",
+                                })
+                              } else {
+                                field.onChange([
+                                  {
+                                    id: val?.id,
+                                    name: val?.name,
+                                    amount: watchTransaction.balance_amount,
+                                  },
+                                ])
+                                formProps.clearErrors("payments")
                               }
-                              onChange={(date) => {
-                                field.onChange(
-                                  date ? dayjs(date).format("YYYY-MM-DD") : null
-                                )
-                              }}
-                              hideTime={true}
-                              clearable
-                            />
-                          )}
-                        />
-                        <FormFieldItem
-                          control={control}
-                          name="notes"
-                          label={<FormLabel>Keterangan</FormLabel>}
-                          render={({ field }) => (
-                            <Textarea
-                              placeholder="Tambahkan keterangan freeze"
-                              autoComplete="off"
-                              {...field}
-                              value={field.value ?? ""}
-                            />
-                          )}
-                        />
-                      </div>
-
-                      <Separator />
-
-                      {/* Payment */}
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold">Pembayaran</h3>
-                          <p className="text-muted-foreground text-sm">
-                            Tentukan jumlah dan metode pembayaran
-                          </p>
-                        </div>
-                        <FormFieldItem
-                          control={control}
-                          name="balance_amount"
-                          label={
-                            <FormLabel>
-                              Jumlah Pembayaran{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                          }
-                          render={({ field }) => (
-                            <InputCurrency
-                              value={field.value}
-                              placeholder="0"
-                              className="bg-primary/10 text-primary focus:bg-primary/10 h-20 text-center text-2xl font-bold"
-                              onValueChange={(_value, _name, values) => {
-                                field.onChange(values?.float)
-                              }}
-                            />
-                          )}
-                        />
-                        <FormFieldItem
-                          control={control}
-                          name="payments"
-                          label={
-                            <FormLabel>
-                              Metode Pembayaran{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                          }
-                          render={({ field }) => (
-                            <SelectAsyncPaginate
-                              isClearable
-                              loadOptions={getRekeningList as any}
-                              additional={{ page: 1 }}
-                              placeholder="Pilih metode pembayaran"
-                              value={field.value[0]}
-                              cacheUniqs={[watchTransaction.payments[0]]}
-                              getOptionLabel={(option) => option.name!}
-                              getOptionValue={(option) => option.id?.toString()}
-                              debounceTimeout={500}
-                              onChange={(val, ctx) => {
-                                if (ctx.action === "clear") {
-                                  field.onChange([])
-                                  setValue(
-                                    "balance_amount",
-                                    watchTransaction.balance_amount
-                                  )
-                                  formProps.setError("payments", {
-                                    type: "custom",
-                                    message: "Payment method is required",
-                                  })
-                                } else {
-                                  field.onChange([
-                                    {
-                                      id: val?.id,
-                                      name: val?.name,
-                                      amount: watchTransaction.balance_amount,
-                                    },
-                                  ])
-                                  formProps.clearErrors("payments")
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </ScrollArea>
+                            }}
+                          />
+                        )}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </ScrollArea>
             </div>
             <SheetFooter className="px-4 py-2">
               <div className="flex w-full items-center justify-end gap-2">

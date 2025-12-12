@@ -30,7 +30,7 @@ export const validationSchemaMember = yup.object().shape({
     .typeError("Join Date must be a valid date"),
   notes: yup.string().optional().nullable(),
   goals: yup.string().optional().nullable(),
-  height_cm: yup.number().optional().nullable(),
+  height_cm: yup.number().required("Height is required").nullable(),
   enabled: yup.boolean().default(true),
 })
 

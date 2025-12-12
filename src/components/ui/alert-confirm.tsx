@@ -57,7 +57,12 @@ const AlertConfirm: React.FC<AlertConfirmProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={closable ? onClose : undefined}>
-      <DialogContent className={className} showCloseButton={closable}>
+      <DialogContent
+        className={className}
+        showCloseButton={closable}
+        animation="zoomBounce"
+        from="top"
+      >
         <div className="flex flex-col items-center justify-center">
           {icon && <div className="mb-2">{icon}</div>}
           <DialogHeader className="text-center">

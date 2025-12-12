@@ -21,18 +21,26 @@ export type PhoneInputProps = Omit<
   Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
     onChange?: (value: RPNInput.Value) => void
     defaultCountry?: RPNInput.Country
+    error?: boolean
   }
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
   React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
-    ({ className, onChange, defaultCountry = "ID", ...props }, ref) => {
+    (
+      { className, onChange, defaultCountry = "ID", error = false, ...props },
+      ref
+    ) => {
       return (
         <RPNInput.default
           ref={ref}
           className={cn("flex", className)}
           flagComponent={FlagComponent}
-          countrySelectComponent={CountrySelect}
-          inputComponent={InputComponent}
+          countrySelectComponent={(countrySelectProps) => (
+            <CountrySelect {...countrySelectProps} error={error} />
+          )}
+          inputComponent={(inputProps) => (
+            <InputComponent {...inputProps} error={error} />
+          )}
           smartCaret={false}
           international={false}
           defaultCountry={defaultCountry}
@@ -48,15 +56,18 @@ export default PhoneInput
 
 const InputComponent = ({
   className,
+  error = false,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   ref: React.RefObject<HTMLInputElement>
+  error?: boolean
 }) => {
   const { size, ref, ...restProps } = props
   return (
     <Input
       {...restProps}
       ref={ref}
+      aria-invalid={error}
       className={cn("rounded-s-none rounded-e-lg", className)}
     />
   )
@@ -70,6 +81,7 @@ type CountrySelectProps = {
   value: RPNInput.Country
   options: CountryEntry[]
   onChange: (country: RPNInput.Country) => void
+  error?: boolean
 }
 
 const CountrySelect = ({
@@ -77,6 +89,7 @@ const CountrySelect = ({
   value: selectedCountry,
   options: countryList,
   onChange,
+  error = false,
 }: CountrySelectProps) => {
   const [isOpen, setIsOpen] = React.useState(false)
   const listCountry = countryList.filter(
@@ -89,6 +102,7 @@ const CountrySelect = ({
           className="rounded-tr-none rounded-br-none px-3"
           type="button"
           variant="outline"
+          aria-invalid={error}
         >
           {selectedCountry ? (
             <div className="flex items-center gap-2">
@@ -127,7 +141,7 @@ const CountrySelect = ({
                   {...props}
                   className={cn(
                     !isDisabled && "cursor-pointer",
-                    isSelected && "!bg-primary/10 !text-primary",
+                    isSelected && "bg-primary/10! text-primary!",
                     isFocused && !isSelected && "bg-accent",
                     !isDisabled &&
                       !isSelected &&

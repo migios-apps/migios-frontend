@@ -295,8 +295,12 @@ export default function FormValidationDemo() {
               control={form.control}
               name="phone"
               label="Nomor Telepon"
-              render={({ field }) => (
-                <PhoneInput {...field} defaultCountry="ID" />
+              render={({ field, fieldState }) => (
+                <PhoneInput
+                  {...field}
+                  defaultCountry="ID"
+                  error={!!fieldState.error}
+                />
               )}
             />
 

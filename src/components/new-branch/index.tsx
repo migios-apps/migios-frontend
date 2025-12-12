@@ -356,10 +356,11 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
                                 errorMessage={
                                   formProps.formState.errors.phone?.message
                                 }
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                   <PhoneInput
                                     placeholder="+62 *** *** ***"
                                     {...field}
+                                    error={!!fieldState.error}
                                   />
                                 )}
                               />

@@ -19,13 +19,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import InputCurrency from "@/components/ui/input-currency"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
 import {
   ReturnAsyncSelect,
   SelectAsyncPaginate,
@@ -667,136 +667,49 @@ const FormAddItemSale: React.FC<FormProps> = ({
                         label="Discount"
                         invalid={Boolean(errors.discount)}
                         errorMessage={errors.discount?.message}
-                        render={({ field }) => {
+                        render={({ field, fieldState }) => {
                           return (
-                            <InputGroup>
-                              {watchData.discount_type === "nominal" ? (
-                                <InputCurrency
-                                  placeholder="Discount amount"
-                                  disabled={
-                                    !watchData.discount_type ||
-                                    Boolean(watchData.is_promo)
-                                  }
-                                  customInput={InputGroupInput}
-                                  value={field.value || undefined}
-                                  onValueChange={(_value, _name, values) => {
-                                    const valData = values?.float
-                                    field.onChange(valData)
+                            <InputPercentNominal
+                              value={
+                                field.value === 0 ? undefined : field.value
+                              }
+                              onChange={(val) => {
+                                const value =
+                                  val === null || val === "" ? 0 : Number(val)
+                                field.onChange(value)
 
-                                    if (!valData) {
-                                      formProps.setValue(
-                                        "sell_price",
-                                        watchData.price
-                                      )
-                                    } else {
-                                      const { amount } =
-                                        calculateDiscountAmount({
-                                          price: watchData.price,
-                                          discount_type:
-                                            watchData.discount_type as any,
-                                          discount_amount: valData || 0,
-                                        })
-                                      formProps.setValue("sell_price", amount)
-                                    }
-                                  }}
-                                />
-                              ) : (
-                                <InputGroupInput
-                                  type="number"
-                                  autoComplete="off"
-                                  placeholder="10%"
-                                  disabled={
-                                    !watchData.discount_type ||
-                                    Boolean(watchData.is_promo)
-                                  }
-                                  {...field}
-                                  value={
-                                    (field.value === 0
-                                      ? undefined
-                                      : field.value) || undefined
-                                  }
-                                  onChange={(e) => {
-                                    const value =
-                                      e.target.value === ""
-                                        ? 0
-                                        : Number(e.target.value)
-                                    field.onChange(value)
-
-                                    if (value === 0) {
-                                      formProps.setValue(
-                                        "sell_price",
-                                        watchData.price
-                                      )
-                                    } else {
-                                      const val = Number(value)
-                                      const { amount } =
-                                        calculateDiscountAmount({
-                                          price: watchData.price,
-                                          discount_type:
-                                            watchData.discount_type as any,
-                                          discount_amount: val,
-                                        })
-                                      formProps.setValue("sell_price", amount)
-                                    }
-                                  }}
-                                />
-                              )}
-                              <InputGroupAddon
-                                align="inline-end"
-                                className="pr-0"
-                              >
-                                <ButtonGroup>
-                                  <InputGroupButton
-                                    type="button"
-                                    variant={
-                                      watchData.discount_type === "percent"
-                                        ? "default"
-                                        : "ghost"
-                                    }
-                                    size="sm"
-                                    className={
-                                      watchData.discount_type === "percent"
-                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                        : ""
-                                    }
-                                    disabled={Boolean(watchData.is_promo)}
-                                    onClick={() => {
-                                      formProps.setValue(
-                                        "discount_type",
-                                        "percent"
-                                      )
-                                      formProps.setValue("discount", 0)
-                                    }}
-                                  >
-                                    %
-                                  </InputGroupButton>
-                                  <InputGroupButton
-                                    type="button"
-                                    variant={
-                                      watchData.discount_type === "nominal"
-                                        ? "default"
-                                        : "ghost"
-                                    }
-                                    size="sm"
-                                    className={
-                                      watchData.discount_type === "nominal"
-                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                        : ""
-                                    }
-                                    disabled={Boolean(watchData.is_promo)}
-                                    onClick={() => {
-                                      formProps.setValue(
-                                        "discount_type",
-                                        "nominal"
-                                      )
-                                      formProps.setValue("discount", 0)
-                                    }}
-                                  >
-                                    Rp
-                                  </InputGroupButton>
-                                </ButtonGroup>
-                              </InputGroupAddon>
-                            </InputGroup>
+                                if (value === 0) {
+                                  formProps.setValue(
+                                    "sell_price",
+                                    watchData.price
+                                  )
+                                } else {
+                                  const { amount } = calculateDiscountAmount({
+                                    price: watchData.price,
+                                    discount_type:
+                                      watchData.discount_type as any,
+                                    discount_amount: value,
+                                  })
+                                  formProps.setValue("sell_price", amount)
+                                }
+                              }}
+                              type={
+                                (watchData.discount_type as
+                                  | "percent"
+                                  | "nominal") || "percent"
+                              }
+                              onTypeChange={(type) => {
+                                formProps.setValue("discount_type", type as any)
+                                formProps.setValue("discount", 0)
+                              }}
+                              disabled={
+                                !watchData.discount_type ||
+                                Boolean(watchData.is_promo)
+                              }
+                              placeholderPercent="10%"
+                              placeholderNominal="Discount amount"
+                              error={!!fieldState.error}
+                            />
                           )
                         }}
                       />

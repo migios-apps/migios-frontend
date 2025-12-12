@@ -18,9 +18,8 @@ import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
-import { InputGroup } from "@/components/ui/input-group"
+import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
 import Loading from "@/components/ui/loading"
 import LayoutOtherSetting from "../Layout"
 
@@ -128,50 +127,22 @@ const CommissionSetting = () => {
                       errorMessage={
                         errors.sales?.message || errors.sales_type?.message
                       }
-                      render={({ field }) => {
+                      render={({ field, fieldState }) => {
                         return (
-                          <InputGroup>
-                            {watchData.sales_type === "nominal" ? (
-                              <InputCurrency
-                                placeholder="Rp. 0"
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              />
-                            ) : (
-                              <Input
-                                type="number"
-                                autoComplete="off"
-                                placeholder="10%"
-                                {...field}
-                              />
-                            )}
-                            <Button
-                              type="button"
-                              variant={
-                                watchData.sales_type === "percent"
-                                  ? "default"
-                                  : "outline"
-                              }
-                              onClick={() => {
-                                formProps.setValue("sales_type", "percent")
-                              }}
-                            >
-                              %
-                            </Button>
-                            <Button
-                              type="button"
-                              variant={
-                                watchData.sales_type === "nominal"
-                                  ? "default"
-                                  : "outline"
-                              }
-                              onClick={() => {
-                                formProps.setValue("sales_type", "nominal")
-                              }}
-                            >
-                              Rp
-                            </Button>
-                          </InputGroup>
+                          <InputPercentNominal
+                            value={field.value}
+                            onChange={field.onChange}
+                            type={
+                              (watchData.sales_type as "percent" | "nominal") ||
+                              "percent"
+                            }
+                            onTypeChange={(type) => {
+                              formProps.setValue("sales_type", type as any)
+                            }}
+                            placeholderPercent="10%"
+                            placeholderNominal="Rp. 0"
+                            error={!!fieldState.error}
+                          />
                         )
                       }}
                     />

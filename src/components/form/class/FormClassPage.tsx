@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import PhoneInput from "@/components/ui/phone-input"
 import type { ReturnAsyncSelect } from "@/components/ui/react-select"
 import { Select, SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -403,22 +404,28 @@ const FormClassPage: React.FC<FormProps> = ({
                         }
                         invalid={Boolean(errors.phone)}
                         errorMessage={errors.phone?.message}
-                        render={({ field }) => (
-                          <Input
-                            type="string"
-                            autoComplete="off"
-                            placeholder="Phone Number"
+                        render={({ field, fieldState }) => (
+                          // <Input
+                          //   type="string"
+                          //   autoComplete="off"
+                          //   placeholder="Phone Number"
+                          //   {...field}
+                          //   onChange={(e) => {
+                          //     const value = e.target.value
+                          //     // Hanya izinkan angka dan satu karakter +
+                          //     const formattedValue = value
+                          //       .replace(/[^\d+]/g, "") // Hapus semua karakter kecuali angka dan +
+                          //       .replace(/\+/g, (_match, offset, string) =>
+                          //         string.indexOf("+") === offset ? "+" : ""
+                          //       ) // Pastikan hanya ada satu tanda +
+                          //     field.onChange(formattedValue)
+                          //   }}
+                          //   error={!!fieldState.error}
+                          // />
+                          <PhoneInput
+                            placeholder="08 *** *** ***"
                             {...field}
-                            onChange={(e) => {
-                              const value = e.target.value
-                              // Hanya izinkan angka dan satu karakter +
-                              const formattedValue = value
-                                .replace(/[^\d+]/g, "") // Hapus semua karakter kecuali angka dan +
-                                .replace(/\+/g, (_match, offset, string) =>
-                                  string.indexOf("+") === offset ? "+" : ""
-                                ) // Pastikan hanya ada satu tanda +
-                              field.onChange(formattedValue)
-                            }}
+                            error={!!fieldState.error}
                           />
                         )}
                       />

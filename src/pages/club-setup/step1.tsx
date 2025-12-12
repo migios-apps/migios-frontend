@@ -109,8 +109,12 @@ const Step1: React.FC<PropsType> = ({ onNext, formProps }) => {
           }
           invalid={Boolean(errors.phone)}
           errorMessage={errors.phone?.message}
-          render={({ field }) => (
-            <PhoneInput placeholder="08 *** *** ***" {...field} />
+          render={({ field, fieldState }) => (
+            <PhoneInput
+              placeholder="08 *** *** ***"
+              {...field}
+              error={!!fieldState.error}
+            />
           )}
         />
         <FormFieldItem

@@ -8,7 +8,7 @@ import {
   apiUpdateEmployee,
 } from "@/services/api/EmployeeService"
 import dayjs from "dayjs"
-import { ArrowDown2, Trash, UserCirlceAdd } from "iconsax-reactjs"
+import { Trash, UserCirlceAdd } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -24,7 +24,7 @@ import {
   FormLabel,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { InputGroup } from "@/components/ui/input-group"
+import { InputIdentity } from "@/components/ui/input-identity"
 import PhoneInput from "@/components/ui/phone-input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select } from "@/components/ui/react-select"
@@ -36,13 +36,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/animate-ui/components/radix/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
 import {
   CreateEmployeeSchema,
   ReturnEmployeeSchema,
@@ -278,8 +271,12 @@ const FormEmployee: React.FC<FormProps> = ({
                   }
                   invalid={Boolean(errors.phone)}
                   errorMessage={errors.phone?.message}
-                  render={({ field }) => (
-                    <PhoneInput placeholder="+62 *** *** ***" {...field} />
+                  render={({ field, fieldState }) => (
+                    <PhoneInput
+                      placeholder="+62 *** *** ***"
+                      error={!!fieldState.error}
+                      {...field}
+                    />
                   )}
                 />
                 <FormFieldItem
@@ -299,65 +296,20 @@ const FormEmployee: React.FC<FormProps> = ({
                     errors.identity_number?.message
                   }
                   render={({ field, fieldState }) => {
-                    const dropdownItems = [
-                      { key: "ktp", name: "KTP" },
-                      { key: "sim", name: "SIM" },
-                      { key: "passport", name: "Passport" },
-                    ]
                     return (
-                      <InputGroup>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            asChild
-                            className="rounded-tr-none rounded-br-none"
-                            aria-invalid={!!fieldState.error}
-                          >
-                            <Button type="button" variant="outline">
-                              <span>
-                                {
-                                  dropdownItems.find(
-                                    (item) =>
-                                      item.key === watchData.identity_type
-                                  )?.name
-                                }
-                              </span>
-                              <ArrowDown2
-                                color="currentColor"
-                                variant="Outline"
-                                size={14}
-                              />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
-                            <DropdownMenuRadioGroup
-                              value={watchData.identity_type}
-                              onValueChange={(val) => {
+                      <InputIdentity
+                        identityType={watchData.identity_type}
+                        onIdentityTypeChange={(value) => {
                                 formProps.setValue(
                                   "identity_type",
-                                  val as "ktp" | "sim" | "passport"
+                            value as "ktp" | "sim" | "passport"
                                 )
                               }}
-                            >
-                              {dropdownItems.map((item) => (
-                                <DropdownMenuRadioItem
-                                  key={item.key}
-                                  value={item.key}
-                                >
-                                  {item.name}
-                                </DropdownMenuRadioItem>
-                              ))}
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Input
-                          type="text"
-                          autoComplete="off"
+                        identityNumber={field.value}
+                        onIdentityNumberChange={field.onChange}
+                        error={!!fieldState.error}
                           placeholder="No. Identity"
-                          className="rounded-tl-none rounded-bl-none"
-                          aria-invalid={!!fieldState.error}
-                          {...field}
                         />
-                      </InputGroup>
                     )
                   }}
                 />

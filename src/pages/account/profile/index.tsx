@@ -2,7 +2,6 @@ import { useEffect } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { UpdateEmployeeDto } from "@/services/api/@types/user"
 import { apiUpdateEmployeeProfile } from "@/services/api/UserService"
-import { ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { InputGroup } from "@/components/ui/input-group"
+import { InputIdentity } from "@/components/ui/input-identity"
 import PhoneInput from "@/components/ui/phone-input"
 import {
   Select as SelectUI,
@@ -21,13 +20,6 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
 import LayoutAccount from "../Layout"
 import {
   useEmployeeProfileValidation,
@@ -130,8 +122,12 @@ const ProfilePage = () => {
                 }
                 invalid={Boolean(form.formState.errors.phone)}
                 errorMessage={form.formState.errors.phone?.message}
-                render={({ field }) => (
-                  <PhoneInput placeholder="+62 *** *** ***" {...field} />
+                render={({ field, fieldState }) => (
+                  <PhoneInput
+                    placeholder="+62 *** *** ***"
+                    {...field}
+                    error={!!fieldState.error}
+                  />
                 )}
               />
 
@@ -207,57 +203,17 @@ const ProfilePage = () => {
                 }
                 description="Pilih tipe identitas dan masukkan nomornya"
                 render={({ field, fieldState }) => {
-                  const dropdownItems = [
-                    { key: "ktp", name: "KTP" },
-                    { key: "sim", name: "SIM" },
-                    { key: "passport", name: "Passport" },
-                  ]
                   return (
-                    <InputGroup>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          className="rounded-tr-none rounded-br-none"
-                          aria-invalid={!!fieldState.error}
-                        >
-                          <Button type="button" variant="outline">
-                            <span>
-                              {
-                                dropdownItems.find(
-                                  (item) => item.key === watchData.identity_type
-                                )?.name
-                              }
-                            </span>
-                            <ChevronDown className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          <DropdownMenuRadioGroup
-                            value={watchData.identity_type}
-                            onValueChange={(val: any) => {
-                              form.setValue("identity_type", val)
+                    <InputIdentity
+                      identityType={watchData.identity_type}
+                      onIdentityTypeChange={(value) => {
+                        form.setValue("identity_type", value as any)
                             }}
-                          >
-                            {dropdownItems.map((item, index) => (
-                              <DropdownMenuRadioItem
-                                key={index}
-                                value={item.key}
-                              >
-                                {item.name}
-                              </DropdownMenuRadioItem>
-                            ))}
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <Input
-                        type="text"
-                        autoComplete="off"
+                      identityNumber={field.value}
+                      onIdentityNumberChange={field.onChange}
+                      error={!!fieldState.error}
                         placeholder="No. Identitas"
-                        className="rounded-tl-none rounded-bl-none"
-                        aria-invalid={!!fieldState.error}
-                        {...field}
                       />
-                    </InputGroup>
                   )
                 }}
               />
