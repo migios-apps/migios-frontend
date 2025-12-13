@@ -179,8 +179,6 @@ export function DateTimePicker({
     )
   }, [displayValue, hideTime, use12HourFormat])
 
-
-
   return (
     <Popover
       open={open}
