@@ -33,11 +33,11 @@ export const IsPublishOptions = [
 export const DurationTimeTypeOptions = [
   { label: "Minute", value: "minute" },
   { label: "Hour", value: "hour" },
-  { label: "Day", value: "day" },
-  { label: "Week", value: "week" },
-  { label: "Month", value: "month" },
-  { label: "Year", value: "year" },
-  { label: "Forever", value: "forever" },
+  // { label: "Day", value: "day" },
+  // { label: "Week", value: "week" },
+  // { label: "Month", value: "month" },
+  // { label: "Year", value: "year" },
+  // { label: "Forever", value: "forever" },
 ]
 
 export const WeekdayOptions = [
@@ -65,7 +65,14 @@ export const validationSchemaClassPage = yup.object().shape({
   allow_all_instructor: yup.boolean().default(false),
   enabled: yup.boolean().default(true),
   start_date: yup.string().required("Start date is required"),
-  end_date: yup.string().required("End date is required"),
+  end_date: yup
+    .string()
+    .nullable()
+    .when("is_forever", {
+      is: (is_forever: boolean) => is_forever === false,
+      then: (schema) => schema.required("End date is required"),
+      otherwise: (schema) => schema.nullable().optional(),
+    }),
   is_forever: yup.boolean().default(false),
   is_publish: yup.number().required("Publish status is required"),
   available_for: yup.number().required("Available for is required"),
