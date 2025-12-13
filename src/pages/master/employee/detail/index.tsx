@@ -78,6 +78,8 @@ const EmployeeDetail = () => {
     enabled: !!id,
   })
 
+  const isTrainer = employee?.roles?.some((role) => role.name === "trainer")
+
   return (
     <Loading loading={isLoadingEmployee || isLoadingEmployeeHead}>
       {!isEmpty(employee) && !errorEmployee && (
@@ -121,13 +123,14 @@ const EmployeeDetail = () => {
                     {employee?.name}
                   </span>
                   <span className="text-primary-foreground/80 text-center text-sm leading-none capitalize">
-                    {employee?.type}
+                    {employee?.roles?.map((role) => role.name).join(", ") ||
+                      "-"}
                   </span>
                 </div>
               </div>
             </div>
 
-            {employee?.type === "trainer" && (
+            {isTrainer && (
               <Card className="bg-accent py-0 shadow-none">
                 <CardContent className="flex items-center justify-between gap-2 p-2">
                   <div className="flex flex-1 flex-col items-center gap-1">
@@ -477,7 +480,7 @@ const EmployeeDetail = () => {
                   <div className="overflow-x-auto">
                     <TabsList className="min-w-fit justify-start sm:w-fit">
                       <TabsTrigger value="tab1">Informasi detail</TabsTrigger>
-                      {employee && employee.type === "trainer" && (
+                      {isTrainer && (
                         <>
                           <TabsTrigger value="tab2">Daftar Member</TabsTrigger>
                           <TabsTrigger value="tab3">Daftar Program</TabsTrigger>
@@ -490,14 +493,10 @@ const EmployeeDetail = () => {
                       <InformasiDetail employee={employee} />
                     </TabsContent>
                     <TabsContent value="tab2">
-                      {employee && employee.type === "trainer" ? (
-                        <Members data={employee} />
-                      ) : null}
+                      {isTrainer ? <Members data={employee} /> : null}
                     </TabsContent>
                     <TabsContent value="tab3">
-                      {employee && employee.type === "trainer" ? (
-                        <PtPrograms data={employee} />
-                      ) : null}
+                      {isTrainer ? <PtPrograms data={employee} /> : null}
                     </TabsContent>
                   </TabsContents>
                 </Tabs>

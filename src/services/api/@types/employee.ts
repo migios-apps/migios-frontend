@@ -22,6 +22,12 @@ export interface EmployeeDetail {
   enabled: boolean
   created_at?: string
   updated_at?: string
+  roles: {
+    id: number
+    name: string
+    display_name: string
+    description: string
+  }[]
 }
 
 export interface EmployeeDetailPage extends EmployeeDetail {
@@ -41,12 +47,6 @@ export interface EmployeeDetailPage extends EmployeeDetail {
     fsession: string
     fclass: string
   }
-  roles: {
-    id: number
-    name: string
-    display_name: string
-    description: string
-  }[]
 }
 
 export type EmployeeListTypeResponse = Omit<ApiTypes, "data"> & {

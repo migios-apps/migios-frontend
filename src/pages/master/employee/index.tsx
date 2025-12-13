@@ -42,7 +42,7 @@ const EmployeeCard = ({ data }: { data: EmployeeDetail }) => {
             {data.name}
           </span>
           <span className="text-muted-foreground line-clamp-1 text-xs leading-none capitalize">
-            {data.type ?? "-"}
+            {data.roles?.map((role) => role.name).join(", ") || "-"}
           </span>
         </div>
         <div className="bg-muted flex flex-col gap-3 rounded-lg p-4">

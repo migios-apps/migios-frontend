@@ -77,8 +77,8 @@ const Onboarding = () => {
     defaultValues: {
       email: user?.email,
       plan_type: "free",
-      duration: 1,
-      duration_type: "month",
+      duration: 7,
+      duration_type: "day",
       amount: 0,
       payment_method: "cash",
     },
@@ -145,8 +145,12 @@ const Onboarding = () => {
         ? (data.members as unknown as BulkCreateClubDto["members"])
         : [],
       plan_type: data.plan_type as BulkCreateClubDto["plan_type"],
-      duration: data.duration,
-      duration_type: data.duration_type as BulkCreateClubDto["duration_type"],
+      duration: (data.plan_type === "free"
+        ? 7
+        : 1) as BulkCreateClubDto["duration"],
+      duration_type: (data.plan_type === "free"
+        ? "day"
+        : "month") as BulkCreateClubDto["duration_type"],
       amount: data.amount,
       payment_method:
         data.payment_method as BulkCreateClubDto["payment_method"],
