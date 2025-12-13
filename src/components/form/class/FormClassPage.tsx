@@ -128,12 +128,12 @@ const FormClassPage: React.FC<FormProps> = ({
             search_condition: "=",
             search_text: "true",
           },
-          // {
-          //   search_operator: "and",
-          //   search_column: "roles_name",
-          //   search_condition: "=",
-          //   search_text: "trainer",
-          // },
+          {
+            search_operator: "and",
+            search_column: "roles_name",
+            search_condition: "=",
+            search_text: "trainer",
+          },
         ],
       })
       return new Promise<ReturnAsyncSelect>((resolve) => {
