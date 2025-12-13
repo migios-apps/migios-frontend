@@ -138,7 +138,6 @@ const FormPageEmployee: React.FC<FormProps> = ({
         enabled: data.enabled,
         description: data.description as string | null,
         specialist: data.specialist,
-        type: data.type as "user" | "trainer",
         earnings: data.earnings as CreateEmployee["earnings"],
         roles: data.roles as CreateEmployee["roles"],
       })
@@ -160,7 +159,6 @@ const FormPageEmployee: React.FC<FormProps> = ({
         enabled: data.enabled,
         description: data.description as string | null,
         specialist: data.specialist,
-        type: data.type as "user" | "trainer",
         earnings: data.earnings as CreateEmployee["earnings"],
         roles: data.roles as CreateEmployee["roles"],
       })
@@ -408,30 +406,6 @@ const FormPageEmployee: React.FC<FormProps> = ({
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormFieldItem
                     control={control}
-                    name="type"
-                    label={
-                      <FormLabel>
-                        Jenis staff <span className="text-destructive">*</span>
-                      </FormLabel>
-                    }
-                    invalid={Boolean(errors.type)}
-                    errorMessage={errors.type?.message}
-                    render={({ field, fieldState }) => (
-                      <Select
-                        {...field}
-                        isSearchable={false}
-                        placeholder="Please Select"
-                        value={userTypeOptions.filter(
-                          (option) => option.value === field.value
-                        )}
-                        options={userTypeOptions}
-                        onChange={(option) => field.onChange(option?.value)}
-                        error={!!fieldState.error}
-                      />
-                    )}
-                  />
-                  <FormFieldItem
-                    control={control}
                     name="join_date"
                     label={
                       <FormLabel>
@@ -455,63 +429,50 @@ const FormPageEmployee: React.FC<FormProps> = ({
                     )}
                   />
                 </div>
-                {watchData.type === "trainer" && (
-                  <FormFieldItem
-                    control={control}
-                    name="specialist"
-                    label={
-                      <FormLabel>
-                        Spesialisasi <span className="text-destructive">*</span>
-                      </FormLabel>
-                    }
-                    invalid={Boolean(errors.specialist)}
-                    errorMessage={errors.specialist?.message}
-                    render={({ field, fieldState }) => (
-                      <Select
-                        isMulti={true}
-                        value={
-                          field.value
-                            ?.split(",")
-                            .map((option) => ({
-                              label: option.trim(),
-                              value: option.trim(),
-                            }))
-                            .filter((item) => item.value !== "") || []
+                <FormFieldItem
+                  control={control}
+                  name="specialist"
+                  label={
+                    <FormLabel>
+                      Spesialisasi <span className="text-destructive">*</span>
+                    </FormLabel>
+                  }
+                  invalid={Boolean(errors.specialist)}
+                  errorMessage={errors.specialist?.message}
+                  render={({ field, fieldState }) => (
+                    <Select
+                      isMulti={true}
+                      value={field.value?.split(",").map((option) => ({
+                        label: option.trim(),
+                        value: option.trim(),
+                      }))}
+                      options={selectedOptions}
+                      hideSelectedOptions={true}
+                      backspaceRemovesValue={false}
+                      onChange={(e) => {
+                        const vaue = e as unknown as OptionType[]
+                        const newVal = vaue?.filter((item) => item.value !== "")
+                        setSelectedOptions(newVal)
+                        field.onChange(
+                          newVal.map((item) => item.value).join(", ")
+                        )
+                      }}
+                      onInputChange={(newValue, actionMeta) => {
+                        if (actionMeta.action === "input-change") {
+                          const options = newValue.split(",").map((option) => ({
+                            label: option.trim(),
+                            value: option.trim(),
+                          }))
+                          setSelectedOptions(options)
                         }
-                        options={selectedOptions}
-                        hideSelectedOptions={true}
-                        backspaceRemovesValue={false}
-                        onChange={(e) => {
-                          const vaue = e as unknown as OptionType[]
-                          const newVal = vaue?.filter(
-                            (item) => item.value !== ""
-                          )
-                          setSelectedOptions(newVal)
-                          field.onChange(
-                            newVal.map((item) => item.value).join(", ")
-                          )
-                        }}
-                        onInputChange={(newValue, actionMeta) => {
-                          if (actionMeta.action === "input-change") {
-                            const options = newValue
-                              .split(",")
-                              .map((option) => ({
-                                label: option.trim(),
-                                value: option.trim(),
-                              }))
-                            setSelectedOptions(options)
-                          }
-                        }}
-                        error={!!fieldState.error}
-                      />
-                    )}
-                  />
-                )}
-                {watchData.type === "trainer" && (
-                  <span className="text-muted-foreground text-xs">
-                    Pisahkan dengan Enter
-                  </span>
-                )}
+                      }}
+                      error={!!fieldState.error}
+                    />
+                  )}
+                />
+                <span className="text-muted-foreground text-xs">
+                  Pisahkan dengan Enter
+                </span>
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormFieldItem
                     control={control}

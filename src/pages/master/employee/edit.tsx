@@ -27,7 +27,6 @@ const EditEmployee = () => {
         // Mengisi semua field form berdasarkan data dari API
         formProps.setValue("code", data.code)
         formProps.setValue("photo", data.photo)
-        formProps.setValue("type", data.type)
         formProps.setValue("name", data.name)
         formProps.setValue("email", data.email)
         formProps.setValue("phone", data.phone)
@@ -44,7 +43,7 @@ const EditEmployee = () => {
         }
 
         formProps.setValue("gender", data.gender)
-        formProps.setValue("specialist", data.specialist)
+        formProps.setValue("specialist", data?.specialist)
         formProps.setValue("address", data.address)
         formProps.setValue("description", data.description)
         formProps.setValue("enabled", data.enabled)

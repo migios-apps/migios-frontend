@@ -5,7 +5,6 @@ export interface EmployeeDetail {
   id: number
   user_id: number
   club_id: number
-  type: "trainer" | "user"
   code: string
   name: string
   identity_number: string
@@ -83,7 +82,6 @@ export interface EmployeeHeadType {
 
 export interface CreateEmployee {
   club_id: number
-  type: "user" | "trainer"
   name: string
   identity_number: string
   identity_type: string
