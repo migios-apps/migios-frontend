@@ -163,12 +163,12 @@ const AxiosResponseIntrceptorErrorCallback = async (error: AxiosError) => {
       return Promise.reject(error)
     }
 
-    // 5. Handle 500 Internal Server Error
-    if (response.status === 500 && import.meta.env.PROD) {
-      toast.error(errorMessage)
-      window.location.href = "/500"
-      return Promise.reject(error)
-    }
+    // // 5. Handle 500 Internal Server Error
+    // if (response.status === 500 && import.meta.env.PROD) {
+    //   toast.error(errorMessage)
+    //   window.location.href = "/500"
+    //   return Promise.reject(error)
+    // }
 
     // 6. Tampilkan error message untuk status lainnya
     // Kecuali 401 yang sudah di-handle di atas

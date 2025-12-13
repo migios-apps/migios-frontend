@@ -401,26 +401,6 @@ const FormMembership: React.FC<FormProps> = ({
                         )}
                       />
                     </div>
-                    <FormFieldItem
-                      control={control}
-                      name="session_duration"
-                      label={
-                        <FormLabel>
-                          Session Duration{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                      }
-                      invalid={Boolean(errors.session_duration)}
-                      errorMessage={errors.session_duration?.message}
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          placeholder="Session Duration"
-                          {...field}
-                        />
-                      )}
-                    />
                     {/* <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <FormLabel>Allow All Trainer</FormLabel>
