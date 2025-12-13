@@ -1,37 +1,18 @@
 import { ChevronDownIcon, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { TimePicker } from "./time-picker"
+import { TimePicker, TimePickerProps } from "./time-picker"
 
-export function SimpleTimePicker({
-  value,
-  onChange,
-  use12HourFormat,
-  min,
-  max,
-  disabled,
-  modal,
-  error = false,
-}: {
-  use12HourFormat?: boolean
-  value: Date
-  onChange: (date: Date) => void
-  min?: Date
-  max?: Date
+interface SimpleTimePickerProps
+  extends Omit<TimePickerProps, "renderTrigger" | "disabled"> {
   disabled?: boolean
-  className?: string
-  modal?: boolean
   error?: boolean
-}) {
+}
+
+export function SimpleTimePicker(props: SimpleTimePickerProps) {
+  const { disabled, error = false } = props
   return (
     <TimePicker
-      value={value}
-      onChange={onChange}
-      use12HourFormat={use12HourFormat}
-      min={min}
-      max={max}
-      disabled={disabled}
-      error={error}
-      modal={modal}
+      {...props}
       renderTrigger={({ display: displayValue, open, onClick }) => (
         <div
           role="combobox"

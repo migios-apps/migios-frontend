@@ -609,6 +609,10 @@ const FormClassPage: React.FC<FormProps> = ({
                             return (
                               <SimpleTimePicker
                                 value={timeValue}
+                                timePicker={{
+                                  hour: true,
+                                  minute: true,
+                                }}
                                 onChange={(date) => {
                                   const hours = date
                                     .getHours()
