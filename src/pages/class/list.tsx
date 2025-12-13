@@ -8,7 +8,7 @@ import {
   apiGetClassList,
 } from "@/services/api/ClassService"
 import dayjs from "dayjs"
-import { Call, Chart21, Layer, Profile2User } from "iconsax-reactjs"
+import { Chart21, Layer, Profile2User } from "iconsax-reactjs"
 import { ArrowRight, Flame } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -235,22 +235,6 @@ const ClassIndex = () => {
 
                           <div className="grid gap-3">
                             <div className="flex items-center gap-3">
-                              <Call
-                                color="currentColor"
-                                size={16}
-                                variant="Bulk"
-                                className="text-muted-foreground shrink-0"
-                              />
-                              <div className="flex-1">
-                                <div className="text-muted-foreground text-xs">
-                                  Phone
-                                </div>
-                                <div className="text-sm font-medium">
-                                  {item.phone}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
                               <Profile2User
                                 color="currentColor"
                                 size={16}
@@ -418,25 +402,58 @@ const ClassIndex = () => {
                               formProps.setValue("id", item.id)
                               formProps.setValue("photo", item.photo)
                               formProps.setValue("name", item.name)
-                              formProps.setValue("phone", item.phone)
                               formProps.setValue("capacity", item.capacity)
-                              formProps.setValue("level", item.level)
+                              formProps.setValue("level", item.level ?? null)
                               formProps.setValue(
                                 "burn_calories",
-                                item.burn_calories
+                                item.burn_calories ?? null
                               )
-                              formProps.setValue("category", item.category)
+                              formProps.setValue(
+                                "category",
+                                item.category ?? null
+                              )
                               formProps.setValue(
                                 "description",
-                                item.description
+                                item.description ?? null
                               )
                               formProps.setValue(
                                 "allow_all_instructor",
                                 item.allow_all_instructor
                               )
                               formProps.setValue("enabled", item.enabled)
+                              formProps.setValue("start_date", item.start_date)
+                              formProps.setValue("end_date", item.end_date)
+                              formProps.setValue("is_forever", item.is_forever)
+                              formProps.setValue("is_publish", item.is_publish)
+                              formProps.setValue(
+                                "available_for",
+                                item.available_for
+                              )
+                              formProps.setValue(
+                                "visible_for",
+                                item.visible_for
+                              )
+                              formProps.setValue("class_type", item.class_type)
+                              formProps.setValue(
+                                "embed_video",
+                                item.embed_video ?? null
+                              )
+                              formProps.setValue(
+                                "background_color",
+                                item.background_color ?? null
+                              )
+                              formProps.setValue("color", item.color ?? null)
+                              formProps.setValue("start_time", item.start_time)
+                              formProps.setValue(
+                                "duration_time",
+                                item.duration_time
+                              )
+                              formProps.setValue(
+                                "duration_time_type",
+                                item.duration_time_type as any
+                              )
+                              // Instructors will be set by useEffect in FormClassPage
                               // formProps.setValue('instructors', item.instructors)
-                              formProps.setValue("events", item.events as [])
                             }}
                           >
                             Edit class

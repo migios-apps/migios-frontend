@@ -15,7 +15,7 @@ import {
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import { apiDeletePackage } from "@/services/api/PackageService"
 import dayjs from "dayjs"
-import { Trash2, User } from "lucide-react"
+import { Trash2, Plus, User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -23,9 +23,10 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DateTimePicker } from "@/components/ui/date-picker"
+import { SimpleTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import InputPhone from "@/components/ui/input-phone"
 import type { ReturnAsyncSelect } from "@/components/ui/react-select"
 import { Select, SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -39,11 +40,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/animate-ui/components/radix/sheet"
-import FormClassEvent from "./FormClassEvent"
 import {
   ClassPageFormSchema,
   LevelClassOptions,
   ReturnClassPageFormSchema,
+  AvailableForOptions,
+  VisibleForOptions,
+  ClassTypeOptions,
+  IsPublishOptions,
+  DurationTimeTypeOptions,
+  WeekdayOptions,
 } from "./validation"
 
 type FormProps = {
@@ -67,9 +73,14 @@ const FormClassPage: React.FC<FormProps> = ({
     handleSubmit,
     formState: { errors },
   } = formProps
-  const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
-  const [eventModal, setEventModal] = React.useState(false)
+
+  // Use specific watch to avoid infinite loops
+  const watchId = watch("id")
+  const watchAllowAllInstructor = watch("allow_all_instructor")
+  const watchInstructors = watch("instructors")
+  const watchCategory = watch("category")
+  const watchIsForever = watch("is_forever")
 
   // console.log("watchData", watchData)
   // console.log("errors", JSON.stringify(errors))
@@ -79,17 +90,18 @@ const FormClassPage: React.FC<FormProps> = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: [QUERY_KEY.trainers, watchData.id],
-    queryFn: () => apiGetAllInstructorByClass(watchData.id as number),
+    queryKey: [QUERY_KEY.trainers, watchId],
+    queryFn: () => apiGetAllInstructorByClass(watchId as number),
     select: (res) => res.data,
-    enabled: !!watchData.id,
+    enabled: !!watchId,
   })
 
   React.useEffect(() => {
-    if (type === "update" && !error) {
+    if (type === "update" && !error && instructors) {
       formProps.setValue("instructors", instructors)
     }
-  }, [error, formProps, instructors, type, watchData.allow_all_instructor])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error, instructors, type])
 
   const getTrainerList = React.useCallback(
     async (
@@ -168,10 +180,10 @@ const FormClassPage: React.FC<FormProps> = ({
     })
   }
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     formProps.reset({})
     onClose()
-  }
+  }, [formProps, onClose])
 
   const handlePrefecth = () => {
     queryClient.invalidateQueries({ queryKey: [QUERY_KEY.classes] })
@@ -190,7 +202,7 @@ const FormClassPage: React.FC<FormProps> = ({
 
   const update = useMutation({
     mutationFn: (data: CreateClassPage) =>
-      apiUpdateClass(watchData.id as number, data),
+      apiUpdateClass(watchId as number, data),
     onError: (error) => {
       console.log("error update", error)
     },
@@ -206,65 +218,67 @@ const FormClassPage: React.FC<FormProps> = ({
   })
 
   const onSubmit: SubmitHandler<ClassPageFormSchema> = (data) => {
+    const payload: CreateClassPage = {
+      club_id: club?.id as number,
+      photo: data.photo,
+      name: data.name,
+      capacity: data.capacity,
+      level: data.level ?? null,
+      burn_calories: data.burn_calories ?? null,
+      description: data.description ?? null,
+      allow_all_instructor: data.allow_all_instructor ?? false,
+      enabled: data.enabled ?? true,
+      start_date: dayjs(data.start_date).format("YYYY-MM-DD"),
+      end_date: dayjs(data.end_date).format("YYYY-MM-DD"),
+      is_forever: data.is_forever ?? false,
+      is_publish: data.is_publish,
+      available_for: data.available_for,
+      visible_for: data.visible_for,
+      class_type: data.class_type,
+      embed_video: data.embed_video ?? null,
+      background_color: data.background_color ?? null,
+      color: data.color ?? null,
+      start_time: data.start_time,
+      duration_time: data.duration_time,
+      duration_time_type: data.duration_time_type,
+      category_id: data?.category?.id || null,
+      instructors: data.allow_all_instructor
+        ? []
+        : (data.instructors?.map((inst) => ({
+            id: inst.id,
+            trainer_code: inst.code,
+            name: inst.name,
+          })) ?? []),
+      weekdays_available: data.weekdays_available ?? [],
+      class_photos: (data.class_photos ?? []) as string[],
+    }
+
     if (type === "update") {
-      update.mutate({
-        club_id: club?.id as number,
-        photo: data.photo,
-        burn_calories: data.burn_calories,
-        name: data.name,
-        enabled: data.enabled,
-        allow_all_instructor: data.allow_all_instructor,
-        phone: data.phone,
-        capacity: data.capacity,
-        level: data.level,
-        category_id: data?.category?.id || null,
-        description: data.description,
-        instructors: data.allow_all_instructor
-          ? []
-          : (data.instructors as CreateClassPage["instructors"]),
-        events: data.events.map((event) => ({
-          ...event,
-          start: dayjs(event.start).format("YYYY-MM-DD HH:mm"),
-          end: dayjs(event.end).format("YYYY-MM-DD HH:mm"),
-        })) as CreateClassPage["events"],
-      })
+      update.mutate(payload)
       return
     }
     if (type === "create") {
-      create.mutate({
-        club_id: club?.id as number,
-        photo: data.photo,
-        burn_calories: data.burn_calories,
-        name: data.name,
-        enabled: data.enabled,
-        allow_all_instructor: data.allow_all_instructor,
-        phone: data.phone,
-        capacity: data.capacity,
-        level: data.level,
-        category_id: data?.category?.id || null,
-        description: data.description,
-        instructors: data.allow_all_instructor
-          ? []
-          : (data.instructors as CreateClassPage["instructors"]),
-        events: data.events.map((event) => ({
-          ...event,
-          start: dayjs(event.start).format("YYYY-MM-DD HH:mm"),
-          end: dayjs(event.end).format("YYYY-MM-DD HH:mm"),
-        })) as CreateClassPage["events"],
-      })
+      create.mutate(payload)
       return
     }
   }
 
   const handleDelete = () => {
-    deleteItem.mutate(watchData.id as number)
+    deleteItem.mutate(watchId as number)
     setConfirmDelete(false)
     handleClose()
   }
 
   return (
     <>
-      <Sheet open={open} onOpenChange={handleClose}>
+      <Sheet
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose()
+          }
+        }}
+      >
         <SheetContent floating className="gap-0 sm:max-w-xl">
           <Form {...formProps}>
             <form
@@ -300,7 +314,7 @@ const FormClassPage: React.FC<FormProps> = ({
                       )}
                     />
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
+                      {/* <div className="flex items-center justify-between">
                         <FormLabel>
                           Instructors{" "}
                           <span className="text-destructive">*</span>
@@ -320,12 +334,18 @@ const FormClassPage: React.FC<FormProps> = ({
                             </div>
                           )}
                         />
-                      </div>
+                      </div> */}
                       <FormFieldItem
                         control={control}
                         name="instructors"
                         invalid={Boolean(errors.instructors)}
                         errorMessage={errors.instructors?.message}
+                        label={
+                          <FormLabel>
+                            Instructor{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
                         render={({ field, fieldState }) => (
                           <SelectAsyncPaginate
                             isClearable
@@ -336,15 +356,14 @@ const FormClassPage: React.FC<FormProps> = ({
                             placeholder="Select Instructor"
                             value={field.value}
                             error={!!fieldState.error}
-                            cacheUniqs={[watchData.instructors]}
+                            cacheUniqs={[watchInstructors]}
                             isOptionDisabled={() =>
-                              ((watchData.instructors as any[]) ?? []).length >=
-                              5
+                              ((watchInstructors as any[]) ?? []).length >= 5
                             }
                             getOptionLabel={(option) => option.name!}
                             getOptionValue={(option) => option.code.toString()}
                             debounceTimeout={500}
-                            isDisabled={watchData.allow_all_instructor}
+                            isDisabled={watchAllowAllInstructor}
                             formatOptionLabel={({ name, photo }) => {
                               return (
                                 <div className="flex items-center justify-start gap-2">
@@ -383,7 +402,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           additional={{ page: 1 }}
                           placeholder="Select Category"
                           value={field.value}
-                          cacheUniqs={[watchData.category]}
+                          cacheUniqs={[watchCategory]}
                           error={!!fieldState.error}
                           getOptionLabel={(option) => option.name!}
                           getOptionValue={(option) => option.id.toString()}
@@ -393,52 +412,11 @@ const FormClassPage: React.FC<FormProps> = ({
                       )}
                     />
                     <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
-                      <FormFieldItem
-                        control={control}
-                        name="phone"
-                        label={
-                          <FormLabel>
-                            Phone Number{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                        }
-                        invalid={Boolean(errors.phone)}
-                        errorMessage={errors.phone?.message}
-                        render={({ field, fieldState }) => (
-                          // <Input
-                          //   type="string"
-                          //   autoComplete="off"
-                          //   placeholder="Phone Number"
-                          //   {...field}
-                          //   onChange={(e) => {
-                          //     const value = e.target.value
-                          //     // Hanya izinkan angka dan satu karakter +
-                          //     const formattedValue = value
-                          //       .replace(/[^\d+]/g, "") // Hapus semua karakter kecuali angka dan +
-                          //       .replace(/\+/g, (_match, offset, string) =>
-                          //         string.indexOf("+") === offset ? "+" : ""
-                          //       ) // Pastikan hanya ada satu tanda +
-                          //     field.onChange(formattedValue)
-                          //   }}
-                          //   error={!!fieldState.error}
-                          // />
-                          <InputPhone
-                            placeholder="08 *** *** ***"
-                            {...field}
-                            error={!!fieldState.error}
-                          />
-                        )}
-                      />
                       <div className="w-full">
                         <FormFieldItem
                           control={control}
                           name="burn_calories"
-                          label={
-                            <FormLabel>
-                              Calorie Burn{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                          }
+                          label={<FormLabel>Calorie Burn</FormLabel>}
                           invalid={Boolean(errors.burn_calories)}
                           errorMessage={errors.burn_calories?.message}
                           render={({ field }) => (
@@ -447,6 +425,12 @@ const FormClassPage: React.FC<FormProps> = ({
                               autoComplete="off"
                               placeholder="Calorie Burn"
                               {...field}
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value ? Number(e.target.value) : null
+                                )
+                              }
                             />
                           )}
                         />
@@ -479,11 +463,7 @@ const FormClassPage: React.FC<FormProps> = ({
                         <FormFieldItem
                           control={control}
                           name="level"
-                          label={
-                            <FormLabel>
-                              Level <span className="text-destructive">*</span>
-                            </FormLabel>
-                          }
+                          label={<FormLabel>Level</FormLabel>}
                           invalid={Boolean(errors.level)}
                           errorMessage={errors.level?.message}
                           render={({ field, fieldState }) => (
@@ -496,7 +476,7 @@ const FormClassPage: React.FC<FormProps> = ({
                               options={LevelClassOptions}
                               error={!!fieldState.error}
                               onChange={(option) =>
-                                field.onChange(option?.value)
+                                field.onChange(option?.value ?? null)
                               }
                             />
                           )}
@@ -517,216 +497,461 @@ const FormClassPage: React.FC<FormProps> = ({
                         />
                       )}
                     />
+                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="start_date"
+                          label={
+                            <FormLabel className="mb-1.5">
+                              Start Date{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.start_date)}
+                          errorMessage={errors.start_date?.message}
+                          render={({ field, fieldState }) => (
+                            <DateTimePicker
+                              value={
+                                field.value
+                                  ? dayjs(field.value).toDate()
+                                  : undefined
+                              }
+                              onChange={(date) => {
+                                field.onChange(
+                                  date ? dayjs(date).format("YYYY-MM-DD") : null
+                                )
+                              }}
+                              error={!!fieldState.error}
+                              hideTime={true}
+                              clearable
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="end_date"
+                          label={
+                            <div className="flex items-center justify-between">
+                              <FormLabel>
+                                End Date{" "}
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <FormFieldItem
+                                control={control}
+                                name="is_forever"
+                                render={({ field }) => (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm">Forever</span>
+                                    <Switch
+                                      checked={field.value ?? false}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </div>
+                                )}
+                              />
+                            </div>
+                          }
+                          invalid={Boolean(errors.end_date)}
+                          errorMessage={errors.end_date?.message}
+                          render={({ field, fieldState }) => (
+                            <DateTimePicker
+                              value={
+                                field.value
+                                  ? dayjs(field.value).toDate()
+                                  : undefined
+                              }
+                              onChange={(date) => {
+                                field.onChange(
+                                  date ? dayjs(date).format("YYYY-MM-DD") : null
+                                )
+                              }}
+                              error={!!fieldState.error}
+                              hideTime={true}
+                              clearable
+                              disabled={watchIsForever}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="start_time"
+                          label={
+                            <FormLabel>
+                              Start Time{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.start_time)}
+                          errorMessage={errors.start_time?.message}
+                          render={({ field, fieldState }) => {
+                            const timeValue = field.value
+                              ? (() => {
+                                  const [hours, minutes] =
+                                    field.value.split(":")
+                                  const date = new Date()
+                                  date.setHours(
+                                    parseInt(hours || "0", 10),
+                                    parseInt(minutes || "0", 10),
+                                    0,
+                                    0
+                                  )
+                                  return date
+                                })()
+                              : new Date()
+
+                            return (
+                              <SimpleTimePicker
+                                value={timeValue}
+                                onChange={(date) => {
+                                  const hours = date
+                                    .getHours()
+                                    .toString()
+                                    .padStart(2, "0")
+                                  const minutes = date
+                                    .getMinutes()
+                                    .toString()
+                                    .padStart(2, "0")
+                                  field.onChange(`${hours}:${minutes}`)
+                                }}
+                                use12HourFormat={false}
+                                error={!!fieldState.error}
+                              />
+                            )
+                          }}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="duration_time"
+                          label={
+                            <FormLabel>
+                              Duration Time{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.duration_time)}
+                          errorMessage={errors.duration_time?.message}
+                          render={({ field }) => (
+                            <Input
+                              type="number"
+                              autoComplete="off"
+                              placeholder="Duration Time"
+                              {...field}
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value ? Number(e.target.value) : null
+                                )
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="duration_time_type"
+                          label={
+                            <FormLabel>
+                              Duration Type{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.duration_time_type)}
+                          errorMessage={errors.duration_time_type?.message}
+                          render={({ field, fieldState }) => (
+                            <Select
+                              isSearchable={false}
+                              placeholder="Select Duration Type"
+                              value={DurationTimeTypeOptions.filter(
+                                (option) => option.value === field.value
+                              )}
+                              options={DurationTimeTypeOptions}
+                              error={!!fieldState.error}
+                              onChange={(option) =>
+                                field.onChange(option?.value)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="is_publish"
+                          label={
+                            <FormLabel>
+                              Publish Status{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.is_publish)}
+                          errorMessage={errors.is_publish?.message}
+                          render={({ field, fieldState }) => (
+                            <Select
+                              isSearchable={false}
+                              placeholder="Select Publish Status"
+                              value={IsPublishOptions.filter(
+                                (option) => option.value === field.value
+                              )}
+                              options={IsPublishOptions}
+                              error={!!fieldState.error}
+                              onChange={(option) =>
+                                field.onChange(option?.value)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="available_for"
+                          label={
+                            <FormLabel>
+                              Available For{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.available_for)}
+                          errorMessage={errors.available_for?.message}
+                          render={({ field, fieldState }) => (
+                            <Select
+                              isSearchable={false}
+                              placeholder="Select Available For"
+                              value={AvailableForOptions.filter(
+                                (option) => option.value === field.value
+                              )}
+                              options={AvailableForOptions}
+                              error={!!fieldState.error}
+                              onChange={(option) =>
+                                field.onChange(option?.value)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="visible_for"
+                          label={
+                            <FormLabel>
+                              Visible For{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.visible_for)}
+                          errorMessage={errors.visible_for?.message}
+                          render={({ field, fieldState }) => (
+                            <Select
+                              isSearchable={false}
+                              placeholder="Select Visible For"
+                              value={VisibleForOptions.filter(
+                                (option) => option.value === field.value
+                              )}
+                              options={VisibleForOptions}
+                              error={!!fieldState.error}
+                              onChange={(option) =>
+                                field.onChange(option?.value)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="class_type"
+                          label={
+                            <FormLabel>
+                              Class Type{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.class_type)}
+                          errorMessage={errors.class_type?.message}
+                          render={({ field, fieldState }) => (
+                            <Select
+                              isSearchable={false}
+                              placeholder="Select Class Type"
+                              value={ClassTypeOptions.filter(
+                                (option) => option.value === field.value
+                              )}
+                              options={ClassTypeOptions}
+                              error={!!fieldState.error}
+                              onChange={(option) =>
+                                field.onChange(option?.value)
+                              }
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <FormFieldItem
+                      control={control}
+                      name="embed_video"
+                      label={<FormLabel>Embed Video URL</FormLabel>}
+                      invalid={Boolean(errors.embed_video)}
+                      errorMessage={errors.embed_video?.message}
+                      render={({ field }) => (
+                        <Input
+                          type="text"
+                          autoComplete="off"
+                          placeholder="Embed Video URL"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      )}
+                    />
+                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="background_color"
+                          label={<FormLabel>Background Color</FormLabel>}
+                          invalid={Boolean(errors.background_color)}
+                          errorMessage={errors.background_color?.message}
+                          render={({ field }) => (
+                            <Input
+                              type="color"
+                              autoComplete="off"
+                              placeholder="Background Color"
+                              {...field}
+                              value={field.value ?? "#FFFFFF"}
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <FormFieldItem
+                          control={control}
+                          name="color"
+                          label={<FormLabel>Color</FormLabel>}
+                          invalid={Boolean(errors.color)}
+                          errorMessage={errors.color?.message}
+                          render={({ field }) => (
+                            <Input
+                              type="color"
+                              autoComplete="off"
+                              placeholder="Color"
+                              {...field}
+                              value={field.value ?? "#000000"}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
                     <div className="flex w-full flex-col">
                       <h5 className="mb-2 text-lg font-semibold">
-                        Events Schedule
+                        Weekdays Available
                       </h5>
-                      {watchData.events?.map((item, index) => (
-                        <div
-                          key={index}
-                          className="mb-4 flex flex-col rounded-lg border border-gray-200 p-4"
-                        >
-                          <div className="flex flex-col">
-                            <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                              <div className="flex w-full items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold">
-                                  Frequency
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start capitalize">
-                                {item.frequency}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                              <div className="flex w-full items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold">
-                                  Start End
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start">
-                                {dayjs(item.start).format("DD MMMM YYYY")}{" "}
-                                {item.end_type === "on" &&
-                                  `- ${dayjs(item.end).format("DD MMMM YYYY")}`}
-                              </div>
-                            </div>
-
-                            {item.frequency === "hourly" ||
-                            item.frequency === "daily" ? (
-                              <>
-                                <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                                  <div className="flex w-full items-center justify-between">
-                                    <span className="flex items-center gap-1 font-bold">
-                                      Start Time
-                                    </span>
-                                    <span className="text-sm">:</span>
-                                  </div>
-                                  <div className="flex justify-start">
-                                    {dayjs(item.start).format("HH:mm")}
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                                  <div className="flex w-full items-center justify-between">
-                                    <span className="flex items-center gap-1 font-bold">
-                                      End Time
-                                    </span>
-                                    <span className="text-sm">:</span>
-                                  </div>
-                                  <div className="flex justify-start">
-                                    {dayjs(item.end).format("HH:mm")}
-                                  </div>
-                                </div>
-                              </>
-                            ) : null}
-
-                            <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                              <div className="flex w-full items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold">
-                                  Color
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex items-center justify-start gap-1">
-                                <div
-                                  className="h-4 w-4"
-                                  style={{ background: `${item.color}` }}
-                                ></div>
-                                {item.color}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                              <div className="flex w-full items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold">
-                                  Background Color
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex items-center justify-start gap-1">
-                                <div
-                                  className="h-4 w-4"
-                                  style={{
-                                    background: `${item.background_color}`,
-                                  }}
-                                ></div>
-                                {item.background_color}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                              <div className="flex w-full items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold">
-                                  End Type
-                                </span>
-                                <span className="text-sm">:</span>
-                              </div>
-                              <div className="flex justify-start">
-                                {item.end_type}
-                              </div>
-                            </div>
-
-                            {item.frequency === "monthly" ? (
-                              <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                                <div className="flex w-full items-center justify-between">
-                                  <span className="flex items-center gap-1 font-bold">
-                                    Weeks
-                                  </span>
-                                  <span className="text-sm">:</span>
-                                </div>
-                                <div className="flex justify-start">
-                                  <div className="flex flex-wrap gap-2">
-                                    {item.week_number?.map((week) => (
-                                      <span
-                                        key={week}
-                                        className="rounded-md border border-gray-200 px-1 capitalize"
-                                      >
-                                        {week === -1
-                                          ? "Last Week"
-                                          : `Week ${week}`}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            ) : null}
-
-                            {item.frequency === "yearly" ? (
-                              <div className="grid grid-cols-[140px_1fr] items-start space-x-2">
-                                <div className="flex w-full items-center justify-between">
-                                  <span className="flex items-center gap-1 font-bold">
-                                    Selected Months
-                                  </span>
-                                  <span className="text-sm">:</span>
-                                </div>
-                                <div className="flex justify-start">
-                                  <div className="flex flex-wrap gap-2">
-                                    {item.selected_months?.map((month) => (
-                                      <span
-                                        key={month}
-                                        className="rounded-md border border-gray-200 px-1 capitalize"
-                                      >
-                                        {dayjs(new Date(0, month!)).format(
-                                          "MMMM"
-                                        )}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            ) : null}
-
-                            {item.frequency === "weekly" ||
-                            item.frequency === "monthly" ||
-                            item.frequency === "yearly" ? (
-                              <div className="flex flex-col gap-2">
-                                <div className="flex w-[200px] items-center justify-between">
-                                  <span className="flex items-center gap-1 font-bold">
-                                    Weekdays
-                                  </span>
-                                  <span className="text-sm">:</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                  {item.selected_weekdays?.map(
-                                    (item, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex flex-col rounded-xl border border-gray-200 p-2"
-                                      >
-                                        <span className="font-semibold capitalize">
-                                          {item.day_of_week}
-                                        </span>
-                                        <span className="text-xs">
-                                          {item.start_time} - {item.end_time}
-                                        </span>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            ) : null}
-                          </div>
-                        </div>
-                      ))}
                       <FormFieldItem
                         control={control}
-                        name="events"
+                        name="weekdays_available"
                         label={<FormLabel></FormLabel>}
-                        invalid={Boolean(errors.events)}
-                        errorMessage={errors.events?.message}
-                        render={() => (
-                          <Button
-                            variant="default"
-                            type="button"
-                            className="w-full"
-                            onClick={() => setEventModal(true)}
-                          >
-                            {watchData.events?.length > 0
-                              ? "Edit Schedule"
-                              : "Add Schedule"}
-                          </Button>
+                        invalid={Boolean(errors.weekdays_available)}
+                        errorMessage={errors.weekdays_available?.message}
+                        render={({ field }) => (
+                          <div className="flex flex-wrap gap-2">
+                            {WeekdayOptions.map((option) => {
+                              const isSelected = field.value?.some(
+                                (w) => w.day === option.value
+                              )
+                              return (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant={isSelected ? "default" : "outline"}
+                                  onClick={() => {
+                                    const current = field.value ?? []
+                                    if (isSelected) {
+                                      field.onChange(
+                                        current.filter(
+                                          (w) => w.day !== option.value
+                                        )
+                                      )
+                                    } else {
+                                      field.onChange([
+                                        ...current,
+                                        { day: option.value },
+                                      ])
+                                    }
+                                  }}
+                                >
+                                  {option.label}
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <div className="flex w-full flex-col">
+                      <div className="mb-2 flex items-center justify-between">
+                        <h5 className="text-lg font-semibold">Class Photos</h5>
+                      </div>
+                      <FormFieldItem
+                        control={control}
+                        name="class_photos"
+                        label={<FormLabel></FormLabel>}
+                        invalid={Boolean(errors.class_photos)}
+                        errorMessage={errors.class_photos?.message}
+                        render={({ field }) => (
+                          <div className="space-y-2">
+                            {field.value?.map((photo, index) => (
+                              <div
+                                key={`photo-${index}-${photo}`}
+                                className="flex items-center gap-2"
+                              >
+                                <Input
+                                  type="text"
+                                  autoComplete="off"
+                                  placeholder="Photo URL"
+                                  value={photo}
+                                  onChange={(e) => {
+                                    const newPhotos = [...(field.value ?? [])]
+                                    newPhotos[index] = e.target.value
+                                    field.onChange(newPhotos)
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => {
+                                    const newPhotos = [...(field.value ?? [])]
+                                    newPhotos.splice(index, 1)
+                                    field.onChange(newPhotos)
+                                  }}
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                field.onChange([...(field.value ?? []), ""])
+                              }}
+                            >
+                              <Plus className="mr-2 size-4" />
+                              Add Photo URL
+                            </Button>
+                          </div>
                         )}
                       />
                     </div>
@@ -788,12 +1013,6 @@ const FormClassPage: React.FC<FormProps> = ({
           </Form>
         </SheetContent>
       </Sheet>
-
-      <FormClassEvent
-        open={eventModal}
-        formProps={formProps}
-        onClose={() => setEventModal(false)}
-      />
 
       <AlertConfirm
         open={confirmDelete}

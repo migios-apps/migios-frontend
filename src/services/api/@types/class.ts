@@ -1,18 +1,32 @@
 import { ApiTypes, MetaApi } from "./api"
-import { CreateEventDto, EventsData } from "./event"
+import { EventsData } from "./event"
 
 export interface ClassesType {
   id: number
   club_id: number
+  category_id?: number | null
   photo?: string | null
   name: string
-  phone: string
   capacity: number
-  level: number
-  burn_calories: number
-  description: string
+  level?: number | null
+  burn_calories?: number | null
+  description?: string | null
   allow_all_instructor: boolean
   enabled: boolean
+  start_date: string
+  end_date: string
+  is_forever: boolean
+  is_publish: number
+  available_for: number
+  visible_for: number
+  class_type: number
+  embed_video?: string | null
+  background_color?: string | null
+  color?: string | null
+  start_time: string
+  duration_time: number
+  duration_time_type: string
+  end_time?: string | null
   created_at: string
   updated_at: string
 }
@@ -38,20 +52,41 @@ export interface CreateClassPage {
   category_id?: number | null
   photo?: string | null
   name: string
-  phone: string
   capacity: number
-  level: number
-  burn_calories: number
+  level?: number | null
+  burn_calories?: number | null
   description?: string | null
-  allow_all_instructor: boolean
-  enabled: boolean
-  instructors: {
+  allow_all_instructor?: boolean
+  enabled?: boolean
+  start_date: string
+  end_date: string
+  is_forever?: boolean
+  is_publish: number // 0 = draft, 1 = publish and show in event
+  available_for: number // 0 = Everyone, 1 = male, 2 = female
+  visible_for: number // 0 = public, 1 = private
+  class_type: number // 0 = offline, 1 = online
+  embed_video?: string | null
+  background_color?: string | null
+  color?: string | null
+  start_time: string
+  duration_time: number
+  duration_time_type:
+    | "minute"
+    | "hour"
+    | "day"
+    | "week"
+    | "month"
+    | "year"
+    | "forever"
+  instructors?: {
     id: number
-    code: string
+    trainer_code: string
     name: string
-    photo?: string | null
   }[]
-  events: CreateEventDto[]
+  weekdays_available?: {
+    day: number // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  }[]
+  class_photos?: string[]
 }
 
 // category
