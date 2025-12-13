@@ -179,10 +179,20 @@ export function DateTimePicker({
     )
   }, [displayValue, hideTime, use12HourFormat])
 
+
+
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={modal}>
-      <PopoverTrigger asChild>
-        {renderTrigger ? (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        if (!disabled) {
+          setOpen(v)
+        }
+      }}
+      modal={modal}
+    >
+      {disabled ? (
+        renderTrigger ? (
           renderTrigger({
             value: displayValue,
             open,
@@ -201,7 +211,7 @@ export function DateTimePicker({
               error && "border-destructive ring-destructive/20 ring-[3px]",
               classNames?.trigger
             )}
-            tabIndex={0}
+            tabIndex={-1}
           >
             <div className="flex grow items-center">
               <CalendarIcon className="mr-2 size-4" />
@@ -226,8 +236,57 @@ export function DateTimePicker({
               </Button>
             )}
           </div>
-        )}
-      </PopoverTrigger>
+        )
+      ) : (
+        <PopoverTrigger asChild>
+          {renderTrigger ? (
+            renderTrigger({
+              value: displayValue,
+              open,
+              timezone,
+              disabled,
+              use12HourFormat,
+              setOpen,
+            })
+          ) : (
+            <div
+              className={cn(
+                "border-input flex h-9 w-full cursor-pointer items-center rounded-md border ps-3 pe-1 text-sm font-normal shadow-sm",
+                !displayValue && "text-muted-foreground",
+                (!clearable || !value) && "pe-3",
+                disabled && "cursor-not-allowed opacity-50",
+                error && "border-destructive ring-destructive/20 ring-[3px]",
+                classNames?.trigger
+              )}
+              tabIndex={0}
+              onClick={() => setOpen(!open)}
+            >
+              <div className="flex grow items-center">
+                <CalendarIcon className="mr-2 size-4" />
+                {dislayFormat}
+              </div>
+              {clearable && value && (
+                <Button
+                  disabled={disabled}
+                  variant="ghost"
+                  size="sm"
+                  role="button"
+                  aria-label="Clear date"
+                  className="ms-1 size-6 p-1"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    onChange(null)
+                    setOpen(false)
+                  }}
+                >
+                  <XCircle className="size-4" />
+                </Button>
+              )}
+            </div>
+          )}
+        </PopoverTrigger>
+      )}
       <PopoverContent className="w-auto p-2">
         <CalendarPicker
           value={date}

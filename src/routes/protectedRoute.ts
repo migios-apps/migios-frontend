@@ -71,6 +71,12 @@ const protectedRoute: Routes = [
   //   component: lazy(() => import("@/pages/testinfinite")),
   //   authority: [],
   // },
+
+  {
+    path: "/form-validation-demo-yup",
+    component: lazy(() => import("@/components/form/form-validation-demo-yup")),
+    authority: [],
+  },
 ]
 
 export default protectedRoute

@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputPhone from "@/components/ui/input-phone"
-import { ScrollArea } from "@/components/ui/scroll-area"
+
 import {
   Select,
   SelectContent,
@@ -99,7 +99,7 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
 
   const formProps = useForm<BranchClubFormValues>({
     resolver: yupResolver(branchClubSchema) as any,
-    mode: "all",
+    mode: "onSubmit",
     defaultValues: {
       amount: 0,
       duration: 1,
@@ -215,7 +215,7 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
             <span className="sr-only">Close</span>
           </Button>
           {/* Content */}
-          <ScrollArea className="h-[calc(100vh-5px)]">
+          <div className="h-[calc(100vh-5px)] overflow-y-auto">
             <div className={cn("p-6", step === "form" ? "pb-24" : "")}>
               {step === "pricing" ? (
                 <>
@@ -443,7 +443,7 @@ const DialogNewBranchClub: React.FC<DialogNewBranchClubProps> = ({
                 </>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           {step === "form" ? (

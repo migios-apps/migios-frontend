@@ -113,7 +113,7 @@ const TimeItem = ({
     <Button
       variant="ghost"
       className={cn(
-        "flex w-full justify-center px-1 ps-1 pe-2",
+        "flex w-full items-center justify-center px-1 ps-1 pe-2 text-center",
         selected &&
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         className
@@ -121,7 +121,7 @@ const TimeItem = ({
       onClick={() => onSelect(option)}
       disabled={disabled}
     >
-      <span className="ms-2">{option.label}</span>
+      {option.label}
     </Button>
   )
 }
@@ -136,7 +136,7 @@ export function TimePicker({
   renderTrigger,
   className,
   disabled,
-  modal = false,
+  modal = true,
 }: TimePickerProps) {
   const formatStr = useMemo(
     () =>
@@ -386,9 +386,17 @@ export function TimePicker({
   }, [value, use12HourFormat, timePicker])
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={modal}>
-      <PopoverTrigger asChild>
-        {renderTrigger ? (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        if (!disabled) {
+          setOpen(v)
+        }
+      }}
+      modal={modal}
+    >
+      {disabled ? (
+        renderTrigger ? (
           renderTrigger({
             display,
             open,
@@ -406,14 +414,36 @@ export function TimePicker({
             {display}
             <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
-        )}
-      </PopoverTrigger>
-      <PopoverContent className="p-0" side="top">
+        )
+      ) : (
+        <PopoverTrigger asChild>
+          {renderTrigger ? (
+            renderTrigger({
+              display,
+              open,
+              onClick: () => setOpen(!open),
+            })
+          ) : (
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={cn("justify-between", className)}
+              disabled={disabled}
+            >
+              <Clock className="mr-2 size-4" />
+              {display}
+              <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+            </Button>
+          )}
+        </PopoverTrigger>
+      )}
+      <PopoverContent className="w-auto p-0" side="top">
         <div className="timepicker-content flex-col gap-2 p-2">
           <div className="timepicker-content-hours flex h-56 grow">
             {(!timePicker || timePicker.hour) && (
               <ScrollArea className="h-full grow">
-                <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
+                <div className="flex grow flex-col items-stretch pe-2 pb-48">
                   {hours.map((v) => (
                     <div
                       key={v.value}
@@ -434,7 +464,7 @@ export function TimePicker({
             )}
             {(!timePicker || timePicker.minute) && (
               <ScrollArea className="timepicker-content-minutes h-full grow">
-                <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
+                <div className="flex grow flex-col items-stretch pe-2 pb-48">
                   {minutes.map((v) => (
                     <div
                       key={v.value}
@@ -455,7 +485,7 @@ export function TimePicker({
             )}
             {(!timePicker || timePicker.second) && (
               <ScrollArea className="timepicker-content-seconds h-full grow">
-                <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
+                <div className="flex grow flex-col items-stretch pe-2 pb-48">
                   {seconds.map((v) => (
                     <div
                       key={v.value}
@@ -476,7 +506,7 @@ export function TimePicker({
             )}
             {use12HourFormat && (
               <ScrollArea className="timepicker-content-ampm h-full grow">
-                <div className="flex grow flex-col items-stretch overflow-y-auto pe-2">
+                <div className="flex grow flex-col items-stretch pe-2">
                   {ampmOptions.map((v) => (
                     <TimeItem
                       key={v.value}
