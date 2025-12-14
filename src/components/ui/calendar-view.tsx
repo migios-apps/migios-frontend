@@ -9,12 +9,14 @@ import {
   MoreLinkArg,
   SlotLabelContentArg,
 } from "@fullcalendar/core"
+import idLocale from "@fullcalendar/core/locales/id"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import listPlugin from "@fullcalendar/list"
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import dayjs from "dayjs"
+import "dayjs/locale/id"
 import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -35,6 +37,8 @@ import {
   TooltipTrigger,
 } from "./tooltip"
 
+dayjs.locale("id")
+
 /* ============================================================================
  * TYPE DEFINITIONS
  * ============================================================================ */
@@ -54,6 +58,8 @@ type DayRenderProps = {
 type SlotLabelProps = {
   args: SlotLabelContentArg
 }
+
+const locales = [idLocale]
 
 interface CalendarViewProps extends CalendarOptions {
   wrapperClass?: string
@@ -140,21 +146,21 @@ const formatDateRange = (startDate: Date, view: string): string => {
   }
 
   if (view === "dayGridMonth") {
-    return `${start.format("MMM D, YYYY")} - ${end.format("MMM D, YYYY")}`
+    return `${start.format("D MMM YYYY")} - ${end.format("D MMM YYYY")}`
   } else if (view === "timeGridWeek" || view === "listWeek") {
     const isSameMonth = start.format("MMM") === end.format("MMM")
     const isSameYear = start.format("YYYY") === end.format("YYYY")
 
     if (isSameMonth && isSameYear) {
-      return `${start.format("MMM D")} - ${end.format("D, YYYY")}`
+      return `${start.format("D MMM")} - ${end.format("D YYYY")}`
     } else if (isSameYear) {
-      return `${start.format("MMM D")} - ${end.format("MMM D, YYYY")}`
+      return `${start.format("D MMM")} - ${end.format("D MMM YYYY")}`
     } else {
-      return `${start.format("MMM D, YYYY")} - ${end.format("MMM D, YYYY")}`
+      return `${start.format("D MMM YYYY")} - ${end.format("D MMM YYYY")}`
     }
   } else {
     // timeGridDay
-    return start.format("MMM D, YYYY")
+    return start.format("D MMM YYYY")
   }
 }
 
@@ -466,7 +472,7 @@ const Loading = ({
         <div className="bg-background/80 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-            <span className="text-muted-foreground text-sm">Loading...</span>
+            <span className="text-muted-foreground text-sm">Memuat...</span>
           </div>
         </div>
       </div>
@@ -531,7 +537,7 @@ const CalendarHeader = ({
                 {currentMonth}
               </h2>
               <div className="bg-muted text-muted-foreground rounded-md px-1.5 text-sm font-medium">
-                {totalEvents} events
+                {totalEvents} acara
               </div>
             </div>
 
@@ -572,13 +578,13 @@ const CalendarHeader = ({
           >
             <TabsList>
               <TabsTrigger value="dayGridMonth" disabled={isLoading}>
-                Month
+                Bulan
               </TabsTrigger>
               <TabsTrigger value="timeGridWeek" disabled={isLoading}>
-                Week
+                Minggu
               </TabsTrigger>
               <TabsTrigger value="timeGridDay" disabled={isLoading}>
-                Day
+                Hari
               </TabsTrigger>
               {showAgendaTab && (
                 <TabsTrigger value="listWeek" disabled={isLoading}>
@@ -590,7 +596,7 @@ const CalendarHeader = ({
 
           {handleCreateEvent && (
             <Button size="sm" onClick={handleCreateEvent} disabled={isLoading}>
-              Create Event
+              Buat Acara
             </Button>
           )}
         </div>
@@ -617,7 +623,7 @@ const ModalEventList = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Events</DialogTitle>
+          <DialogTitle>Acara</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         <ScrollArea className="max-h-[calc(80vh-300px)] pr-4">
@@ -774,9 +780,9 @@ const DayHeader = ({
       {info.view.type == "timeGridDay" ? (
         <div className="flex flex-col rounded-md">
           <p className="text-foreground">
-            {info.date.toLocaleDateString("en-US", {
-              month: "long",
+            {info.date.toLocaleDateString("id-ID", {
               day: "numeric",
+              month: "long",
               year: "numeric",
             })}
           </p>
@@ -1000,6 +1006,8 @@ const CalendarView = (props: CalendarViewProps) => {
         >
           <FullCalendar
             ref={calendarRef}
+            locale="id"
+            locales={locales}
             nowIndicator
             plugins={[
               dayGridPlugin,
@@ -1041,7 +1049,7 @@ const CalendarView = (props: CalendarViewProps) => {
                   setModalEvents(info.allSegs)
                 },
                 moreLinkContent: (args) => {
-                  return `+${args.num} more`
+                  return `+${args.num} lagi`
                 },
               },
               timeGridWeek: {
