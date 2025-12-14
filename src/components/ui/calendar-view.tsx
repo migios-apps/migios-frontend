@@ -110,7 +110,7 @@ const getNavigationDate = (
   } else {
     // today
     if (currentView === "timeGridWeek" || currentView === "listWeek") {
-      return dayjs().startOf("week")
+      return dayjs()
     } else if (currentView === "timeGridDay") {
       return dayjs()
     } else {
@@ -131,8 +131,8 @@ const formatDateRange = (startDate: Date, view: string): string => {
     start = start.startOf("month")
     end = start.endOf("month")
   } else if (view === "timeGridWeek" || view === "listWeek") {
-    start = start.startOf("week")
-    end = start.endOf("week")
+    // Rolling 7 days
+    end = start.add(7, "day")
   } else {
     // timeGridDay
     start = start.startOf("day")
@@ -177,8 +177,8 @@ const countEventsInRange = (
     start = start.startOf("month")
     end = start.endOf("month")
   } else if (view === "timeGridWeek" || view === "listWeek") {
-    start = start.startOf("week")
-    end = start.endOf("week")
+    // Rolling 7 days
+    end = start.add(7, "day")
   } else {
     // timeGridDay
     start = start.startOf("day")
@@ -284,10 +284,11 @@ const useInitializeCalendar = (
     const minutes = now.getMinutes().toString().padStart(2, "0")
     setCurrentTime(`${hours}:${minutes}:00`)
 
-    let initialDate = dayjs()
-    if (currentView === "timeGridWeek" || currentView === "listWeek") {
-      initialDate = initialDate.startOf("week")
-    }
+    const initialDate = dayjs()
+    // Remove week start reset to default to today
+    // if (currentView === "timeGridWeek" || currentView === "listWeek") {
+    //   initialDate = initialDate.startOf("week")
+    // }
     setCurrentDate(initialDate.format("YYYY-MM-DD"))
 
     // Initialize view range
@@ -297,8 +298,8 @@ const useInitializeCalendar = (
       start = initialDate.startOf("month").toDate()
       end = initialDate.endOf("month").toDate()
     } else if (currentView === "timeGridWeek" || currentView === "listWeek") {
-      start = initialDate.startOf("week").toDate()
-      end = initialDate.endOf("week").toDate()
+      start = initialDate.toDate()
+      end = initialDate.add(7, "day").toDate()
     } else {
       // timeGridDay
       start = initialDate.startOf("day").toDate()
@@ -939,7 +940,8 @@ const CalendarView = (props: CalendarViewProps) => {
 
     let newDate = dayjs()
     if (newView === "timeGridWeek" || newView === "listWeek") {
-      newDate = dayjs().startOf("week")
+      // Keep today as start
+      newDate = dayjs()
     } else if (newView === "timeGridDay") {
       newDate = dayjs()
     } else if (newView === "dayGridMonth") {
@@ -1044,11 +1046,13 @@ const CalendarView = (props: CalendarViewProps) => {
               },
               timeGridWeek: {
                 dayMaxEvents: true,
+                duration: { days: 7 },
               },
               timeGridDay: {
                 dayMaxEvents: true,
               },
               listWeek: {
+                duration: { days: 7 },
                 listDayFormat: {
                   weekday: "long",
                   month: "long",
@@ -1106,8 +1110,9 @@ const CalendarView = (props: CalendarViewProps) => {
                 viewType === "timeGridWeek" ||
                 viewType === "listWeek"
               ) {
-                start = viewDate.startOf("week").toDate()
-                end = viewDate.endOf("week").toDate()
+                // For rolling week, view.activeStart is the start date
+                start = dayjs(view.view.activeStart).toDate()
+                end = dayjs(view.view.activeEnd).toDate()
               } else {
                 // timeGridDay
                 start = viewDate.startOf("day").toDate()

@@ -49,8 +49,8 @@ const Calendar = () => {
       return data.map((item) => ({
         id: item.id,
         title: item.title,
-        start: dayjs(item.fstart).format("YYYY-MM-DD HH:mm:ss"),
-        end: dayjs(item.fend).format("YYYY-MM-DD HH:mm:ss"),
+        start: dayjs(item.fstart).format("YYYY-MM-DDTHH:mm:ss"),
+        end: dayjs(item.fend).format("YYYY-MM-DDTHH:mm:ss"),
         backgroundColor: item.background_color,
         textColor: item.color,
         dayOfWeek: item.day_of_week,
