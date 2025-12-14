@@ -16,8 +16,10 @@ export interface EventsData {
   history_id: string | null
   title: string
   description: string
-  start: Date
-  end: Date
+  start_date: string
+  end_date: string
+  start_time: string
+  end_time: string
   fstart: string
   fend: string
   day_of_week: string

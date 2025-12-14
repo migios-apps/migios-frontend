@@ -23,7 +23,6 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { ColorPalettePicker } from "@/components/ui/color-palette-picker"
 import { DateTimePicker } from "@/components/ui/date-picker"
 import { SimpleTimePicker } from "@/components/ui/date-picker"
@@ -994,24 +993,6 @@ const FormClassPage: React.FC<FormProps> = ({
                         )}
                       />
                     </div>
-                    <FormFieldItem
-                      control={control}
-                      name="enabled"
-                      label={<FormLabel></FormLabel>}
-                      invalid={Boolean(errors.enabled)}
-                      errorMessage={errors.enabled?.message}
-                      render={({ field }) => (
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={field.value ?? false}
-                            onCheckedChange={field.onChange}
-                          />
-                          <FormLabel className="font-normal">
-                            {field.value ? "Aktif" : "Tidak Aktif"}
-                          </FormLabel>
-                        </div>
-                      )}
-                    />
                   </div>
                 </ScrollArea>
               </div>

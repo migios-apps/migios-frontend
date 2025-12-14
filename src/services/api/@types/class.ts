@@ -15,7 +15,7 @@ export interface ClassesType {
   allow_all_instructor: boolean
   enabled: boolean
   start_date: string
-  end_date: string
+  end_date: string | null
   is_forever: boolean
   is_publish: number
   available_for: number
@@ -36,11 +36,18 @@ export interface ClassDetail extends ClassesType {
   instructors: {
     id: number
     name: string
-    photo: string
+    photo: string | null
     code: string
   }[]
   // events: EventsData[]
   category: ClassCategoryDetail
+  class_photos: string[]
+  weekdays_available: {
+    id: number
+    class_id: number
+    day: number // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    fday: string // "sunday", "monday", etc.
+  }[]
 }
 
 export type ClassDetailResponse = Omit<ApiTypes, "data"> & {
@@ -60,7 +67,7 @@ export interface CreateClassPage {
   allow_all_instructor?: boolean
   enabled?: boolean
   start_date: string
-  end_date: string
+  end_date?: string | null
   is_forever?: boolean
   is_publish: number // 0 = draft, 1 = publish and show in event
   available_for: number // 0 = Everyone, 1 = male, 2 = female

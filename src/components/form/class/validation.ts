@@ -105,7 +105,8 @@ export const validationSchemaClassPage = yup.object().shape({
         day: yup.number().min(0).max(6).required(),
       })
     )
-    .optional(),
+    .required("Hari tersedia wajib diisi")
+    .min(1, "Minimal satu hari wajib dipilih"),
   class_photos: yup.array().of(yup.string()).optional(),
   category: yup
     .object({

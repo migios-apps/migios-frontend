@@ -10,6 +10,7 @@ import {
 import { Chart21, Layer, Profile2User } from "iconsax-reactjs"
 import { ArrowRight, Flame } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -419,8 +420,18 @@ const ClassIndex = () => {
                                 item.allow_all_instructor
                               )
                               formProps.setValue("enabled", item.enabled)
-                              formProps.setValue("start_date", item.start_date)
-                              formProps.setValue("end_date", item.end_date)
+                              formProps.setValue(
+                                "start_date",
+                                item.start_date
+                                  ? dayjs(item.start_date).format("YYYY-MM-DD")
+                                  : ""
+                              )
+                              formProps.setValue(
+                                "end_date",
+                                item.end_date
+                                  ? dayjs(item.end_date).format("YYYY-MM-DD")
+                                  : null
+                              )
                               formProps.setValue("is_forever", item.is_forever)
                               formProps.setValue("is_publish", item.is_publish)
                               formProps.setValue(
@@ -451,7 +462,20 @@ const ClassIndex = () => {
                                 item.duration_time_type as any
                               )
                               // Instructors will be set by useEffect in FormClassPage
-                              // formProps.setValue('instructors', item.instructors)
+                              formProps.setValue(
+                                "instructors",
+                                item.instructors
+                              )
+                              formProps.setValue(
+                                "weekdays_available",
+                                item.weekdays_available?.map((weekday) => ({
+                                  day: weekday.day,
+                                })) || []
+                              )
+                              formProps.setValue(
+                                "class_photos",
+                                item.class_photos || []
+                              )
                             }}
                           >
                             Edit class
