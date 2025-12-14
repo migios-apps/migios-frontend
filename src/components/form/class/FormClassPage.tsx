@@ -8,12 +8,12 @@ import {
 import { EmployeeDetail } from "@/services/api/@types/employee"
 import {
   apiCreateClass,
+  apiDeleteClass,
   apiGetAllInstructorByClass,
   apiGetClassCategory,
   apiUpdateClass,
 } from "@/services/api/ClassService"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
-import { apiDeletePackage } from "@/services/api/PackageService"
 import dayjs from "dayjs"
 import { Trash2, Plus, User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
@@ -22,7 +22,9 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ColorPalettePicker } from "@/components/ui/color-palette-picker"
 import { DateTimePicker } from "@/components/ui/date-picker"
 import { SimpleTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
@@ -74,6 +76,10 @@ const FormClassPage: React.FC<FormProps> = ({
     formState: { errors },
   } = formProps
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [showDraftAlert, setShowDraftAlert] = React.useState(false)
+  const [pendingData, setPendingData] = React.useState<CreateClassPage | null>(
+    null
+  )
 
   // Use specific watch to avoid infinite loops
   const watchId = watch("id")
@@ -114,6 +120,7 @@ const FormClassPage: React.FC<FormProps> = ({
         per_page: 10,
         sort_column: "id",
         sort_type: "desc",
+        role_name: "trainer",
         search: [
           (inputValue || "").length > 0
             ? ({
@@ -127,12 +134,6 @@ const FormClassPage: React.FC<FormProps> = ({
             search_column: "enabled",
             search_condition: "=",
             search_text: "true",
-          },
-          {
-            search_operator: "and",
-            search_column: "roles_name",
-            search_condition: "=",
-            search_text: "trainer",
           },
         ],
       })
@@ -183,6 +184,8 @@ const FormClassPage: React.FC<FormProps> = ({
   const handleClose = React.useCallback(() => {
     formProps.reset({})
     onClose()
+    setShowDraftAlert(false)
+    setPendingData(null)
   }, [formProps, onClose])
 
   const handlePrefecth = () => {
@@ -210,12 +213,23 @@ const FormClassPage: React.FC<FormProps> = ({
   })
 
   const deleteItem = useMutation({
-    mutationFn: (id: number) => apiDeletePackage(id),
+    mutationFn: (id: number) => apiDeleteClass(id),
     onError: (error) => {
       console.log("error update", error)
     },
     onSuccess: handlePrefecth,
   })
+
+  const executeMutation = (payload: CreateClassPage) => {
+    if (type === "update") {
+      update.mutate(payload)
+      return
+    }
+    if (type === "create") {
+      create.mutate(payload)
+      return
+    }
+  }
 
   const onSubmit: SubmitHandler<ClassPageFormSchema> = (data) => {
     const payload: CreateClassPage = {
@@ -253,14 +267,13 @@ const FormClassPage: React.FC<FormProps> = ({
       class_photos: (data.class_photos ?? []) as string[],
     }
 
-    if (type === "update") {
-      update.mutate(payload)
+    if (payload.is_publish === 0) {
+      setPendingData(payload)
+      setShowDraftAlert(true)
       return
     }
-    if (type === "create") {
-      create.mutate(payload)
-      return
-    }
+
+    executeMutation(payload)
   }
 
   const handleDelete = () => {
@@ -287,7 +300,7 @@ const FormClassPage: React.FC<FormProps> = ({
             >
               <SheetHeader>
                 <SheetTitle>
-                  {type === "create" ? "Create Class" : "Update Class"}
+                  {type === "create" ? "Buat Kelas" : "Ubah Kelas"}
                 </SheetTitle>
                 <SheetDescription />
               </SheetHeader>
@@ -299,7 +312,7 @@ const FormClassPage: React.FC<FormProps> = ({
                       name="name"
                       label={
                         <FormLabel>
-                          Name <span className="text-destructive">*</span>
+                          Nama <span className="text-destructive">*</span>
                         </FormLabel>
                       }
                       invalid={Boolean(errors.name)}
@@ -308,7 +321,7 @@ const FormClassPage: React.FC<FormProps> = ({
                         <Input
                           type="text"
                           autoComplete="off"
-                          placeholder="Name"
+                          placeholder="Nama"
                           {...field}
                         />
                       )}
@@ -342,7 +355,7 @@ const FormClassPage: React.FC<FormProps> = ({
                         errorMessage={errors.instructors?.message}
                         label={
                           <FormLabel>
-                            Instructor{" "}
+                            Instruktur{" "}
                             <span className="text-destructive">*</span>
                           </FormLabel>
                         }
@@ -353,7 +366,7 @@ const FormClassPage: React.FC<FormProps> = ({
                             isLoading={isLoading}
                             loadOptions={getTrainerList as any}
                             additional={{ page: 1 }}
-                            placeholder="Select Instructor"
+                            placeholder="Pilih Instruktur"
                             value={field.value}
                             error={!!fieldState.error}
                             cacheUniqs={[watchInstructors]}
@@ -391,7 +404,7 @@ const FormClassPage: React.FC<FormProps> = ({
                     <FormFieldItem
                       control={control}
                       name="category"
-                      label={<FormLabel>Category (Optional)</FormLabel>}
+                      label={<FormLabel>Kategori (Opsional)</FormLabel>}
                       invalid={Boolean(errors.category)}
                       errorMessage={errors.category?.message}
                       render={({ field, fieldState }) => (
@@ -400,7 +413,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           isLoading={isLoading}
                           loadOptions={getClassCategoryList as any}
                           additional={{ page: 1 }}
-                          placeholder="Select Category"
+                          placeholder="Pilih Kategori"
                           value={field.value}
                           cacheUniqs={[watchCategory]}
                           error={!!fieldState.error}
@@ -416,14 +429,14 @@ const FormClassPage: React.FC<FormProps> = ({
                         <FormFieldItem
                           control={control}
                           name="burn_calories"
-                          label={<FormLabel>Calorie Burn</FormLabel>}
+                          label={<FormLabel>Kalori</FormLabel>}
                           invalid={Boolean(errors.burn_calories)}
                           errorMessage={errors.burn_calories?.message}
                           render={({ field }) => (
                             <Input
                               type="number"
                               autoComplete="off"
-                              placeholder="Calorie Burn"
+                              placeholder="Kalori Terbakar"
                               {...field}
                               value={field.value ?? ""}
                               onChange={(e) =>
@@ -443,7 +456,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="capacity"
                           label={
                             <FormLabel>
-                              Capacity{" "}
+                              Kapasitas{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
@@ -453,7 +466,7 @@ const FormClassPage: React.FC<FormProps> = ({
                             <Input
                               type="number"
                               autoComplete="off"
-                              placeholder="Capacity"
+                              placeholder="Kapasitas"
                               {...field}
                             />
                           )}
@@ -463,13 +476,13 @@ const FormClassPage: React.FC<FormProps> = ({
                         <FormFieldItem
                           control={control}
                           name="level"
-                          label={<FormLabel>Level</FormLabel>}
+                          label={<FormLabel>Tingkat</FormLabel>}
                           invalid={Boolean(errors.level)}
                           errorMessage={errors.level?.message}
                           render={({ field, fieldState }) => (
                             <Select
                               isSearchable={false}
-                              placeholder="Select Level"
+                              placeholder="Pilih Tingkat"
                               value={LevelClassOptions.filter(
                                 (option) => option.value === field.value
                               )}
@@ -486,12 +499,12 @@ const FormClassPage: React.FC<FormProps> = ({
                     <FormFieldItem
                       control={control}
                       name="description"
-                      label={<FormLabel>Description</FormLabel>}
+                      label={<FormLabel>Deskripsi</FormLabel>}
                       invalid={Boolean(errors.description)}
                       errorMessage={errors.description?.message}
                       render={({ field }) => (
                         <Textarea
-                          placeholder="description"
+                          placeholder="Deskripsi"
                           {...field}
                           value={field.value ?? ""}
                         />
@@ -504,7 +517,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="start_date"
                           label={
                             <FormLabel className="mb-1.5">
-                              Start Date{" "}
+                              Tanggal Mulai{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
@@ -536,7 +549,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           label={
                             <div className="flex items-center justify-between">
                               <FormLabel>
-                                End Date{" "}
+                                Tanggal Selesai{" "}
                                 <span className="text-destructive">*</span>
                               </FormLabel>
                               <FormFieldItem
@@ -544,7 +557,7 @@ const FormClassPage: React.FC<FormProps> = ({
                                 name="is_forever"
                                 render={({ field }) => (
                                   <div className="flex items-center gap-2">
-                                    <span className="text-sm">Forever</span>
+                                    <span className="text-sm">Selamanya</span>
                                     <Switch
                                       checked={field.value ?? false}
                                       onCheckedChange={field.onChange}
@@ -584,7 +597,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="start_time"
                           label={
                             <FormLabel>
-                              Start Time{" "}
+                              Waktu Mulai{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
@@ -637,8 +650,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="duration_time"
                           label={
                             <FormLabel>
-                              Duration Time{" "}
-                              <span className="text-destructive">*</span>
+                              Durasi <span className="text-destructive">*</span>
                             </FormLabel>
                           }
                           invalid={Boolean(errors.duration_time)}
@@ -647,7 +659,7 @@ const FormClassPage: React.FC<FormProps> = ({
                             <Input
                               type="number"
                               autoComplete="off"
-                              placeholder="Duration Time"
+                              placeholder="Durasi"
                               {...field}
                               value={field.value ?? ""}
                               onChange={(e) =>
@@ -665,7 +677,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="duration_time_type"
                           label={
                             <FormLabel>
-                              Duration Type{" "}
+                              Tipe Durasi{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
@@ -674,7 +686,7 @@ const FormClassPage: React.FC<FormProps> = ({
                           render={({ field, fieldState }) => (
                             <Select
                               isSearchable={false}
-                              placeholder="Select Duration Type"
+                              placeholder="Pilih Tipe Durasi"
                               value={DurationTimeTypeOptions.filter(
                                 (option) => option.value === field.value
                               )}
@@ -695,25 +707,30 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="is_publish"
                           label={
                             <FormLabel>
-                              Publish Status{" "}
+                              Status Publikasi{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
                           invalid={Boolean(errors.is_publish)}
                           errorMessage={errors.is_publish?.message}
-                          render={({ field, fieldState }) => (
-                            <Select
-                              isSearchable={false}
-                              placeholder="Select Publish Status"
-                              value={IsPublishOptions.filter(
-                                (option) => option.value === field.value
-                              )}
-                              options={IsPublishOptions}
-                              error={!!fieldState.error}
-                              onChange={(option) =>
-                                field.onChange(option?.value)
-                              }
-                            />
+                          render={({ field }) => (
+                            <ButtonGroup className="w-full">
+                              {IsPublishOptions.map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant={
+                                    field.value === option.value
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  className="flex-1"
+                                  onClick={() => field.onChange(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </ButtonGroup>
                           )}
                         />
                       </div>
@@ -723,25 +740,30 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="available_for"
                           label={
                             <FormLabel>
-                              Available For{" "}
+                              Tersedia Untuk{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
                           invalid={Boolean(errors.available_for)}
                           errorMessage={errors.available_for?.message}
-                          render={({ field, fieldState }) => (
-                            <Select
-                              isSearchable={false}
-                              placeholder="Select Available For"
-                              value={AvailableForOptions.filter(
-                                (option) => option.value === field.value
-                              )}
-                              options={AvailableForOptions}
-                              error={!!fieldState.error}
-                              onChange={(option) =>
-                                field.onChange(option?.value)
-                              }
-                            />
+                          render={({ field }) => (
+                            <ButtonGroup className="w-full">
+                              {AvailableForOptions.map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant={
+                                    field.value === option.value
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  className="flex-1"
+                                  onClick={() => field.onChange(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </ButtonGroup>
                           )}
                         />
                       </div>
@@ -753,25 +775,30 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="visible_for"
                           label={
                             <FormLabel>
-                              Visible For{" "}
+                              Terlihat Untuk{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
                           invalid={Boolean(errors.visible_for)}
                           errorMessage={errors.visible_for?.message}
-                          render={({ field, fieldState }) => (
-                            <Select
-                              isSearchable={false}
-                              placeholder="Select Visible For"
-                              value={VisibleForOptions.filter(
-                                (option) => option.value === field.value
-                              )}
-                              options={VisibleForOptions}
-                              error={!!fieldState.error}
-                              onChange={(option) =>
-                                field.onChange(option?.value)
-                              }
-                            />
+                          render={({ field }) => (
+                            <ButtonGroup className="w-full">
+                              {VisibleForOptions.map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant={
+                                    field.value === option.value
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  className="flex-1"
+                                  onClick={() => field.onChange(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </ButtonGroup>
                           )}
                         />
                       </div>
@@ -781,25 +808,30 @@ const FormClassPage: React.FC<FormProps> = ({
                           name="class_type"
                           label={
                             <FormLabel>
-                              Class Type{" "}
+                              Tipe Kelas{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                           }
                           invalid={Boolean(errors.class_type)}
                           errorMessage={errors.class_type?.message}
-                          render={({ field, fieldState }) => (
-                            <Select
-                              isSearchable={false}
-                              placeholder="Select Class Type"
-                              value={ClassTypeOptions.filter(
-                                (option) => option.value === field.value
-                              )}
-                              options={ClassTypeOptions}
-                              error={!!fieldState.error}
-                              onChange={(option) =>
-                                field.onChange(option?.value)
-                              }
-                            />
+                          render={({ field }) => (
+                            <ButtonGroup className="w-full">
+                              {ClassTypeOptions.map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant={
+                                    field.value === option.value
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  className="flex-1"
+                                  onClick={() => field.onChange(option.value)}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </ButtonGroup>
                           )}
                         />
                       </div>
@@ -820,39 +852,42 @@ const FormClassPage: React.FC<FormProps> = ({
                         />
                       )}
                     />
-                    <div className="flex w-full flex-col items-start gap-0 md:flex-row md:gap-2">
+                    <div className="flex w-full flex-col">
                       <div className="w-full">
                         <FormFieldItem
                           control={control}
                           name="background_color"
-                          label={<FormLabel>Background Color</FormLabel>}
+                          label={
+                            <FormLabel>
+                              Warna agenda{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
                           invalid={Boolean(errors.background_color)}
                           errorMessage={errors.background_color?.message}
-                          render={({ field }) => (
-                            <Input
-                              type="color"
-                              autoComplete="off"
-                              placeholder="Background Color"
-                              {...field}
-                              value={field.value ?? "#FFFFFF"}
-                            />
-                          )}
-                        />
-                      </div>
-                      <div className="w-full">
-                        <FormFieldItem
-                          control={control}
-                          name="color"
-                          label={<FormLabel>Color</FormLabel>}
-                          invalid={Boolean(errors.color)}
-                          errorMessage={errors.color?.message}
-                          render={({ field }) => (
-                            <Input
-                              type="color"
-                              autoComplete="off"
-                              placeholder="Color"
-                              {...field}
-                              value={field.value ?? "#000000"}
+                          render={({ field: bgField }) => (
+                            <FormFieldItem
+                              control={control}
+                              name="color"
+                              render={({ field: colorField }) => (
+                                <ColorPalettePicker
+                                  value={
+                                    bgField.value && colorField.value
+                                      ? {
+                                          background: bgField.value,
+                                          color: colorField.value,
+                                        }
+                                      : undefined
+                                  }
+                                  onChange={(val) => {
+                                    bgField.onChange(val.background)
+                                    colorField.onChange(val.color)
+                                  }}
+                                  disabled={
+                                    create.isPending || update.isPending
+                                  }
+                                />
+                              )}
                             />
                           )}
                         />
@@ -860,7 +895,7 @@ const FormClassPage: React.FC<FormProps> = ({
                     </div>
                     <div className="flex w-full flex-col">
                       <h5 className="mb-2 text-lg font-semibold">
-                        Weekdays Available
+                        Hari Tersedia
                       </h5>
                       <FormFieldItem
                         control={control}
@@ -905,7 +940,7 @@ const FormClassPage: React.FC<FormProps> = ({
                     </div>
                     <div className="flex w-full flex-col">
                       <div className="mb-2 flex items-center justify-between">
-                        <h5 className="text-lg font-semibold">Class Photos</h5>
+                        <h5 className="text-lg font-semibold">Foto Kelas</h5>
                       </div>
                       <FormFieldItem
                         control={control}
@@ -923,7 +958,7 @@ const FormClassPage: React.FC<FormProps> = ({
                                 <Input
                                   type="text"
                                   autoComplete="off"
-                                  placeholder="Photo URL"
+                                  placeholder="URL Foto"
                                   value={photo}
                                   onChange={(e) => {
                                     const newPhotos = [...(field.value ?? [])]
@@ -953,7 +988,7 @@ const FormClassPage: React.FC<FormProps> = ({
                               }}
                             >
                               <Plus className="mr-2 size-4" />
-                              Add Photo URL
+                              Tambah URL Foto
                             </Button>
                           </div>
                         )}
@@ -972,7 +1007,7 @@ const FormClassPage: React.FC<FormProps> = ({
                             onCheckedChange={field.onChange}
                           />
                           <FormLabel className="font-normal">
-                            {field.value ? "Enabled" : "Disabled"}
+                            {field.value ? "Aktif" : "Tidak Aktif"}
                           </FormLabel>
                         </div>
                       )}
@@ -1000,15 +1035,15 @@ const FormClassPage: React.FC<FormProps> = ({
                       type="button"
                       onClick={handleClose}
                     >
-                      Cancel
+                      Batal
                     </Button>
                     <Button
                       type="submit"
                       disabled={create.isPending || update.isPending}
                     >
                       {create.isPending || update.isPending
-                        ? "Saving..."
-                        : "Save"}
+                        ? "Menyimpan..."
+                        : "Simpan"}
                     </Button>
                   </div>
                 </div>
@@ -1020,13 +1055,30 @@ const FormClassPage: React.FC<FormProps> = ({
 
       <AlertConfirm
         open={confirmDelete}
-        title="Delete Class Package"
-        description="Are you sure want to delete this Class Package?"
+        title="Hapus Paket Kelas"
+        description="Apakah Anda yakin ingin menghapus Paket Kelas ini?"
         type="delete"
         loading={deleteItem.isPending}
         onClose={() => setConfirmDelete(false)}
         onLeftClick={() => setConfirmDelete(false)}
         onRightClick={handleDelete}
+      />
+
+      <AlertConfirm
+        open={showDraftAlert}
+        title="Status Masih Draf"
+        description="Kelas ini tidak akan muncul di agenda karena statusnya masih Draf. Apakah Anda yakin ingin menyimpan?"
+        loading={create.isPending || update.isPending}
+        onClose={() => setShowDraftAlert(false)}
+        onLeftClick={() => setShowDraftAlert(false)}
+        onRightClick={() => {
+          if (pendingData) {
+            executeMutation(pendingData)
+          }
+          setShowDraftAlert(false)
+        }}
+        leftTitle="Batal"
+        rightTitle="Simpan"
       />
     </>
   )

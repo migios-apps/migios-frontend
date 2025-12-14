@@ -158,6 +158,7 @@ const FormCuttingSession: React.FC<FormProps> = ({
         per_page: 10,
         sort_column: "id",
         sort_type: "desc",
+        role_name: "trainer",
         search: [
           (inputValue || "").length > 0
             ? ({
@@ -171,12 +172,6 @@ const FormCuttingSession: React.FC<FormProps> = ({
             search_column: "enabled",
             search_condition: "=",
             search_text: "true",
-          },
-          {
-            search_operator: "and",
-            search_column: "roles_name",
-            search_condition: "=",
-            search_text: "trainer",
           },
         ],
       })

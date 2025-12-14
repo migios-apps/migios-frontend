@@ -7,7 +7,6 @@ import {
   apiGetClassCategory,
   apiGetClassList,
 } from "@/services/api/ClassService"
-import dayjs from "dayjs"
 import { Chart21, Layer, Profile2User } from "iconsax-reactjs"
 import { ArrowRight, Flame } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
@@ -43,7 +42,6 @@ import {
   LevelClassOptions,
   useClassPageForm,
 } from "@/components/form/class/validation"
-import { EventFrequency } from "@/components/form/event/events"
 import LayoutClasses from "./Layout"
 
 const ClassIndex = () => {
@@ -219,7 +217,7 @@ const ClassIndex = () => {
                     ))
                 : listData.map((item, index) => {
                     const status = item.enabled ? "active" : "inactive"
-                    const event = item.events[0]
+                    // const event = item.events[0]
                     return (
                       <Card key={index} className="gap-0">
                         <CardHeader>
@@ -302,7 +300,7 @@ const ClassIndex = () => {
                             </div>
                           </div>
 
-                          {item.events.length > 0 && (
+                          {/* {item.events.length > 0 && (
                             <div className="space-y-2">
                               <div className="text-muted-foreground text-xs font-medium">
                                 Schedule
@@ -333,7 +331,7 @@ const ClassIndex = () => {
                                 </div>
                               )}
                             </div>
-                          )}
+                          )} */}
 
                           {item.description && (
                             <div className="space-y-2">
@@ -440,9 +438,9 @@ const ClassIndex = () => {
                               )
                               formProps.setValue(
                                 "background_color",
-                                item.background_color ?? null
+                                item?.background_color as string
                               )
-                              formProps.setValue("color", item.color ?? null)
+                              formProps.setValue("color", item?.color as string)
                               formProps.setValue("start_time", item.start_time)
                               formProps.setValue(
                                 "duration_time",

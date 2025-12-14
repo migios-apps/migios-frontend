@@ -4,20 +4,20 @@ import * as yup from "yup"
 import { validationSchemaTrainer } from "../package/package"
 
 export const LevelClassOptions = [
-  { label: "Easy", value: 1 },
-  { label: "Medium", value: 2 },
-  { label: "Hard", value: 3 },
+  { label: "Mudah", value: 1 },
+  { label: "Sedang", value: 2 },
+  { label: "Sulit", value: 3 },
 ]
 
 export const AvailableForOptions = [
-  { label: "Everyone", value: 0 },
-  { label: "Male", value: 1 },
-  { label: "Female", value: 2 },
+  { label: "Semua", value: 0 },
+  { label: "Pria", value: 1 },
+  { label: "Wanita", value: 2 },
 ]
 
 export const VisibleForOptions = [
-  { label: "Public", value: 0 },
-  { label: "Private", value: 1 },
+  { label: "Publik", value: 0 },
+  { label: "Pribadi", value: 1 },
 ]
 
 export const ClassTypeOptions = [
@@ -26,13 +26,13 @@ export const ClassTypeOptions = [
 ]
 
 export const IsPublishOptions = [
-  { label: "Draft", value: 0 },
-  { label: "Publish", value: 1 },
+  { label: "Draf", value: 0 },
+  { label: "Terbit", value: 1 },
 ]
 
 export const DurationTimeTypeOptions = [
-  { label: "Minute", value: "minute" },
-  { label: "Hour", value: "hour" },
+  { label: "Menit", value: "minute" },
+  { label: "Jam", value: "hour" },
   // { label: "Day", value: "day" },
   // { label: "Week", value: "week" },
   // { label: "Month", value: "month" },
@@ -41,52 +41,52 @@ export const DurationTimeTypeOptions = [
 ]
 
 export const WeekdayOptions = [
-  { label: "Sunday", value: 0 },
-  { label: "Monday", value: 1 },
-  { label: "Tuesday", value: 2 },
-  { label: "Wednesday", value: 3 },
-  { label: "Thursday", value: 4 },
-  { label: "Friday", value: 5 },
-  { label: "Saturday", value: 6 },
+  { label: "Minggu", value: 0 },
+  { label: "Senin", value: 1 },
+  { label: "Selasa", value: 2 },
+  { label: "Rabu", value: 3 },
+  { label: "Kamis", value: 4 },
+  { label: "Jumat", value: 5 },
+  { label: "Sabtu", value: 6 },
 ]
 
 export const validationSchemaClassPage = yup.object().shape({
   id: yup.number().optional().nullable(),
   photo: yup.string().optional().nullable(),
-  name: yup.string().required("Name is required"),
-  capacity: yup.number().required("Capacity is required"),
+  name: yup.string().required("Nama wajib diisi"),
+  capacity: yup.number().required("Kapasitas wajib diisi"),
   level: yup.number().optional().nullable(),
   burn_calories: yup.number().optional().nullable(),
   description: yup
     .string()
-    .max(150, "Maximum 150 characters")
+    .max(150, "Maksimal 150 karakter")
     .optional()
     .nullable(),
   allow_all_instructor: yup.boolean().default(false),
   enabled: yup.boolean().default(true),
-  start_date: yup.string().required("Start date is required"),
+  start_date: yup.string().required("Tanggal mulai wajib diisi"),
   end_date: yup
     .string()
     .nullable()
     .when("is_forever", {
       is: (is_forever: boolean) => is_forever === false,
-      then: (schema) => schema.required("End date is required"),
+      then: (schema) => schema.required("Tanggal selesai wajib diisi"),
       otherwise: (schema) => schema.nullable().optional(),
     }),
   is_forever: yup.boolean().default(false),
-  is_publish: yup.number().required("Publish status is required"),
-  available_for: yup.number().required("Available for is required"),
-  visible_for: yup.number().required("Visible for is required"),
-  class_type: yup.number().required("Class type is required"),
+  is_publish: yup.number().required("Status publikasi wajib diisi"),
+  available_for: yup.number().required("Ketersediaan wajib diisi"),
+  visible_for: yup.number().required("Visibilitas wajib diisi"),
+  class_type: yup.number().required("Tipe kelas wajib diisi"),
   embed_video: yup.string().optional().nullable(),
-  background_color: yup.string().optional().nullable(),
-  color: yup.string().optional().nullable(),
-  start_time: yup.string().required("Start time is required"),
-  duration_time: yup.number().required("Duration time is required"),
+  background_color: yup.string().required("Warna latar wajib diisi"),
+  color: yup.string().required("Warna wajib diisi"),
+  start_time: yup.string().required("Waktu mulai wajib diisi"),
+  duration_time: yup.number().required("Durasi waktu wajib diisi"),
   duration_time_type: yup
     .string()
     .oneOf(["minute", "hour", "day", "week", "month", "year", "forever"])
-    .required("Duration time type is required"),
+    .required("Tipe durasi waktu wajib diisi"),
   instructors: yup
     .array()
     .of(validationSchemaTrainer)
@@ -94,8 +94,8 @@ export const validationSchemaClassPage = yup.object().shape({
       is: (allow_all_instructor: boolean) => allow_all_instructor === false,
       then: (schema) =>
         schema
-          .required("Instructor is required")
-          .min(1, "At least one instructor is required"),
+          .required("Instruktur wajib diisi")
+          .min(1, "Minimal satu instruktur wajib diisi"),
     })
     .optional(),
   weekdays_available: yup
@@ -109,8 +109,8 @@ export const validationSchemaClassPage = yup.object().shape({
   class_photos: yup.array().of(yup.string()).optional(),
   category: yup
     .object({
-      id: yup.number().required("Category ID is required"),
-      name: yup.string().required("Category name is required"),
+      id: yup.number().required("ID Kategori wajib diisi"),
+      name: yup.string().required("Nama kategori wajib diisi"),
     })
     .optional()
     .nullable(),
@@ -151,7 +151,7 @@ export const resetClassPageForm = (form: ReturnClassPageFormSchema) => {
 
 export const validationSchemaClassCategoryPage = yup.object().shape({
   id: yup.number().optional().nullable(),
-  name: yup.string().required("Name is required"),
+  name: yup.string().required("Nama wajib diisi"),
 })
 
 export type ClassCategoryPageFormSchema = yup.InferType<

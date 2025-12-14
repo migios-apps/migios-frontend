@@ -309,6 +309,7 @@ const PointOfSales = () => {
         per_page: 10,
         sort_column: "id",
         sort_type: "desc",
+        role_name: "trainer",
         search: [
           (inputValue || "").length > 0
             ? ({
@@ -322,12 +323,6 @@ const PointOfSales = () => {
             search_column: "enabled",
             search_condition: "=",
             search_text: "true",
-          },
-          {
-            search_operator: "and",
-            search_column: "roles_name",
-            search_condition: "=",
-            search_text: "trainer",
           },
         ],
       })

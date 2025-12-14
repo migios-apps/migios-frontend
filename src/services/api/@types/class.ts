@@ -1,5 +1,6 @@
 import { ApiTypes, MetaApi } from "./api"
-import { EventsData } from "./event"
+
+// import { EventsData } from "./event"
 
 export interface ClassesType {
   id: number
@@ -38,7 +39,7 @@ export interface ClassDetail extends ClassesType {
     photo: string
     code: string
   }[]
-  events: EventsData[]
+  // events: EventsData[]
   category: ClassCategoryDetail
 }
 

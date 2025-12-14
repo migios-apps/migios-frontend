@@ -710,7 +710,7 @@ const EventItem = ({
             style={{
               backgroundColor,
               color: textColor,
-              border: `1px solid ${textColor}`,
+              // border: `1px solid ${textColor}`,
               willChange: "transform, opacity",
             }}
             className={cn(
