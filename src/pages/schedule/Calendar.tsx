@@ -10,7 +10,6 @@ import type {
 } from "@fullcalendar/core"
 import dayjs from "dayjs"
 import cloneDeep from "lodash/cloneDeep"
-import { useSessionUser } from "@/stores/auth-store"
 import { getStartAndEndOfMonth } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import CalendarView from "@/components/ui/calendar-view"
@@ -19,7 +18,6 @@ import EventDialog, { EventParam } from "./components/EventDialog"
 import type { SelectedCell } from "./types"
 
 const Calendar = () => {
-  const club = useSessionUser((state) => state.club)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [view, setView] = useState<
     "timeGridWeek" | "timeGridDay" | "dayGridMonth"
@@ -33,11 +31,10 @@ const Calendar = () => {
   })
 
   const { data: events, isLoading: loadingEvents } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [QUERY_KEY.events, dateRange],
     enabled: !!dateRange.start && !!dateRange.end,
     queryFn: async () => {
-      const res = await apiGetEventList(Number(club.id), {
+      const res = await apiGetEventList({
         start_date: dayjs(dateRange.start).format("YYYY-MM-DD"),
         end_date: dayjs(dateRange.end).format("YYYY-MM-DD"),
         show_all: true,

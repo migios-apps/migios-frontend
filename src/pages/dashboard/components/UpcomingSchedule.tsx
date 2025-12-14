@@ -4,7 +4,6 @@ import { EventsData } from "@/services/api/@types/event"
 import { apiGetEventList } from "@/services/api/EventService"
 import dayjs from "dayjs"
 import { useNavigate } from "react-router-dom"
-import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
 import { Badge } from "@/components/ui/badge"
@@ -27,9 +26,7 @@ const ScheduledEvent = (props: EventsData) => {
         </div>
       </div>
       <div>
-        <span className="heading-text font-semibold">
-          {props.end && dayjs(props.end).format("hh:mm")}
-        </span>
+        <span className="heading-text font-semibold">{props.end_time}</span>
       </div>
     </div>
   )
@@ -37,7 +34,6 @@ const ScheduledEvent = (props: EventsData) => {
 
 const UpcomingSchedule = () => {
   const navigate = useNavigate()
-  const club = useSessionUser((state) => state.club)
   const defaultMenu = getMenuShortcutDatePickerByType("today").menu
   const [valueDateRangePicker, setValueDateRangePicker] =
     useState<DatePickerAIOPropsValue>({
@@ -50,12 +46,11 @@ const UpcomingSchedule = () => {
     })
 
   const { data: eventList, isLoading } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [QUERY_KEY.events, valueDateRangePicker],
     enabled:
       !!valueDateRangePicker.date?.[0] && !!valueDateRangePicker.date?.[1],
     queryFn: async () => {
-      const res = await apiGetEventList(Number(club.id), {
+      const res = await apiGetEventList({
         start_date: dayjs(valueDateRangePicker.date?.[0]).format("YYYY-MM-DD"),
         end_date: dayjs(valueDateRangePicker.date?.[1]).format("YYYY-MM-DD"),
         show_all: true,
