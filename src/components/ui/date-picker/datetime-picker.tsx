@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { format } from "date-fns"
@@ -167,9 +166,8 @@ export function DateTimePicker({
   }, [open, initDate])
 
   const displayValue = useMemo(() => {
-    if (!open && !value) return value
-    return open ? date : initDate
-  }, [date, value, open])
+    return value
+  }, [value])
 
   const dislayFormat = useMemo(() => {
     if (!displayValue) return "Pick a date"

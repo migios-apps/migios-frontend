@@ -353,6 +353,7 @@ export function CalendarPicker({
           <DayPicker
             timeZone={timezone}
             mode="single"
+            required={true}
             selected={value instanceof Date ? value : undefined}
             onSelect={(d: Date | undefined) => d && onDayChanged(d)}
             month={month}
