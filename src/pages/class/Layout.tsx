@@ -12,10 +12,10 @@ const LayoutClasses = ({ children }: { children?: React.ReactNode }) => {
 
   return (
     <div className="relative">
-      <div className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-16 z-10 w-full py-2 backdrop-blur">
+      <div className="text-muted-foreground/95 supports-backdrop-filter:text-muted-foreground/60 sticky top-16 z-10 w-full py-2 backdrop-blur">
         <Tabs value={pathname} onValueChange={(tab) => navigate(tab)}>
           <div className="scrollbar-hide flex justify-start overflow-x-auto px-4 md:justify-center md:px-6 lg:px-8">
-            <TabsList>
+            <TabsList className="w-auto md:w-full">
               <TabsTrigger value={routeSchedule} className="min-w-[140px]">
                 <Calendar color="currentColor" size={20} variant="Bold" />
                 Jadwal
