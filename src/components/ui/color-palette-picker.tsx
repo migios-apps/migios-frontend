@@ -22,20 +22,20 @@ export interface ColorPair {
 }
 
 const DEFAULT_PAIRS: ColorPair[] = [
-  { background: "#FEF9C3", color: "#854D0E" }, // Yellow 100/800
-  { background: "#FEE2E2", color: "#991B1B" }, // Red 100/800
-  { background: "#FFEDD5", color: "#9A3412" }, // Orange 100/800
-  { background: "#DCFCE7", color: "#166534" }, // Green 100/800
-  { background: "#D1FAE5", color: "#065F46" }, // Emerald 100/800
-  { background: "#CFFAFE", color: "#155E75" }, // Cyan 100/800
-  { background: "#F1F5F9", color: "#0F172A" }, // Slate 100/900
-  { background: "#E0F2FE", color: "#075985" }, // Sky 100/800
-  { background: "#DBEAFE", color: "#1E40AF" }, // Blue 100/800
-  { background: "#E0E7FF", color: "#3730A3" }, // Indigo 100/800
-  { background: "#EDE9FE", color: "#5B21B6" }, // Violet 100/800
-  { background: "#FAE8FF", color: "#86198F" }, // Fuchsia 100/800
-  { background: "#FCE7F3", color: "#9D174D" }, // Pink 100/800
-  { background: "#FFE4E6", color: "#9F1239" }, // Rose 100/800
+  { background: "rgba(234, 179, 8, 0.2)", color: "#CA8A04" }, // Yellow
+  { background: "rgba(239, 68, 68, 0.2)", color: "#DC2626" }, // Red
+  { background: "rgba(249, 115, 22, 0.2)", color: "#EA580C" }, // Orange
+  { background: "rgba(34, 197, 94, 0.2)", color: "#16A34A" }, // Green
+  { background: "rgba(16, 185, 129, 0.2)", color: "#059669" }, // Emerald
+  { background: "rgba(6, 182, 212, 0.2)", color: "#0891B2" }, // Cyan
+  { background: "rgba(100, 116, 139, 0.2)", color: "hsl(var(--foreground))" }, // Slate
+  { background: "rgba(14, 165, 233, 0.2)", color: "#0284C7" }, // Sky
+  { background: "rgba(59, 130, 246, 0.2)", color: "#2563EB" }, // Blue
+  { background: "rgba(99, 102, 241, 0.2)", color: "#4F46E5" }, // Indigo
+  { background: "rgba(139, 92, 246, 0.2)", color: "#7C3AED" }, // Violet
+  { background: "rgba(217, 70, 239, 0.2)", color: "#C026D3" }, // Fuchsia
+  { background: "rgba(236, 72, 153, 0.2)", color: "#DB2777" }, // Pink
+  { background: "rgba(244, 63, 94, 0.2)", color: "#E11D48" }, // Rose
 ]
 
 interface ColorPalettePickerProps {

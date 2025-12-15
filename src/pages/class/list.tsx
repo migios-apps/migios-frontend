@@ -93,7 +93,7 @@ const ClassIndex = () => {
                 {
                   search_operator: "and",
                   search_column: "category.id",
-                  search_condition: "eq",
+                  search_condition: "=",
                   search_text: category?.id.toString(),
                 },
               ] as unknown as Filter[])
