@@ -24,17 +24,7 @@ export const classRoute: Routes = [
   },
   {
     path: "/class/schedule",
-    component: lazy(() => import("@/pages/class/Schedule")),
-    authority: [],
-    meta: {
-      container: {
-        className: "p-0",
-      },
-    },
-  },
-  {
-    path: "/class/detail",
-    component: lazy(() => import("@/pages/class/Schedule/detail")),
+    component: lazy(() => import("@/pages/class/schedule")),
     authority: [],
     meta: {
       container: {

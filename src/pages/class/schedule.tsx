@@ -7,7 +7,7 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { useIsMobile } from "@/hooks/use-mobile"
 import CalendarView from "@/components/ui/calendar-view"
 import Loading from "@/components/ui/loading"
-import LayoutClasses from "../Layout"
+import LayoutClasses from "./Layout"
 
 const ScheduleIndex = () => {
   const isMobile = useIsMobile()

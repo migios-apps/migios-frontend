@@ -4,10 +4,12 @@ import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { ClassCategoryDetail } from "@/services/api/@types/class"
 import { ClassDetail } from "@/services/api/@types/class"
+import { EmployeeDetail } from "@/services/api/@types/employee"
 import {
   apiGetClassCategory,
   apiGetClassList,
 } from "@/services/api/ClassService"
+import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import {
   Add,
   Chart21,
@@ -72,11 +74,12 @@ const ClassIndex = () => {
     null
   )
   const [showDetail, setShowDetail] = React.useState<boolean>(false)
+  const [trainer, setTrainer] = React.useState<EmployeeDetail | null>(null)
 
   const formProps = useClassPageForm()
 
   const { data, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: [QUERY_KEY.classes, tableData, category?.id],
+    queryKey: [QUERY_KEY.classes, tableData, category?.id, trainer],
     initialPageParam: 1,
     queryFn: async () => {
       const res = await apiGetClassList({
@@ -96,7 +99,6 @@ const ClassIndex = () => {
             ? []
             : [
                 {
-                  search_operator: "and",
                   search_column: "name",
                   search_condition: "like",
                   search_text: tableData.query,
@@ -106,11 +108,21 @@ const ClassIndex = () => {
             ? ([
                 {
                   search_operator: "and",
-                  search_column: "category.id",
+                  search_column: "category_id",
                   search_condition: "=",
                   search_text: category?.id.toString(),
                 },
               ] as unknown as Filter[])
+            : []),
+          ...(trainer !== null
+            ? ([
+                {
+                  search_operator: "and",
+                  search_column: "instructors.id",
+                  search_condition: "=",
+                  search_text: trainer.id.toString(),
+                },
+              ] as Filter[])
             : []),
         ],
       })
@@ -162,6 +174,47 @@ const ClassIndex = () => {
     []
   )
 
+  const getTrainerList = React.useCallback(
+    async (
+      inputValue: string,
+      _: OptionsOrGroups<EmployeeDetail, GroupBase<EmployeeDetail>>,
+      additional?: { page: number }
+    ) => {
+      const response = await apiGetEmployeeList({
+        page: additional?.page,
+        per_page: 10,
+        sort_column: "id",
+        sort_type: "desc",
+        role_name: "trainer",
+        search: [
+          (inputValue || "").length > 0
+            ? ({
+                search_column: "name",
+                search_condition: "like",
+                search_text: `${inputValue}`,
+              } as any)
+            : null,
+          {
+            search_operator: "and",
+            search_column: "enabled",
+            search_condition: "=",
+            search_text: "true",
+          },
+        ],
+      })
+      return new Promise<ReturnAsyncSelect>((resolve) => {
+        resolve({
+          options: response.data.data,
+          hasMore: response.data.data.length >= 1,
+          additional: {
+            page: additional!.page + 1,
+          },
+        })
+      })
+    },
+    []
+  )
+
   return (
     <LayoutClasses>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -182,15 +235,15 @@ const ClassIndex = () => {
           <SelectAsyncPaginate
             isClearable
             isLoading={isLoading}
-            loadOptions={getClassCategoryList as any}
+            loadOptions={getTrainerList as any}
             additional={{ page: 1 }}
             placeholder="Filter instruktur"
-            className="w-full md:max-w-max"
-            value={category}
+            className="w-full md:max-w-[200px]"
+            value={trainer}
             getOptionLabel={(option) => option.name!}
             getOptionValue={(option) => option.id.toString()}
             debounceTimeout={500}
-            onChange={(option) => setCategory(option!)}
+            onChange={(option) => setTrainer(option!)}
           />
           <InputDebounce
             placeholder="Search..."

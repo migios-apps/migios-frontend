@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-query"
 import { Filter } from "@/services/api/@types/api"
 import { EmployeeDetail } from "@/services/api/@types/employee"
-import { TrainerPackageTypes } from "@/services/api/@types/package"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
 import { apiGetPackageList } from "@/services/api/PackageService"
 import { apiGetProductList } from "@/services/api/ProductService"
@@ -60,7 +59,7 @@ const PointOfSales = () => {
   const [searchPackage, setSearchPackage] = React.useState("")
   const [searchProduct, setSearchProduct] = React.useState("")
   const [packageCategory, setPackageCategory] = React.useState("")
-  const [trainer, setTrainer] = React.useState<TrainerPackageTypes | null>(null)
+  const [trainer, setTrainer] = React.useState<EmployeeDetail | null>(null)
   const [openAddItem, setOpenAddItem] = React.useState(false)
   const [formItemType, setFormItemType] = React.useState<"create" | "update">(
     "create"
