@@ -12,9 +12,60 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Loading from "@/components/ui/loading"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import LayoutOtherSetting from "../Layout"
+import CommissionSetting from "./commission"
+
+const LoadingSalesSetting = () => {
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-6 w-10 rounded-full" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Mode Pembulatan */}
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <div className="flex gap-3">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 flex-1" />
+            </div>
+          </div>
+
+          {/* Jumlah Pembulatan */}
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-36" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+
+          {/* Penjelasan */}
+          <div className="bg-muted/50 space-y-3 rounded-lg border p-4">
+            <Skeleton className="h-4 w-3/4" />
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
 
 const SalesSettings = () => {
   const queryClient = useQueryClient()
@@ -114,8 +165,12 @@ const SalesSettings = () => {
 
   return (
     <LayoutOtherSetting>
-      <Loading loading={isLoading}>
-        <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <CommissionSetting />
+
+        {isLoading ? (
+          <LoadingSalesSetting />
+        ) : (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -233,8 +288,8 @@ const SalesSettings = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </Loading>
+        )}
+      </div>
     </LayoutOtherSetting>
   )
 }

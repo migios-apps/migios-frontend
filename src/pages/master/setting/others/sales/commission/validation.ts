@@ -38,12 +38,18 @@ export type ReturnCommissionFormSchema = ReturnType<
 export function useCommissionForm() {
   return useForm<CreateCommissionSchema>({
     resolver: yupResolver(validationSchemaCommission) as any,
-    defaultValues: {},
+    defaultValues: {
+      sales: 0,
+      sales_type: "percent",
+      service: 0,
+      session: 0,
+      class: 0,
+    },
   })
 }
 
 export function resetCommissionForm(form: ReturnCommissionFormSchema) {
   form.reset({
-    ...{},
+    ...form.getValues(),
   })
 }

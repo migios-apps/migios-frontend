@@ -9,12 +9,11 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   const tabListRef = useRef<HTMLDivElement>(null)
   const activeTabRef = useRef<HTMLButtonElement>(null)
 
-  const routeCommission = "/settings/others/commission"
+  const routeSales = "/settings/others/sales"
   const routeTax = "/settings/others/taxes"
   const routeInvoice = "/settings/others/invoice"
   const routeLoyaltyPoint = "/settings/others/loyalty-point"
   const routeMembership = "/settings/others/membership"
-  const routeSales = "/settings/others/sales"
 
   useEffect(() => {
     if (activeTabRef.current && tabListRef.current) {
@@ -34,12 +33,11 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname])
 
   const tabItems = [
-    { route: routeCommission, label: "Komisi" },
+    { route: routeSales, label: "Penjualan" },
     { route: routeTax, label: "Pajak" },
     { route: routeInvoice, label: "Invoice" },
     { route: routeLoyaltyPoint, label: "Poin Loyalitas" },
     { route: routeMembership, label: "Keanggotaan" },
-    { route: routeSales, label: "Pengaturan Penjualan" },
   ]
 
   return (

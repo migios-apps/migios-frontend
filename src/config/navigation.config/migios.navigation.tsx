@@ -176,7 +176,7 @@ const migiosNavigationConfig: NavigationTree[] = [
             subMenu: [],
           },
           {
-            path: "/settings/others/commission",
+            path: "/settings/others/sales",
             title: "Others",
             type: NAV_ITEM_TYPE_ITEM,
             authority: [],

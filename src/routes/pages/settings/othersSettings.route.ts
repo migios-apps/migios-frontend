@@ -25,16 +25,6 @@ export const othersSettingsRoute: Routes = [
     },
   },
   {
-    path: "/settings/others/commission",
-    component: lazy(() => import("@/pages/master/setting/others/commission")),
-    authority: [],
-    meta: {
-      container: {
-        className: "p-0",
-      },
-    },
-  },
-  {
     path: "/settings/others/loyalty-point",
     component: lazy(() => import("@/pages/master/setting/others/loyaltyPoint")),
     authority: [],
