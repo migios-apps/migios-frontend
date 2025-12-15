@@ -26,7 +26,7 @@ const ScheduledEvent = (props: EventsData) => {
         </div>
       </div>
       <div>
-        <span className="heading-text font-semibold">{props.end_time}</span>
+        <span className="heading-text font-semibold">{props.start_time}</span>
       </div>
     </div>
   )
