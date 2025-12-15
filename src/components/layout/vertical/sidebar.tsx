@@ -500,16 +500,21 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   )
 }
 
-function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
+const SidebarMenuItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => {
   return (
     <li
+      ref={ref}
       data-slot="sidebar-menu-item"
       data-sidebar="menu-item"
       className={cn("group/menu-item relative", className)}
       {...props}
     />
   )
-}
+})
+SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonActiveVariants = cva(
   "bg-sidebar-accent text-sidebar-accent-foreground rounded-md",
@@ -615,6 +620,17 @@ function SidebarMenuButton({
   const { isMobile, state } = useSidebar()
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
+
+  React.useEffect(() => {
+    if (isActive && buttonRef.current) {
+      buttonRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      })
+    }
+  }, [isActive])
+
   const activeClassNameValue =
     themeConfig.layout === "inset"
       ? sidebarMenuButtonActiveVariantsInset({ variant })
@@ -645,6 +661,7 @@ function SidebarMenuButton({
           )}
         </AnimatePresence>
         <Comp
+          ref={buttonRef}
           data-slot="sidebar-menu-button"
           data-sidebar="menu-button"
           data-size={size}
@@ -891,6 +908,17 @@ function SidebarMenuSubButton({
   const Comp = asChild ? Slot : "a"
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
+  const buttonRef = React.useRef<HTMLAnchorElement>(null)
+
+  React.useEffect(() => {
+    if (isActive && buttonRef.current) {
+      buttonRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      })
+    }
+  }, [isActive])
+
   const activeClassNameValue =
     themeConfig.layout === "inset"
       ? sidebarMenuSubButtonActiveVariantsInset({ variant })
@@ -921,6 +949,7 @@ function SidebarMenuSubButton({
           )}
         </AnimatePresence>
         <Comp
+          ref={buttonRef}
           data-slot="sidebar-menu-sub-button"
           data-sidebar="menu-sub-button"
           data-size={size}

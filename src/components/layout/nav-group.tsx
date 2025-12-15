@@ -1,4 +1,4 @@
-import { type ReactNode } from "react"
+import React, { type ReactNode } from "react"
 import { ChevronRight } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
@@ -94,13 +94,25 @@ function SidebarMenuCollapsible({
     checkIsActive(href, subItem)
   )
   const isActive = checkIsActive(href, item, true) || hasActiveChild
+  const ref = React.useRef<HTMLLIElement>(null)
+
   return (
     <Collapsible
       asChild
       defaultOpen={checkIsActive(href, item, true)}
       className="group/collapsible"
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
+          setTimeout(() => {
+            ref.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+            })
+          }, 200)
+        }
+      }}
     >
-      <SidebarMenuItem>
+      <SidebarMenuItem ref={ref}>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={item.title}
