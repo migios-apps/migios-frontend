@@ -9,7 +9,13 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   type ChartConfig,
   ChartContainer,
@@ -130,27 +136,30 @@ const Overview = () => {
 
   return (
     <Card className="relative gap-2 p-4">
-      <CardHeader className="relative p-0">
-        <div className="flex w-full items-center justify-between">
-          <CardTitle>Overview</CardTitle>
-          <DatePickerAIO
-            variant="range"
-            align="end"
-            options={[
-              "thisWeek",
-              "sevenDaysAgo",
-              "thisMonth",
-              "lastMonth",
-              "thisYear",
-              "lastYear",
-              "custom",
-            ]}
-            value={valueDateRangePicker}
-            onChange={(value) => {
-              setValueDateRangePicker(value)
-            }}
-          />
+      <CardHeader className="relative flex w-full flex-col items-center justify-between p-0 md:flex-row">
+        <div className="flex flex-col">
+          <CardTitle>Ringkasan</CardTitle>
+          <CardDescription>
+            Ringkasan keseluruhan penjualan, anggota, dan kehadiran member.
+          </CardDescription>
         </div>
+        <DatePickerAIO
+          variant="range"
+          align="end"
+          options={[
+            "thisWeek",
+            "sevenDaysAgo",
+            "thisMonth",
+            "lastMonth",
+            "thisYear",
+            "lastYear",
+            "custom",
+          ]}
+          value={valueDateRangePicker}
+          onChange={(value) => {
+            setValueDateRangePicker(value)
+          }}
+        />
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (

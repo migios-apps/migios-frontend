@@ -31,7 +31,7 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "/schedule",
-    title: "Schedule",
+    title: "Jadwal",
     icon: () => <Calendar variant="Bulk" />,
     type: NAV_ITEM_TYPE_ITEM,
     authority: [],
@@ -39,28 +39,28 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "",
-    title: "Attendance",
+    title: "Absensi",
     icon: () => <Scan variant="Bulk" />,
     type: NAV_ITEM_TYPE_COLLAPSE,
     authority: [],
     subMenu: [
       {
         path: "/attendance/checkin",
-        title: "Check in",
+        title: "Check In",
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
       },
       {
         path: "/attendance/checkout",
-        title: "Check out",
+        title: "Check Out",
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
       },
       {
         path: "/attendance/history",
-        title: "History",
+        title: "Riwayat",
         type: NAV_ITEM_TYPE_ITEM,
         authority: [],
         subMenu: [],
@@ -69,7 +69,7 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "/class/list",
-    title: "Class",
+    title: "Kelas",
     icon: () => <People variant="Bulk" />,
     type: NAV_ITEM_TYPE_ITEM,
     authority: [],
@@ -77,7 +77,7 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "/members",
-    title: "Members",
+    title: "Anggota",
     icon: () => <Profile2User variant="Bulk" />,
     type: NAV_ITEM_TYPE_ITEM,
     authority: [],
@@ -85,7 +85,7 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "/cutting-sessions",
-    title: "Cutting Session",
+    title: "Potong Sesi",
     icon: () => <Cut variant="Bulk" />,
     type: NAV_ITEM_TYPE_ITEM,
     authority: [],
@@ -93,7 +93,7 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "/measurement",
-    title: "Measurement",
+    title: "Pengukuran",
     icon: () => <RulerPen variant="Bulk" />,
     type: NAV_ITEM_TYPE_ITEM,
     authority: [],
@@ -101,14 +101,14 @@ const migiosNavigationConfig: NavigationTree[] = [
   },
   {
     path: "",
-    title: "Masters",
+    title: "Master",
     icon: () => <Wallet1 variant="Bulk" />,
     type: NAV_ITEM_TYPE_TITLE,
     authority: [],
     subMenu: [
       {
         path: "/sales",
-        title: "Sales",
+        title: "Penjualan",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <Chart2 variant="Bulk" />,
         authority: [],
@@ -116,7 +116,7 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/packages/membership",
-        title: "Packages",
+        title: "Paket",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <DocumentFilter variant="Bulk" />,
         authority: [],
@@ -124,7 +124,7 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/products",
-        title: "Products",
+        title: "Produk",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <Box variant="Bulk" />,
         authority: [],
@@ -132,7 +132,7 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/finance/rekening",
-        title: "Finance",
+        title: "Keuangan",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <Wallet1 variant="Bulk" />,
         authority: [],
@@ -140,7 +140,7 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/employee",
-        title: "Employee",
+        title: "Karyawan",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <Profile2User variant="Bulk" />,
         authority: [],
@@ -148,7 +148,7 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/reports",
-        title: "Reports",
+        title: "Laporan",
         type: NAV_ITEM_TYPE_ITEM,
         icon: () => <DocumentText variant="Bulk" />,
         authority: [],
@@ -156,14 +156,14 @@ const migiosNavigationConfig: NavigationTree[] = [
       },
       {
         path: "/settings",
-        title: "Settings",
+        title: "Pengaturan",
         type: NAV_ITEM_TYPE_COLLAPSE,
         icon: () => <Setting3 variant="Bulk" />,
         authority: [],
         subMenu: [
           {
             path: "/settings/roles-permissions",
-            title: "Roles & Permissions",
+            title: "Role & Hak Akses",
             type: NAV_ITEM_TYPE_ITEM,
             authority: [],
             subMenu: [],
@@ -177,14 +177,14 @@ const migiosNavigationConfig: NavigationTree[] = [
           },
           {
             path: "/settings/others/sales",
-            title: "Others",
+            title: "Lainnya",
             type: NAV_ITEM_TYPE_ITEM,
             authority: [],
             subMenu: [],
           },
           {
             path: "/settings/log-activity",
-            title: "Log activity",
+            title: "Log Aktivitas",
             type: NAV_ITEM_TYPE_ITEM,
             authority: [],
             subMenu: [],
