@@ -34,12 +34,12 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname])
 
   const tabItems = [
-    { route: routeCommission, label: "Commission" },
-    { route: routeTax, label: "Tax" },
+    { route: routeCommission, label: "Komisi" },
+    { route: routeTax, label: "Pajak" },
     { route: routeInvoice, label: "Invoice" },
-    { route: routeLoyaltyPoint, label: "Loyalty Point" },
-    { route: routeMembership, label: "Membership" },
-    { route: routeSales, label: "Sales Settings" },
+    { route: routeLoyaltyPoint, label: "Poin Loyalitas" },
+    { route: routeMembership, label: "Keanggotaan" },
+    { route: routeSales, label: "Pengaturan Penjualan" },
   ]
 
   return (
