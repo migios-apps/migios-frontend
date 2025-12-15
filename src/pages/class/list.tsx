@@ -3,12 +3,19 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { ClassCategoryDetail } from "@/services/api/@types/class"
+import { ClassDetail } from "@/services/api/@types/class"
 import {
   apiGetClassCategory,
   apiGetClassList,
 } from "@/services/api/ClassService"
-import { Chart21, Layer, Profile2User } from "iconsax-reactjs"
-import { ArrowRight, Flame } from "lucide-react"
+import {
+  Add,
+  Chart21,
+  Layer,
+  People,
+  Profile2User,
+  User,
+} from "iconsax-reactjs"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -20,7 +27,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -41,9 +47,12 @@ import {
 import FormClassPage from "@/components/form/class/FormClassPage"
 import {
   LevelClassOptions,
+  WeekdayOptions,
+  resetClassPageForm,
   useClassPageForm,
 } from "@/components/form/class/validation"
 import LayoutClasses from "./Layout"
+import DialogClassDetail from "./components/DialogClassDetail"
 
 const ClassIndex = () => {
   const [tableData, setTableData] = React.useState<TableQueries>({
@@ -57,7 +66,12 @@ const ClassIndex = () => {
   })
   const [showForm, setShowForm] = React.useState<boolean>(false)
   const [formType, setFormType] = React.useState<"create" | "update">("create")
+
   const [category, setCategory] = React.useState<ClassCategoryDetail>()
+  const [selectedClass, setSelectedClass] = React.useState<ClassDetail | null>(
+    null
+  )
+  const [showDetail, setShowDetail] = React.useState<boolean>(false)
 
   const formProps = useClassPageForm()
 
@@ -150,14 +164,27 @@ const ClassIndex = () => {
 
   return (
     <LayoutClasses>
-      <div className="flex flex-col gap-4">
+      <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <SelectAsyncPaginate
             isClearable
             isLoading={isLoading}
             loadOptions={getClassCategoryList as any}
             additional={{ page: 1 }}
-            placeholder="Filter by Category"
+            placeholder="Filter kategori"
+            className="w-full md:max-w-max"
+            value={category}
+            getOptionLabel={(option) => option.name!}
+            getOptionValue={(option) => option.id.toString()}
+            debounceTimeout={500}
+            onChange={(option) => setCategory(option!)}
+          />
+          <SelectAsyncPaginate
+            isClearable
+            isLoading={isLoading}
+            loadOptions={getClassCategoryList as any}
+            additional={{ page: 1 }}
+            placeholder="Filter instruktur"
             className="w-full md:max-w-max"
             value={category}
             getOptionLabel={(option) => option.name!}
@@ -176,73 +203,138 @@ const ClassIndex = () => {
               })
             }}
           />
+          <Button
+            variant="default"
+            onClick={() => {
+              resetClassPageForm(formProps)
+              setShowForm(true)
+            }}
+          >
+            <Add color="currentColor" />
+            Tambah Kelas
+          </Button>
         </div>
         <Loading loading={isLoading}>
           <div className="mt-1">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {isLoading || isFetchingNextPage
-                ? // Skeleton cards
-                  Array(6)
-                    .fill(null)
-                    .map((_, index) => (
-                      <Card key={index} className="min-h-[140px]">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <Skeleton className="h-6 w-32" />
-                            <Skeleton className="h-6 w-20" />
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
+            <div className="flex flex-col gap-4">
+              {isLoading || isFetchingNextPage ? (
+                // Skeleton cards
+                Array(6)
+                  .fill(null)
+                  .map((_, index) => (
+                    <Card key={index} className="min-h-[200px] gap-0 p-4">
+                      <CardHeader className="px-0">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Skeleton className="h-5 w-24" />
-                            <Skeleton className="h-5 w-32" />
+                            <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
+                            <div className="flex flex-col gap-1">
+                              <Skeleton className="h-7 w-48" />
+                              <Skeleton className="h-3 w-32" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-5 w-24" />
-                            <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-6 w-16 rounded-full" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4 px-0">
+                        <Separator className="mb-4" />
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <Skeleton className="h-4 w-4 shrink-0" />
+                              <div className="flex-1 space-y-1">
+                                <Skeleton className="h-3 w-12" />
+                                <Skeleton className="h-4 w-16" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 space-y-2">
+                          <Skeleton className="h-3 w-12" />
+                          <div className="flex flex-wrap gap-2">
+                            <Skeleton className="h-8 w-24 rounded-md" />
+                            <Skeleton className="h-8 w-24 rounded-md" />
+                            <Skeleton className="h-8 w-24 rounded-md" />
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-5 w-24" />
-                            <Skeleton className="h-5 w-32" />
-                          </div>
-                          <div className="mt-4">
-                            <Skeleton className="h-5 w-full" />
-                            <Skeleton className="mt-2 h-5 w-3/4" />
-                          </div>
-                          <div className="mt-4 flex items-center justify-between">
-                            <Skeleton className="h-8 w-24 rounded-full" />
-                            <Skeleton className="h-8 w-20" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                : listData.map((item, index) => {
-                    const status = item.enabled ? "active" : "inactive"
-                    // const event = item.events[0]
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+              ) : listData.length === 0 ? (
+                <Card className="bg-accent shadow-none">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <People
+                      variant="Bulk"
+                      className="text-muted-foreground mb-4 h-20 w-20"
+                    />
+                    <h3 className="text-lg font-semibold">
+                      Belum Ada Kelas Tersedia
+                    </h3>
+                    <p className="text-muted-foreground mt-2 text-center text-sm">
+                      Kelas yang Anda cari tidak ditemukan.
+                      <br />
+                      Silakan tambahkan kelas baru atau ubah filter pencarian.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {listData.map((item, index) => {
                     return (
-                      <Card key={index} className="gap-0">
-                        <CardHeader>
-                          <CardTitle>{item.name}</CardTitle>
+                      <Card
+                        key={index}
+                        className="hover:bg-muted/50 cursor-pointer gap-0 p-4 transition-colors"
+                        onClick={() => {
+                          setSelectedClass(item)
+                          setShowDetail(true)
+                        }}
+                      >
+                        <CardHeader className="px-0">
+                          <CardTitle className="flex items-center gap-2">
+                            <People
+                              variant="Bulk"
+                              className="h-10 w-10 shrink-0"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-2xl font-semibold">
+                                {item.name}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                {dayjs(item.start_date).format("DD MMM YYYY")} -{" "}
+                                {item.is_forever
+                                  ? "Tidak Berakhir"
+                                  : item.end_date
+                                    ? dayjs(item.end_date).format("DD MMM YYYY")
+                                    : "-"}
+                              </span>
+                            </div>
+                          </CardTitle>
                           <CardAction>
-                            <Badge className={statusColor[status]}>
-                              <span className="capitalize">{status}</span>
+                            <Badge
+                              className={
+                                statusColor[
+                                  item.is_publish ? "active" : "inactive"
+                                ]
+                              }
+                            >
+                              <span className="capitalize">
+                                {item.is_publish ? "Terjadwal" : "Draf"}
+                              </span>
                             </Badge>
                           </CardAction>
                         </CardHeader>
-                        <CardContent className="space-y-4 py-2">
+                        <CardContent className="space-y-4 px-0">
                           <Separator />
-
-                          <div className="grid gap-3">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
                             <div className="flex items-center gap-3">
-                              <Profile2User
-                                color="currentColor"
+                              <User
+                                color="#3b82f6"
                                 size={16}
                                 variant="Bulk"
-                                className="text-muted-foreground shrink-0"
+                                className="shrink-0"
                               />
                               <div className="flex-1">
                                 <div className="text-muted-foreground text-xs">
-                                  Capacity
+                                  Kapasitas
                                 </div>
                                 <div className="text-sm font-medium">
                                   {item.capacity}
@@ -251,10 +343,10 @@ const ClassIndex = () => {
                             </div>
                             <div className="flex items-center gap-3">
                               <Chart21
-                                color="currentColor"
+                                color="#f59e0b"
                                 size={16}
                                 variant="Bulk"
-                                className="text-muted-foreground shrink-0"
+                                className="shrink-0"
                               />
                               <div className="flex-1">
                                 <div className="text-muted-foreground text-xs">
@@ -269,83 +361,137 @@ const ClassIndex = () => {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Detailed Info: Category */}
                             <div className="flex items-center gap-3">
                               <Layer
-                                color="currentColor"
+                                color="#8b5cf6"
                                 size={16}
                                 variant="Bulk"
-                                className="text-muted-foreground shrink-0"
+                                className="shrink-0"
                               />
                               <div className="flex-1">
                                 <div className="text-muted-foreground text-xs">
-                                  Category
+                                  Kategori
                                 </div>
                                 <div className="text-sm font-medium">
                                   {item.category?.name || "-"}
                                 </div>
                               </div>
                             </div>
+
+                            {/* Detailed Info: Instructor */}
                             <div className="flex items-center gap-3">
-                              <Flame
+                              <Profile2User
+                                color="#6366f1"
                                 size={16}
-                                className="text-muted-foreground shrink-0"
+                                variant="Bulk"
+                                className="shrink-0"
                               />
                               <div className="flex-1">
                                 <div className="text-muted-foreground text-xs">
-                                  Calorie Burn
+                                  Instruktur
                                 </div>
-                                <div className="text-sm font-medium">
-                                  {item.burn_calories} Cal
+                                <div className="flex items-center">
+                                  {item.allow_all_instructor ? (
+                                    <Badge className={statusColor["active"]}>
+                                      <span className="capitalize">
+                                        All Instructor
+                                      </span>
+                                    </Badge>
+                                  ) : (
+                                    <div className="flex items-center -space-x-2 pt-1">
+                                      {item.instructors
+                                        ?.slice(0, 3)
+                                        .map((instructor, index) => (
+                                          <Tooltip key={index}>
+                                            <TooltipTrigger asChild>
+                                              <Avatar className="border-background size-7 cursor-pointer border-2">
+                                                <AvatarImage
+                                                  src={instructor.photo || ""}
+                                                  alt={instructor.name || ""}
+                                                />
+                                                <AvatarFallback className="text-xs">
+                                                  {instructor.name
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase() || "?"}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                {instructor.name || "Unknown"}
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        ))}
+                                      {(item.instructors?.length || 0) > 3 && (
+                                        <Avatar className="bg-muted border-background size-7 border-2">
+                                          <AvatarFallback className="text-xs">
+                                            +
+                                            {(item.instructors?.length || 0) -
+                                              3}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* {item.events.length > 0 && (
+                          {item.weekdays_available.length > 0 && (
                             <div className="space-y-2">
                               <div className="text-muted-foreground text-xs font-medium">
-                                Schedule
+                                Jadwal
                               </div>
-                              {event?.frequency === EventFrequency.daily ? (
-                                <div className="text-sm">
-                                  {`${dayjs(event.start).format("DD MMM YYYY HH:mm")} - ${dayjs(event.end).format("DD MMM YYYY HH:mm")}`}
-                                </div>
-                              ) : (
-                                <div className="flex flex-wrap gap-2">
-                                  {event.selected_weekdays?.map(
-                                    (weekday, weekdayIndex) => (
-                                      <Badge
-                                        key={weekdayIndex}
-                                        variant="outline"
-                                        className="flex flex-col items-start gap-1 px-3 py-1.5"
-                                      >
-                                        <span className="text-xs font-semibold capitalize">
-                                          {weekday.day_of_week}
-                                        </span>
-                                        <span className="text-xs">
-                                          {weekday.start_time} -{" "}
-                                          {weekday.end_time}
-                                        </span>
-                                      </Badge>
-                                    )
-                                  )}
-                                </div>
-                              )}
+                              <div className="flex flex-wrap gap-2">
+                                {item.weekdays_available?.map(
+                                  (weekday, weekdayIndex) => (
+                                    <Badge
+                                      key={weekdayIndex}
+                                      variant="outline"
+                                      className="flex flex-col items-start gap-1 rounded-md px-3 py-1.5"
+                                      style={{
+                                        backgroundColor:
+                                          item.background_color || "",
+                                        color: item.color || "",
+                                        borderColor: item.color || "",
+                                      }}
+                                    >
+                                      <span className="text-xs font-semibold capitalize">
+                                        {
+                                          WeekdayOptions.find(
+                                            (opt) => opt.value === weekday.day
+                                          )?.label
+                                        }
+                                      </span>
+                                      <span className="text-xs">
+                                        {item.start_time}
+                                        {item.end_time
+                                          ? ` - ${item.end_time}`
+                                          : ""}
+                                      </span>
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
                             </div>
-                          )} */}
+                          )}
 
                           {item.description && (
                             <div className="space-y-2">
                               <div className="text-muted-foreground text-xs font-medium">
-                                Description
+                                Deskripsi
                               </div>
-                              <p className="text-muted-foreground text-sm">
+                              <p className="bg-accent text-muted-foreground line-clamp-2 rounded-md p-2 text-sm">
                                 {item.description}
                               </p>
                             </div>
                           )}
                         </CardContent>
-                        <CardFooter className="flex items-center justify-between border-t pt-2!">
+                        {/* <CardFooter className="flex items-center justify-between border-t pt-2!">
                           <div className="flex items-center">
                             {item.allow_all_instructor ? (
                               <Badge className={statusColor["active"]}>
@@ -481,32 +627,34 @@ const ClassIndex = () => {
                             Edit class
                             <ArrowRight size={16} />
                           </Button>
-                        </CardFooter>
+                        </CardFooter> */}
                       </Card>
                     )
                   })}
-            </div>
 
-            <div className="mt-3">
-              <FullPagination
-                displayTotal
-                total={total}
-                pageSize={tableData.pageSize}
-                currentPage={tableData.pageIndex}
-                onChange={(value) => {
-                  setTableData({
-                    ...tableData,
-                    pageIndex: value,
-                  })
-                }}
-                onPageSizeChange={(value) => {
-                  setTableData({
-                    ...tableData,
-                    pageSize: value,
-                    pageIndex: 1,
-                  })
-                }}
-              />
+                  <div className="mt-3">
+                    <FullPagination
+                      displayTotal
+                      total={total}
+                      pageSize={tableData.pageSize}
+                      currentPage={tableData.pageIndex}
+                      onChange={(value) => {
+                        setTableData({
+                          ...tableData,
+                          pageIndex: value,
+                        })
+                      }}
+                      onPageSizeChange={(value) => {
+                        setTableData({
+                          ...tableData,
+                          pageSize: value,
+                          pageIndex: 1,
+                        })
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Loading>
@@ -516,6 +664,46 @@ const ClassIndex = () => {
           type={formType}
           formProps={formProps}
           onClose={() => setShowForm(false)}
+        />
+
+        <DialogClassDetail
+          open={showDetail}
+          onOpenChange={setShowDetail}
+          item={selectedClass}
+          onEdit={() => {
+            if (selectedClass) {
+              formProps.reset({
+                id: selectedClass.id,
+                name: selectedClass.name,
+                capacity: selectedClass.capacity,
+                level: selectedClass.level ?? undefined,
+                burn_calories: selectedClass.burn_calories ?? undefined,
+                description: selectedClass.description ?? undefined,
+                allow_all_instructor: selectedClass.allow_all_instructor,
+                enabled: selectedClass.enabled,
+                start_date: selectedClass.start_date,
+                end_date: selectedClass.end_date ?? undefined,
+                is_forever: selectedClass.is_forever,
+                is_publish: selectedClass.is_publish,
+                available_for: selectedClass.available_for,
+                visible_for: selectedClass.visible_for,
+                class_type: selectedClass.class_type,
+                embed_video: selectedClass.embed_video ?? undefined,
+                background_color: selectedClass.background_color ?? undefined,
+                color: selectedClass.color ?? undefined,
+                start_time: selectedClass.start_time,
+                duration_time: selectedClass.duration_time,
+                duration_time_type: selectedClass.duration_time_type as any,
+                category: selectedClass.category ?? undefined,
+                instructors: selectedClass.instructors,
+                weekdays_available: selectedClass.weekdays_available,
+                class_photos: selectedClass.class_photos,
+              })
+              setFormType("update")
+              setShowDetail(false)
+              setShowForm(true)
+            }
+          }}
         />
       </div>
     </LayoutClasses>

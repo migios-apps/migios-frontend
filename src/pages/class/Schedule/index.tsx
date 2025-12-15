@@ -4,11 +4,13 @@ import { apiGetEventList } from "@/services/api/EventService"
 import dayjs from "dayjs"
 import { getStartAndEndOfWeek } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { useIsMobile } from "@/hooks/use-mobile"
 import CalendarView from "@/components/ui/calendar-view"
 import Loading from "@/components/ui/loading"
 import LayoutClasses from "../Layout"
 
 const ScheduleIndex = () => {
+  const isMobile = useIsMobile()
   const dateRange = getStartAndEndOfWeek()
 
   const { data: events, isLoading: loadingEvents } = useQuery({
@@ -40,16 +42,19 @@ const ScheduleIndex = () => {
   return (
     <LayoutClasses>
       <Loading loading={false}>
-        <CalendarView
-          showHeader={false}
-          editable={false}
-          droppable={false}
-          eventStartEditable={false}
-          eventDurationEditable={false}
-          isLoading={loadingEvents}
-          initialView={"timeGridWeek"}
-          events={events}
-        />
+        <div className="px-4">
+          <CalendarView
+            showHeader={false}
+            editable={false}
+            droppable={false}
+            eventStartEditable={false}
+            eventDurationEditable={false}
+            isLoading={loadingEvents}
+            initialView={isMobile ? "listWeek" : "timeGridWeek"}
+            events={events}
+            showAllDay={false}
+          />
+        </div>
       </Loading>
     </LayoutClasses>
   )

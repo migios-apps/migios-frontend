@@ -42,12 +42,7 @@ const FromClassCategory: React.FC<FormProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const club = useSessionUser((state) => state.club)
-  const {
-    watch,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = formProps
+  const { watch, control, handleSubmit } = formProps
   const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
 
@@ -148,7 +143,7 @@ const FromClassCategory: React.FC<FormProps> = ({
                     type="button"
                     onClick={() => setConfirmDelete(true)}
                   >
-                    <Trash2 className="size-4" />
+                    <Trash2 className="size-4" color="white" />
                   </Button>
                 ) : (
                   <div></div>
