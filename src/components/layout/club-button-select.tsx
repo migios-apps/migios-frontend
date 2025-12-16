@@ -75,11 +75,6 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                   },
                 ] as Filter[])
               : []),
-            {
-              search_column: "subscription_status",
-              search_condition: "=",
-              search_text: "active",
-            },
           ],
         }).then((data) => data.data)
 
@@ -319,17 +314,21 @@ const ClubButtonSelect = ({ sideNavCollapse }: ClubButtonSelectProps) => {
                           )}
                         </span>
                       </div>
-                      <Badge
-                        className={cn(
-                          "border-border ml-auto w-14 shrink-0 justify-center border text-center text-[11px] font-medium tracking-wide uppercase",
-                          isInsetLayout &&
-                            "border-border-inset text-card-inset-foreground"
-                        )}
-                      >
-                        {item.subscription_plan_type === "enterprise"
-                          ? "Entprs"
-                          : item.subscription_plan_type}
-                      </Badge>
+                      {item.subscription_status === "expired" ? (
+                        <Badge variant="destructive">Expired</Badge>
+                      ) : (
+                        <Badge
+                          className={cn(
+                            "border-border ml-auto w-14 shrink-0 justify-center border text-center text-[11px] font-medium tracking-wide uppercase",
+                            isInsetLayout &&
+                              "border-border-inset text-card-inset-foreground"
+                          )}
+                        >
+                          {item.subscription_plan_type === "enterprise"
+                            ? "Entprs"
+                            : item.subscription_plan_type}
+                        </Badge>
+                      )}
                     </DropdownMenuItem>
                   )
                 })

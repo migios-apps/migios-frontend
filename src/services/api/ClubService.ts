@@ -24,9 +24,9 @@ export function apiBulkCreateClub(body: BulkCreateClubDto) {
   })
 }
 
-export function apiGetClubDetail(club_id: number) {
+export function apiGetClubDetail() {
   return ApiService.fetchDataWithAxios<ClubDetailResponse>({
-    url: `/club/${club_id}/detail`,
+    url: `/club/detail`,
     method: "get",
   })
 }

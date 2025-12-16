@@ -29,10 +29,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         refetchOnMount: true,
       },
       {
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [QUERY_KEY.clubDetail],
         queryFn: async () => {
-          const res = await apiGetClubDetail(club!.id!)
+          const res = await apiGetClubDetail()
           setClub(res.data)
           if (res.data.subscription_status === "expired") {
             // setClub({} as UserClubListData)
