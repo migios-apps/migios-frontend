@@ -100,6 +100,7 @@ function SheetContent({
           className
         )}
         side={side}
+        tabIndex={undefined}
         {...props}
       >
         <div

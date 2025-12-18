@@ -29,12 +29,62 @@ export const validationSchemaEmployee = yup.object().shape({
   enabled: yup.boolean().default(true),
   earnings: yup.object().shape({
     base_salary: yup.number().required("Base Salary is required"),
-    sales: yup.number().optional().default(0),
-    sales_type: yup.string().optional().default("nominal"),
     service: yup.number().optional().default(0),
     session: yup.number().optional().default(0),
     class: yup.number().optional().default(0),
+    // Default sales product commission
+    default_sales_product_commission: yup
+      .number()
+      .optional()
+      .min(0, "Must be 0 or 1")
+      .max(1, "Must be 0 or 1")
+      .integer("Must be an integer")
+      .default(0),
+    default_sales_product_commission_type: yup
+      .string()
+      .optional()
+      .oneOf(["nominal", "percent"], "Invalid commission type")
+      .default("nominal"),
+    default_sales_product_commission_amount: yup
+      .number()
+      .min(0, "Amount must be non-negative")
+      .default(0),
+    // Default sales package commission
+    default_sales_package_commission: yup
+      .number()
+      .min(0, "Must be 0 or 1")
+      .max(1, "Must be 0 or 1")
+      .integer("Must be an integer")
+      .default(0),
+    default_sales_package_commission_type: yup
+      .string()
+      .oneOf(["nominal", "percent"], "Invalid commission type")
+      .default("nominal"),
+    default_sales_package_commission_amount: yup
+      .number()
+      .min(0, "Amount must be non-negative")
+      .default(0),
   }),
+  commission_product: yup.array().of(
+    yup.object().shape({
+      product_id: yup.number().required("Product ID is required"),
+      sales_type: yup.string().required("Product Sales Type is required"),
+      sales: yup.number().required("Product Sales is required"),
+      commission_type: yup
+        .string()
+        .required("Product Commission Type is required"),
+    })
+  ),
+  commission_package: yup.array().of(
+    yup.object().shape({
+      package_id: yup.number().required("Package ID is required"),
+      sales_type: yup.string().required("Package Sales Type is required"),
+      sales: yup.number().required("Package Sales is required"),
+      commission_type: yup
+        .string()
+        .required("Package Commission Type is required"),
+    })
+  ),
   roles: yup
     .array()
     .of(
@@ -64,11 +114,15 @@ export const useEmployeeValidation = (defaultValues?: CreateEmployeeSchema) => {
       specialist: null,
       earnings: {
         base_salary: 0,
-        sales: 0,
-        sales_type: "nominal",
         service: 0,
         session: 0,
         class: 0,
+        default_sales_product_commission: 1,
+        default_sales_product_commission_type: "nominal",
+        default_sales_product_commission_amount: 0,
+        default_sales_package_commission: 1,
+        default_sales_package_commission_type: "nominal",
+        default_sales_package_commission_amount: 0,
       },
       ...defaultValues,
     },
@@ -86,11 +140,15 @@ export const resetEmployeeForm = (
     specialist: null,
     earnings: {
       base_salary: 0,
-      sales: 0,
-      sales_type: "nominal",
       service: 0,
       session: 0,
       class: 0,
+      default_sales_product_commission: 1,
+      default_sales_product_commission_type: "nominal",
+      default_sales_product_commission_amount: 0,
+      default_sales_package_commission: 1,
+      default_sales_package_commission_type: "nominal",
+      default_sales_package_commission_amount: 0,
     },
     ...defaultValues,
   })

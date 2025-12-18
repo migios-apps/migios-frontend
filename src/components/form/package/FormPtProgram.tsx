@@ -20,7 +20,14 @@ import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import {
+  Form,
+  FormFieldItem,
+  FormLabel,
+  FormControl,
+  FormItem,
+  FormDescription,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
 import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
@@ -202,6 +209,7 @@ const FormPtProgram: React.FC<FormProps> = ({
         (data.discount_type as CreatePackageDto["discount_type"]) || "nominal",
       discount: parseFloat(data.discount as unknown as string) || 0,
       loyalty_point: loyaltyPoint,
+      enable_commission: data.enable_commission,
     }
 
     if (type === "update") {
@@ -585,6 +593,36 @@ const FormPtProgram: React.FC<FormProps> = ({
                             {field.value ? "Enabled" : "Disabled"}
                           </FormLabel>
                         </div>
+                      )}
+                    />
+                    <FormFieldItem
+                      control={control}
+                      name="enable_commission"
+                      label={<FormLabel></FormLabel>}
+                      invalid={Boolean(errors.enable_commission)}
+                      errorMessage={errors.enable_commission?.message}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Aktifkan Komisi untuk Paket Ini
+                            </FormLabel>
+                            <FormDescription>
+                              Jika aktif, paket ini akan memberikan komisi
+                              kepada sales yang menjualnya sesuai dengan
+                              pengaturan komisi yang ditentukan di pengaturan
+                              komisi karyawan
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={Boolean(field.value === 1)}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked ? 1 : 0)
+                              }}
+                            />
+                          </FormControl>
+                        </FormItem>
                       )}
                     />
                   </div>

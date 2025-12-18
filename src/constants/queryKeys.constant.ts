@@ -43,4 +43,6 @@ export const QUERY_KEY = {
   loyaltyList: "loyaltyList",
   cuttingSessions: "cuttingSessions",
   measurements: "measurements",
+  commissionPackage: "commissionPackage",
+  commissionProduct: "commissionProduct",
 }

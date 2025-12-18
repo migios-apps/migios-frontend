@@ -23,6 +23,7 @@ export interface PackageType {
   photo?: string | null
   enabled: boolean
   allow_all_trainer: boolean
+  enable_commission: number
   created_at: string
   updated_at: string
   fprice: string
@@ -70,6 +71,7 @@ export interface CreatePackageDto {
   duration_type: "day" | "week" | "month" | "year"
   enabled: boolean
   allow_all_trainer: boolean
+  enable_commission?: number
   category_package_id?: number | null
   club_id: number
   session_duration: number

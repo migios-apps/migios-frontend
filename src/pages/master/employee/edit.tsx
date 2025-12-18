@@ -51,11 +51,33 @@ const EditEmployee = () => {
         // Mengisi data earnings
         if (data.earnings) {
           formProps.setValue("earnings.base_salary", data.earnings.base_salary)
-          formProps.setValue("earnings.sales", data.earnings.sales)
-          formProps.setValue("earnings.sales_type", data.earnings.sales_type)
           formProps.setValue("earnings.service", data.earnings.service)
           formProps.setValue("earnings.session", data.earnings.session)
           formProps.setValue("earnings.class", data.earnings.class)
+          formProps.setValue(
+            "earnings.default_sales_product_commission",
+            data.earnings.default_sales_product_commission
+          )
+          formProps.setValue(
+            "earnings.default_sales_product_commission_type",
+            data.earnings.default_sales_product_commission_type
+          )
+          formProps.setValue(
+            "earnings.default_sales_product_commission_amount",
+            data.earnings.default_sales_product_commission_amount
+          )
+          formProps.setValue(
+            "earnings.default_sales_package_commission",
+            data.earnings.default_sales_package_commission
+          )
+          formProps.setValue(
+            "earnings.default_sales_package_commission_type",
+            data.earnings.default_sales_package_commission_type
+          )
+          formProps.setValue(
+            "earnings.default_sales_package_commission_amount",
+            data.earnings.default_sales_package_commission_amount
+          )
         }
 
         // Mengisi data roles
@@ -74,8 +96,6 @@ const EditEmployee = () => {
     queryFn: async () => {
       const res = await apiGetCommissionList()
       const commissionSetting = (res.data[0] as CommissionSettingType) || null
-      formProps.setValue("earnings.sales", commissionSetting?.sales)
-      formProps.setValue("earnings.sales_type", commissionSetting?.sales_type)
       formProps.setValue("earnings.service", commissionSetting?.service)
       formProps.setValue("earnings.session", commissionSetting?.session)
       formProps.setValue("earnings.class", commissionSetting?.class)

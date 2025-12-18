@@ -15,8 +15,6 @@ const CreateEmployee = () => {
       const res = await apiGetCommissionList()
       const commissionSetting = res.data[0] as CommissionSettingType | undefined
       if (commissionSetting) {
-        formProps.setValue("earnings.sales", commissionSetting.sales)
-        formProps.setValue("earnings.sales_type", commissionSetting.sales_type)
         formProps.setValue("earnings.service", commissionSetting.service)
         formProps.setValue("earnings.session", commissionSetting.session)
         formProps.setValue("earnings.class", commissionSetting.class)

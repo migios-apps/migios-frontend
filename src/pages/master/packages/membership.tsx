@@ -207,6 +207,10 @@ const Membership = () => {
                     "allow_all_trainer",
                     row.original.allow_all_trainer
                   )
+                  formProps.setValue(
+                    "enable_commission",
+                    row.original.enable_commission
+                  )
                 }}
               >
                 <Edit color="currentColor" size={20} />

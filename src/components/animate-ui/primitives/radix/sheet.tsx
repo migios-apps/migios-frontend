@@ -116,7 +116,7 @@ function SheetContent({
   }
 
   return (
-    <SheetPrimitive.Content asChild forceMount {...props}>
+    <SheetPrimitive.Content asChild forceMount {...props} tabIndex={undefined}>
       <motion.div
         key="sheet-content"
         data-slot="sheet-content"
@@ -130,6 +130,7 @@ function SheetContent({
           ...style,
         }}
         transition={transition}
+        tabIndex={undefined}
       >
         {children}
       </motion.div>

@@ -195,6 +195,10 @@ const Products = () => {
                     formProps.setValue("code", row.original.code)
                     formProps.setValue("hpp", row.original.hpp)
                     formProps.setValue(
+                      "enable_commission",
+                      row.original.enable_commission
+                    )
+                    formProps.setValue(
                       "loyalty_point",
                       row.original.loyalty_point
                     )

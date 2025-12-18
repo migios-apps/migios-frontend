@@ -12,6 +12,7 @@ export interface ProductDetail {
   sku: string
   code: string
   hpp?: number | null
+  enable_commission: number
   created_at: string
   updated_at: string
   fprice: string
@@ -30,6 +31,7 @@ export interface CreateProduct {
   sku?: string | null
   code?: string | null
   hpp?: number | null
+  enable_commission?: number
   loyalty_point?: PackageProductLoyaltyPointDto | null
 }
 

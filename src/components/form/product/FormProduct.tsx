@@ -12,9 +12,17 @@ import { useSessionUser } from "@/stores/auth-store"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import {
+  Form,
+  FormFieldItem,
+  FormLabel,
+  FormControl,
+  FormItem,
+  FormDescription,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import InputCurrency from "@/components/ui/input-currency"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -116,6 +124,7 @@ const FormProduct: React.FC<FormProps> = ({
       sku: data.sku,
       code: data.code,
       hpp: data.hpp,
+      enable_commission: data.enable_commission,
       loyalty_point: loyaltyPoint,
     }
 
@@ -346,6 +355,35 @@ const FormProduct: React.FC<FormProps> = ({
                       </Button>
                     )}
                   </div>
+                )}
+              />
+              <FormFieldItem
+                control={control}
+                name="enable_commission"
+                label={<FormLabel></FormLabel>}
+                invalid={Boolean(errors.enable_commission)}
+                errorMessage={errors.enable_commission?.message}
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Aktifkan Komisi untuk Produk Ini
+                      </FormLabel>
+                      <FormDescription>
+                        Jika aktif, produk ini akan memberikan komisi kepada
+                        sales yang menjualnya sesuai dengan pengaturan komisi
+                        yang ditentukan di pengaturan komisi karyawan
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={Boolean(field.value === 1)}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked ? 1 : 0)
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
                 )}
               />
               <div className="mt-6 flex items-center justify-between gap-2">

@@ -55,6 +55,7 @@ export const validationSchemaProduct = yup.object().shape({
     })
     .optional()
     .nullable(),
+  enable_commission: yup.number().min(0).max(1).default(0),
 })
 
 export type CreateProductSchema = yup.InferType<typeof validationSchemaProduct>
@@ -65,7 +66,9 @@ export type ReturnProductFormSchema = ReturnType<
 export function useProductForm() {
   return useForm<CreateProductSchema>({
     resolver: yupResolver(validationSchemaProduct) as any,
-    defaultValues: {},
+    defaultValues: {
+      enable_commission: 0,
+    },
   })
 }
 

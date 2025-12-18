@@ -20,10 +20,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import {
+  Form,
+  FormFieldItem,
+  FormLabel,
+  FormControl,
+  FormItem,
+  FormDescription,
+} from "@/components/ui/form"
 import InputCurrency from "@/components/ui/input-currency"
-import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import { CreateCommissionSchema, useCommissionForm } from "./validation"
 
 const LoadingCommissionSetting = () => {
@@ -84,8 +91,18 @@ const CommissionSetting = () => {
         setFormType("update")
         formProps.setValue("id", commissionSetting.id)
         formProps.setValue("club_id", commissionSetting.club_id)
-        formProps.setValue("sales", commissionSetting.sales)
-        formProps.setValue("sales_type", commissionSetting.sales_type)
+        formProps.setValue(
+          "commission_sales_by_item_before_tax",
+          commissionSetting.commission_sales_by_item_before_tax
+        )
+        formProps.setValue(
+          "commission_sales_by_item_before_discount",
+          commissionSetting.commission_sales_by_item_before_discount
+        )
+        formProps.setValue(
+          "commission_prorate_by_total_sales",
+          commissionSetting.commission_prorate_by_total_sales
+        )
         formProps.setValue("service", commissionSetting.service)
         formProps.setValue("session", commissionSetting.session)
         formProps.setValue("class", commissionSetting.class)
@@ -121,8 +138,12 @@ const CommissionSetting = () => {
     if (formType === "update") {
       update.mutate({
         club_id: club?.id as number,
-        sales: data.sales,
-        sales_type: data.sales_type as "percent" | "nominal",
+        commission_sales_by_item_before_tax:
+          data.commission_sales_by_item_before_tax,
+        commission_sales_by_item_before_discount:
+          data.commission_sales_by_item_before_discount,
+        commission_prorate_by_total_sales:
+          data.commission_prorate_by_total_sales,
         service: data.service,
         session: data.session,
         class: data.class,
@@ -132,8 +153,12 @@ const CommissionSetting = () => {
     if (formType === "create") {
       create.mutate({
         club_id: club?.id as number,
-        sales: data.sales,
-        sales_type: data.sales_type as "percent" | "nominal",
+        commission_sales_by_item_before_tax:
+          data.commission_sales_by_item_before_tax,
+        commission_sales_by_item_before_discount:
+          data.commission_sales_by_item_before_discount,
+        commission_prorate_by_total_sales:
+          data.commission_prorate_by_total_sales,
         service: data.service,
         session: data.session,
         class: data.class,
@@ -151,12 +176,13 @@ const CommissionSetting = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl font-bold">
-                Pengaturan Komisi Default
+                Pengaturan Komisi
               </CardTitle>
               <CardDescription>
-                Pengaturan komisi default untuk penjualan, layanan, sesi, dan
-                kelas jika tidak ada komisi yang diatur di level staff atau
-                level item yang akan dijual akan menggunakan komisi default ini.
+                Pengaturan cara perhitungan komisi penjualan dan komisi default
+                untuk layanan, sesi, dan kelas. Jika tidak ada komisi yang
+                diatur di level staff atau level item, akan menggunakan komisi
+                default ini.
               </CardDescription>
             </div>
           </div>
@@ -165,45 +191,118 @@ const CommissionSetting = () => {
           <Form {...formProps}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col gap-3">
-                {/* Sales */}
-                <div className="bg-muted/50 space-y-3 rounded-lg border p-2">
+                {/* Commission Sales Settings */}
+                <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
+                  <FormLabel className="text-base font-semibold">
+                    Pengaturan Komisi Penjualan
+                  </FormLabel>
+                  <p className="text-muted-foreground text-sm">
+                    Pengaturan cara perhitungan komisi penjualan berdasarkan
+                    item transaksi.
+                  </p>
+
+                  {/* Before Tax */}
                   <FormFieldItem
                     control={control}
-                    name="sales"
-                    label={
-                      <FormLabel className="text-base">Penjualan</FormLabel>
-                    }
-                    invalid={
-                      Boolean(errors.sales) || Boolean(errors.sales_type)
-                    }
+                    name="commission_sales_by_item_before_tax"
+                    label={<FormLabel></FormLabel>}
+                    invalid={Boolean(
+                      errors.commission_sales_by_item_before_tax
+                    )}
                     errorMessage={
-                      errors.sales?.message || errors.sales_type?.message
+                      errors.commission_sales_by_item_before_tax?.message
                     }
-                    render={({ field, fieldState }) => {
-                      return (
-                        <InputPercentNominal
-                          value={field.value}
-                          onChange={field.onChange}
-                          type={
-                            (watchData.sales_type as "percent" | "nominal") ||
-                            "percent"
-                          }
-                          onTypeChange={(type) => {
-                            formProps.setValue("sales_type", type as any)
-                          }}
-                          placeholderPercent="10%"
-                          placeholderNominal="Rp. 0"
-                          error={!!fieldState.error}
-                        />
-                      )
-                    }}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Hitung Komisi Item Sebelum Pajak
+                          </FormLabel>
+                          <FormDescription>
+                            Komisi dihitung berdasarkan subtotal item sebelum
+                            pajak diterapkan
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={Boolean(field.value === 1)}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? 1 : 0)
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
                   />
-                  <p className="text-muted-foreground text-sm">
-                    Atur besaran komisi yang diterima sales dari setiap
-                    penjualan. Anda dapat memilih menggunakan{" "}
-                    <strong>Persentase (%)</strong> dari nilai transaksi atau{" "}
-                    <strong>Nominal (Rp)</strong> tetap per penjualan.
-                  </p>
+
+                  {/* Before Discount */}
+                  <FormFieldItem
+                    control={control}
+                    name="commission_sales_by_item_before_discount"
+                    label={<FormLabel></FormLabel>}
+                    invalid={Boolean(
+                      errors.commission_sales_by_item_before_discount
+                    )}
+                    errorMessage={
+                      errors.commission_sales_by_item_before_discount?.message
+                    }
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Hitung Komisi Item Sebelum Diskon
+                          </FormLabel>
+                          <FormDescription>
+                            Komisi dihitung berdasarkan subtotal item sebelum
+                            diskon item diterapkan
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={Boolean(field.value === 1)}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? 1 : 0)
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Prorate by Total Sales */}
+                  <FormFieldItem
+                    control={control}
+                    name="commission_prorate_by_total_sales"
+                    label={<FormLabel></FormLabel>}
+                    invalid={Boolean(errors.commission_prorate_by_total_sales)}
+                    errorMessage={
+                      errors.commission_prorate_by_total_sales?.message
+                    }
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Prorate Komisi Berdasarkan Total Penjualan
+                          </FormLabel>
+                          <FormDescription>
+                            Jika aktif, komisi dihitung secara proporsional
+                            berdasarkan proporsi item terhadap total penjualan
+                            setelah diskon global. Komisi akan dijumlahkan jadi
+                            satu record. Jika tidak aktif, komisi dihitung dan
+                            dicatat per item secara terpisah.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={Boolean(field.value === 1)}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? 1 : 0)
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Service */}

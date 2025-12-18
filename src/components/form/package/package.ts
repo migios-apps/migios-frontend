@@ -13,6 +13,7 @@ export const durationTypeOptions = [
 const defaultValues = {
   enabled: true,
   is_promo: 0,
+  enable_commission: 0,
 }
 
 // Membership validation
@@ -42,6 +43,7 @@ export const validationSchemaMembership = yup.object().shape({
   session_duration: yup.number().optional().default(0),
   enabled: yup.boolean().default(true),
   allow_all_trainer: yup.boolean().default(false),
+  enable_commission: yup.number().min(0).max(1).default(0),
   is_promo: yup.number().default(0),
   discount_type: yup.string().when("is_promo", {
     is: (val: number) => val === 1,
@@ -146,6 +148,7 @@ export const validationSchemaPtTrainer = yup.object().shape({
     .required("Total session is required"),
   enabled: yup.boolean().default(true),
   allow_all_trainer: yup.boolean().default(false),
+  enable_commission: yup.number().min(0).max(1).default(0),
   is_promo: yup.number().default(0),
   discount_type: yup.string().when("is_promo", {
     is: (val: number) => val === 1,
@@ -251,6 +254,7 @@ export const validationSchemaClass = yup.object().shape({
   // session_duration: yup.number().optional().default(0),
   enabled: yup.boolean().default(true),
   allow_all_trainer: yup.boolean().default(false),
+  enable_commission: yup.number().min(0).max(1).default(0),
   is_promo: yup.number().default(0),
   discount_type: yup.string().when("is_promo", {
     is: (val: number) => val === 1,

@@ -36,13 +36,16 @@ export interface EmployeeDetailPage extends EmployeeDetail {
   total_members: number
   earnings: {
     base_salary: number
-    sales: number
-    sales_type: "nominal" | "percent"
     service: number
     session: number
     class: number
+    default_sales_product_commission: number
+    default_sales_product_commission_type: "percent" | "nominal"
+    default_sales_product_commission_amount: number
+    default_sales_package_commission: number
+    default_sales_package_commission_type: "percent" | "nominal"
+    default_sales_package_commission_amount: number
     fbase_salary: string
-    fsales: string
     fservice: string
     fsession: string
     fclass: string
@@ -95,13 +98,69 @@ export interface CreateEmployee {
   specialist?: string | null
   join_date: string
   enabled: boolean
+  roles?: Role[]
   earnings?: {
     base_salary?: number
-    sales?: number
-    sales_type?: "nominal" | "percent"
     service?: number
     session?: number
     class?: number
+    default_sales_product_commission?: number
+    default_sales_product_commission_type?: "percent" | "nominal"
+    default_sales_product_commission_amount?: number
+    default_sales_package_commission?: number
+    default_sales_package_commission_type?: "percent" | "nominal"
+    default_sales_package_commission_amount?: number
   }
-  roles?: Role[]
+  commission_product?: {
+    product_id: number
+    sales_type: string
+    sales: number
+    commission_type: string
+  }[]
+  commission_package?: {
+    package_id: number
+    sales_type: string
+    sales: number
+    commission_type: string
+  }[]
+}
+
+export interface EmployeeCommissionPackage {
+  package_id: number
+  name: string
+  price: number
+  discount_type: string
+  discount: number
+  sell_price: number
+  type: string
+  is_promo: number
+  sales_type: string
+  sales: number
+  commission_type: string
+  classes: {
+    id: number
+    name: string
+    photo: string | null
+  }[]
+  fsales: string
+  fprice: string
+}
+
+export type EmployeeCommissionPackageListResponse = Omit<ApiTypes, "data"> & {
+  data: { data: EmployeeCommissionPackage[]; meta: MetaApi }
+}
+
+export interface EmployeeCommissionProduct {
+  product_id: number
+  name: string
+  price: number
+  sales_type: string
+  sales: number
+  commission_type: string
+  fsales: string
+  fprice: string
+}
+
+export type EmployeeCommissionProductListResponse = Omit<ApiTypes, "data"> & {
+  data: { data: EmployeeCommissionProduct[]; meta: MetaApi }
 }

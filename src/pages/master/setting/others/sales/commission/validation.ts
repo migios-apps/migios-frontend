@@ -8,24 +8,28 @@ export const validationSchemaCommission = Yup.object().shape({
     .required("Club ID is required")
     .positive("Club ID must be a positive number")
     .integer("Club ID must be an integer"),
-  sales: Yup.number()
-    .required("Sales is required")
-    .min(0, "Sales must be a non-negative number"),
-  sales_type: Yup.string()
-    .required("Sales type is required")
-    .oneOf(
-      ["percent", "nominal"],
-      'Sales type must be either "percent" or "nominal"'
-    ),
+  commission_sales_by_item_before_tax: Yup.number()
+    .optional()
+    .min(0, "Must be 0 or 1")
+    .max(1, "Must be 0 or 1")
+    .integer("Must be an integer"),
+  commission_sales_by_item_before_discount: Yup.number()
+    .optional()
+    .min(0, "Must be 0 or 1")
+    .max(1, "Must be 0 or 1")
+    .integer("Must be an integer"),
+  commission_prorate_by_total_sales: Yup.number()
+    .optional()
+    .min(0, "Must be 0 or 1")
+    .max(1, "Must be 0 or 1")
+    .integer("Must be an integer"),
   service: Yup.number()
-    .required("Service is required")
+    .optional()
     .min(0, "Service must be a non-negative number"),
   session: Yup.number()
-    .required("Session is required")
+    .optional()
     .min(0, "Session must be a non-negative number"),
-  class: Yup.number()
-    .required("Class is required")
-    .min(0, "Class must be a non-negative number"),
+  class: Yup.number().optional().min(0, "Class must be a non-negative number"),
 })
 
 export type CreateCommissionSchema = Yup.InferType<
@@ -39,8 +43,9 @@ export function useCommissionForm() {
   return useForm<CreateCommissionSchema>({
     resolver: yupResolver(validationSchemaCommission) as any,
     defaultValues: {
-      sales: 0,
-      sales_type: "percent",
+      commission_sales_by_item_before_tax: 0,
+      commission_sales_by_item_before_discount: 0,
+      commission_prorate_by_total_sales: 0,
       service: 0,
       session: 0,
       class: 0,

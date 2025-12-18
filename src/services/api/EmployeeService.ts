@@ -3,6 +3,8 @@ import { ParamsFilter } from "./@types/api"
 import {
   CreateEmployee,
   EmployeeCommissionListTypeResponse,
+  EmployeeCommissionPackageListResponse,
+  EmployeeCommissionProductListResponse,
   EmployeeDetailPage,
   EmployeeHeadType,
   EmployeeListTypeResponse,
@@ -90,6 +92,28 @@ export async function apiGetMembersEmployee(
 ) {
   return ApiService.fetchDataWithAxios<TrainerMembersListResponse>({
     url: `/employee/${code}/members`,
+    method: "get",
+    params,
+  })
+}
+
+export async function apiGetEmployeeCommissionByPackage(
+  code: string,
+  params?: ParamsFilter
+) {
+  return ApiService.fetchDataWithAxios<EmployeeCommissionPackageListResponse>({
+    url: `/employee/${code}/commission-by-package`,
+    method: "get",
+    params,
+  })
+}
+
+export async function apiGetEmployeeCommissionByProduct(
+  code: string,
+  params?: ParamsFilter
+) {
+  return ApiService.fetchDataWithAxios<EmployeeCommissionProductListResponse>({
+    url: `/employee/${code}/commission-by-product`,
     method: "get",
     params,
   })

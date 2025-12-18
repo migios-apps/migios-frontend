@@ -29,9 +29,8 @@ import {
   FormLabel,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import InputCurrency from "@/components/ui/input-currency"
+import InputCurrency, { currencyFormat } from "@/components/ui/input-currency"
 import { InputIdentity } from "@/components/ui/input-identity"
-import { InputPercentNominal } from "@/components/ui/input-percent-nominal"
 import InputPhone from "@/components/ui/input-phone"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
@@ -41,6 +40,8 @@ import {
 } from "@/components/ui/react-select"
 import { Textarea } from "@/components/ui/textarea"
 import Container from "@/components/container"
+import CommissionPerPackage from "./CommissionPerPackage"
+import CommissionPerProduct from "./CommissionPerProduct"
 import {
   CreateEmployeeSchema,
   ReturnEmployeeSchema,
@@ -79,6 +80,10 @@ const FormPageEmployee: React.FC<FormProps> = ({
   const watchData = watch()
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const [selectedOptions, setSelectedOptions] = React.useState<OptionType[]>([])
+  const [openCommissionPerPackage, setOpenCommissionPerPackage] =
+    React.useState(false)
+  const [openCommissionPerProduct, setOpenCommissionPerProduct] =
+    React.useState(false)
 
   // console.log("watchData", { watchData, errors })
 
@@ -122,46 +127,42 @@ const FormPageEmployee: React.FC<FormProps> = ({
   })
 
   const onSubmit: SubmitHandler<CreateEmployeeSchema> = (data) => {
+    const body = {
+      club_id: club?.id as number,
+      name: data.name,
+      address: data.address,
+      identity_number: data.identity_number,
+      identity_type: data.identity_type,
+      gender: data.gender,
+      phone: data.phone,
+      photo: data.photo as string | null,
+      email: data.email,
+      birth_date: dayjs(data.birth_date).format("YYYY-MM-DD"),
+      join_date: dayjs(data.join_date).format("YYYY-MM-DD"),
+      enabled: data.enabled,
+      description: data.description as string | null,
+      specialist: data.specialist,
+      roles: data.roles as CreateEmployee["roles"],
+      earnings: data.earnings as CreateEmployee["earnings"],
+      commission_product:
+        data.earnings.default_sales_product_commission === 1
+          ? []
+          : (data.commission_product?.filter(
+              (item) => item.sales > 0
+            ) as CreateEmployee["commission_product"]),
+      commission_package:
+        data.earnings.default_sales_package_commission === 1
+          ? []
+          : (data.commission_package?.filter(
+              (item) => item.sales > 0
+            ) as CreateEmployee["commission_package"]),
+    }
     if (type === "update") {
-      update.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        address: data.address,
-        identity_number: data.identity_number,
-        identity_type: data.identity_type,
-        gender: data.gender,
-        phone: data.phone,
-        photo: data.photo as string | null,
-        email: data.email,
-        birth_date: dayjs(data.birth_date).format("YYYY-MM-DD"),
-        join_date: dayjs(data.join_date).format("YYYY-MM-DD"),
-        enabled: data.enabled,
-        description: data.description as string | null,
-        specialist: data.specialist,
-        earnings: data.earnings as CreateEmployee["earnings"],
-        roles: data.roles as CreateEmployee["roles"],
-      })
+      update.mutate(body)
       return
     }
     if (type === "create") {
-      create.mutate({
-        club_id: club?.id as number,
-        name: data.name,
-        address: data.address,
-        identity_number: data.identity_number,
-        identity_type: data.identity_type,
-        gender: data.gender,
-        phone: data.phone,
-        photo: data.photo as string | null,
-        email: data.email,
-        birth_date: dayjs(data.birth_date).format("YYYY-MM-DD"),
-        join_date: dayjs(data.join_date).format("YYYY-MM-DD"),
-        enabled: data.enabled,
-        description: data.description as string | null,
-        specialist: data.specialist,
-        earnings: data.earnings as CreateEmployee["earnings"],
-        roles: data.roles as CreateEmployee["roles"],
-      })
+      create.mutate(body)
       return
     }
   }
@@ -442,16 +443,20 @@ const FormPageEmployee: React.FC<FormProps> = ({
                   render={({ field, fieldState }) => (
                     <Select
                       isMulti={true}
-                      value={field.value?.split(",").map((option) => ({
-                        label: option.trim(),
-                        value: option.trim(),
-                      }))}
+                      value={
+                        field.value && field.value.length > 0
+                          ? field.value.split(",").map((option) => ({
+                              label: option.trim(),
+                              value: option.trim(),
+                            }))
+                          : []
+                      }
                       options={selectedOptions}
                       hideSelectedOptions={true}
                       backspaceRemovesValue={false}
                       onChange={(e) => {
-                        const vaue = e as unknown as OptionType[]
-                        const newVal = vaue?.filter((item) => item.value !== "")
+                        const val = e as unknown as OptionType[]
+                        const newVal = val?.filter((item) => item.value !== "")
                         setSelectedOptions(newVal)
                         field.onChange(
                           newVal.map((item) => item.value).join(", ")
@@ -521,7 +526,7 @@ const FormPageEmployee: React.FC<FormProps> = ({
                   )}
                 />
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormFieldItem
+                  {/* <FormFieldItem
                     control={control}
                     name="earnings.sales"
                     label={<FormLabel>Komisi penjualan</FormLabel>}
@@ -555,8 +560,8 @@ const FormPageEmployee: React.FC<FormProps> = ({
                         />
                       )
                     }}
-                  />
-                  <FormFieldItem
+                  /> */}
+                  {/* <FormFieldItem
                     control={control}
                     name="earnings.service"
                     label={<FormLabel>Komisi layanan</FormLabel>}
@@ -569,7 +574,7 @@ const FormPageEmployee: React.FC<FormProps> = ({
                         onValueChange={field.onChange}
                       />
                     )}
-                  />
+                  /> */}
                   <FormFieldItem
                     control={control}
                     name="earnings.session"
@@ -599,6 +604,73 @@ const FormPageEmployee: React.FC<FormProps> = ({
                     )}
                   />
                 </div>
+
+                <div className="bg-muted/50 rounded-lg border p-4">
+                  <FormLabel className="text-base font-semibold">
+                    Komisi Penjualan
+                  </FormLabel>
+                  <p className="text-muted-foreground text-sm">
+                    Perhitungan komisi penjualan berdasarkan item transaksi.
+                  </p>
+
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="flex flex-col gap-2">
+                      <FormLabel>Komisi per paket dan plan</FormLabel>
+                      <div
+                        className="bg-muted/50 flex cursor-pointer items-center justify-between rounded-lg border p-2 text-sm"
+                        onClick={() => setOpenCommissionPerPackage(true)}
+                      >
+                        <span className="text-muted-foreground">
+                          {watchData.earnings
+                            .default_sales_package_commission === 1
+                            ? watchData.earnings
+                                .default_sales_package_commission_type ===
+                              "percent"
+                              ? `${watchData.earnings.default_sales_package_commission_amount}%`
+                              : currencyFormat(
+                                  watchData.earnings
+                                    .default_sales_package_commission_amount
+                                )
+                            : "Komisi per paket dan plan"}
+                        </span>
+                        <span className="text-primary font-semibold">
+                          Ganti
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Komisi dihitung berdasarkan subtotal item dari paket dan
+                        plan
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <FormLabel>Komisi per produk</FormLabel>
+                      <div
+                        className="bg-muted/50 text-muted-foreground flex cursor-pointer items-center justify-between rounded-lg border p-2 text-sm"
+                        onClick={() => setOpenCommissionPerProduct(true)}
+                      >
+                        <span className="text-muted-foreground">
+                          {watchData.earnings
+                            .default_sales_product_commission === 1
+                            ? watchData.earnings
+                                .default_sales_product_commission_type ===
+                              "percent"
+                              ? `${watchData.earnings.default_sales_product_commission_amount}%`
+                              : currencyFormat(
+                                  watchData.earnings
+                                    .default_sales_product_commission_amount
+                                )
+                            : "Komisi per produk"}
+                        </span>
+                        <span className="text-primary font-semibold">
+                          Ganti
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Komisi dihitung berdasarkan subtotal item dari produk
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
             <Card className="gap-2 shadow-none">
@@ -622,6 +694,7 @@ const FormPageEmployee: React.FC<FormProps> = ({
                       loadOptions={getListRole as any}
                       additional={{ page: 1 }}
                       placeholder="Select Role"
+                      menuPlacement="top"
                       value={field.value}
                       cacheUniqs={[watchData.roles]}
                       isOptionDisabled={() =>
@@ -685,6 +758,16 @@ const FormPageEmployee: React.FC<FormProps> = ({
         </form>
       </Form>
 
+      <CommissionPerPackage
+        formProps={formProps}
+        open={openCommissionPerPackage}
+        onClose={() => setOpenCommissionPerPackage(false)}
+      />
+      <CommissionPerProduct
+        formProps={formProps}
+        open={openCommissionPerProduct}
+        onClose={() => setOpenCommissionPerProduct(false)}
+      />
       <AlertConfirm
         open={confirmDelete}
         title="Delete Employee"

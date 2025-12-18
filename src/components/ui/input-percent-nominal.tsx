@@ -167,6 +167,7 @@ const InputPercentNominal = React.forwardRef<
           onClick={handlePercentClick}
           disabled={disabled}
           size={size}
+          tabIndex={-1}
         >
           {percentLabel}
         </Button>
@@ -178,6 +179,7 @@ const InputPercentNominal = React.forwardRef<
           onClick={handleNominalClick}
           disabled={disabled}
           size={size}
+          tabIndex={-1}
         >
           {nominalLabel}
         </Button>

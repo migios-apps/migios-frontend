@@ -225,6 +225,7 @@ function DialogContent({
       onEscapeKeyDown={onEscapeKeyDown}
       onPointerDownOutside={onPointerDownOutside}
       onInteractOutside={onInteractOutside}
+      tabIndex={undefined}
     >
       <motion.div
         key="dialog-content"
@@ -233,6 +234,7 @@ function DialogContent({
         animate={variants.animate}
         exit={variants.exit}
         transition={finalTransition}
+        tabIndex={undefined}
         {...props}
       />
     </DialogPrimitive.Content>
