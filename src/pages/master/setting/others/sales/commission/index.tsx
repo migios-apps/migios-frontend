@@ -192,11 +192,11 @@ const CommissionSetting = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col gap-3">
                 {/* Commission Sales Settings */}
-                <div className="bg-muted/50 space-y-4 rounded-lg border p-4">
+                <div className="bg-muted/50 rounded-lg border p-4">
                   <FormLabel className="text-base font-semibold">
                     Pengaturan Komisi Penjualan
                   </FormLabel>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground mb-2 text-sm">
                     Pengaturan cara perhitungan komisi penjualan berdasarkan
                     item transaksi.
                   </p>
@@ -279,17 +279,121 @@ const CommissionSetting = () => {
                       errors.commission_prorate_by_total_sales?.message
                     }
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <FormItem className="flex flex-row items-start justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">
                             Prorate Komisi Berdasarkan Total Penjualan
                           </FormLabel>
                           <FormDescription>
-                            Jika aktif, komisi dihitung secara proporsional
-                            berdasarkan proporsi item terhadap total penjualan
-                            setelah diskon global. Komisi akan dijumlahkan jadi
-                            satu record. Jika tidak aktif, komisi dihitung dan
-                            dicatat per item secara terpisah.
+                            Jika aktif, komisi akan dihitung dan dicatat secara
+                            proporsional untuk setiap item berdasarkan nilai
+                            item tersebut terhadap total penjualan setelah
+                            dikurangi diskon global dari transaksi.
+                            <br />
+                            <br />
+                            <strong>Contoh Perhitungan:</strong>
+                            <div className="border-border mt-2 overflow-hidden rounded-md border text-[10px] leading-tight md:text-xs">
+                              <table className="w-full border-collapse">
+                                <thead>
+                                  <tr className="bg-muted/50 text-muted-foreground tracking-wider uppercase">
+                                    <th className="border-border border-b p-2 text-left font-bold">
+                                      Item
+                                    </th>
+                                    <th className="border-border border-b p-2 text-right font-bold">
+                                      Harga
+                                    </th>
+                                    <th className="border-border border-b p-2 text-center font-bold">
+                                      Proporsional Disc
+                                    </th>
+                                    <th className="border-border border-b p-2 text-right font-bold">
+                                      Dasar Komisi
+                                    </th>
+                                    <th className="border-border border-b p-2 text-right font-bold">
+                                      Komisi (10%)
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="border-border border-b p-2">
+                                      Barang A
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right">
+                                      10.000,00
+                                    </td>
+                                    <td className="text-muted-foreground border-border border-b p-2 text-center">
+                                      (10rb / 17rb) x 3rb = 1.764,71
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right">
+                                      8.235,29
+                                      <div className="text-muted-foreground text-[8px] font-normal">
+                                        (10.000 - 1.764,71)
+                                      </div>
+                                    </td>
+                                    <td className="text-primary border-border border-b p-2 text-right font-bold">
+                                      823,53
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="border-border border-b p-2">
+                                      Barang B
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right">
+                                      7.000,00
+                                    </td>
+                                    <td className="text-muted-foreground border-border border-b p-2 text-center">
+                                      (7rb / 17rb) x 3rb = 1.235,29
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right">
+                                      5.764,71
+                                      <div className="text-muted-foreground text-[8px] font-normal">
+                                        (7.000 - 1.235,29)
+                                      </div>
+                                    </td>
+                                    <td className="text-primary border-border border-b p-2 text-right font-bold">
+                                      576,47
+                                    </td>
+                                  </tr>
+                                  <tr className="bg-muted/30">
+                                    <td className="border-border border-b p-2 font-bold italic">
+                                      SUB TOTAL
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right font-bold">
+                                      17.000,00
+                                    </td>
+                                  </tr>
+                                  <tr className="bg-muted/30">
+                                    <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
+                                      Total Disc Global
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right font-bold">
+                                      3.000,00
+                                    </td>
+                                  </tr>
+                                  <tr className="bg-muted/30">
+                                    <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
+                                      Total Pembayaran
+                                    </td>
+                                    <td className="border-border border-b p-2 text-right font-bold">
+                                      14.000,00
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <div className="bg-accent/30 space-y-1 border-t p-2">
+                                <p className="text-muted-foreground text-xs italic">
+                                  * Rumus Dasar: (Harga Item / Sub Total) x
+                                  Total Disc.
+                                  <br />
+                                  * Komisi Akhir: Persentase Komisi (%) x Kolom
+                                  Komisi.
+                                  <br />
+                                  Contoh: Jika set komisi 10% untuk barang A
+                                  pada karyawan, maka Barang A = 10% x 8.235,29
+                                  = 823,53.
+                                </p>
+                              </div>
+                            </div>
                           </FormDescription>
                         </div>
                         <FormControl>
