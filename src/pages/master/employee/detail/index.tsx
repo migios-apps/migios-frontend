@@ -393,7 +393,9 @@ const EmployeeDetail = () => {
                       Spesialis
                     </span>
                     <span className="text-foreground text-sm font-medium">
-                      {employee?.specialist || "-"}
+                      {employee?.specializations
+                        ?.map((s) => s.name_id)
+                        .join(", ") || "-"}
                     </span>
                   </div>
                 </div>

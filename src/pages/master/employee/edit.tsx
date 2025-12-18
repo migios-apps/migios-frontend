@@ -43,7 +43,13 @@ const EditEmployee = () => {
         }
 
         formProps.setValue("gender", data.gender)
-        formProps.setValue("specialist", data?.specialist)
+        formProps.setValue(
+          "specializations",
+          data.specializations?.map((s) => ({
+            label: s.name_id,
+            value: s.id,
+          })) || []
+        )
         formProps.setValue("address", data.address)
         formProps.setValue("description", data.description)
         formProps.setValue("enabled", data.enabled)

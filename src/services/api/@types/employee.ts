@@ -16,7 +16,11 @@ export interface EmployeeDetail {
   phone: string
   email: string
   gender: string
-  specialist: string
+  specializations: {
+    id: number
+    name_id: string
+    name_en: string
+  }[]
   flag: number
   join_date: string
   enabled: boolean
@@ -95,7 +99,7 @@ export interface CreateEmployee {
   phone: string
   email: string
   gender: string
-  specialist?: string | null
+  specialization_ids?: number[]
   join_date: string
   enabled: boolean
   roles?: Role[]

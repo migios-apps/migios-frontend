@@ -1,6 +1,6 @@
 import React from "react"
 import { SubmitHandler } from "react-hook-form"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { CreateEmployee } from "@/services/api/@types/employee"
 import { Role } from "@/services/api/@types/settings/role"
 import {
@@ -8,12 +8,14 @@ import {
   apiDeleteEmployee,
   apiUpdateEmployee,
 } from "@/services/api/EmployeeService"
+import { apiGetSpecializations } from "@/services/api/GeneralService"
 import { apiGetRoleList } from "@/services/api/settings/Role"
 import dayjs from "dayjs"
 import { ArrowLeft, Trash2, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
+import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import BottomStickyBar from "@/components/ui/bottom-sticky-bar"
@@ -60,7 +62,7 @@ type FormProps = {
 }
 
 type OptionType = {
-  value: string
+  value: string | number
   label: string
 }
 
@@ -78,14 +80,28 @@ const FormPageEmployee: React.FC<FormProps> = ({
     formState: { errors },
   } = formProps
   const watchData = watch()
+  // console.log("watchData", { watchData, errors })
   const [confirmDelete, setConfirmDelete] = React.useState(false)
-  const [selectedOptions, setSelectedOptions] = React.useState<OptionType[]>([])
   const [openCommissionPerPackage, setOpenCommissionPerPackage] =
     React.useState(false)
   const [openCommissionPerProduct, setOpenCommissionPerProduct] =
     React.useState(false)
 
-  // console.log("watchData", { watchData, errors })
+  const { data: specializationOptions = [] } = useQuery({
+    queryKey: [QUERY_KEY.specializations],
+    queryFn: async () => {
+      const response = await apiGetSpecializations()
+      return response.data
+    },
+    select: (data) =>
+      data.map((cat) => ({
+        label: cat.name_id,
+        options: cat.specializations.map((spec) => ({
+          label: spec.name_id,
+          value: spec.id,
+        })),
+      })),
+  })
 
   const handleClose = () => {
     resetEmployeeForm(formProps)
@@ -141,7 +157,9 @@ const FormPageEmployee: React.FC<FormProps> = ({
       join_date: dayjs(data.join_date).format("YYYY-MM-DD"),
       enabled: data.enabled,
       description: data.description as string | null,
-      specialist: data.specialist,
+      specialization_ids: (data.specializations || []).map(
+        (item: any) => item.value
+      ),
       roles: data.roles as CreateEmployee["roles"],
       earnings: data.earnings as CreateEmployee["earnings"],
       commission_product:
@@ -432,52 +450,42 @@ const FormPageEmployee: React.FC<FormProps> = ({
                 </div>
                 <FormFieldItem
                   control={control}
-                  name="specialist"
+                  name="specializations"
                   label={
                     <FormLabel>
                       Spesialisasi <span className="text-destructive">*</span>
                     </FormLabel>
                   }
-                  invalid={Boolean(errors.specialist)}
-                  errorMessage={errors.specialist?.message}
+                  invalid={Boolean(errors.specializations)}
+                  errorMessage={errors.specializations?.message}
                   render={({ field, fieldState }) => (
                     <Select
+                      options={specializationOptions}
+                      formatGroupLabel={(data: GroupBase<OptionType>) => (
+                        <div className="bg-accent flex items-center justify-between p-2">
+                          <span className="text-foreground text-sm font-bold">
+                            {data.label}
+                          </span>
+                          <span className="bg-secondary text-muted-foreground rounded-md px-2 py-0.5 text-xs font-normal">
+                            {data.options.length}
+                          </span>
+                        </div>
+                      )}
+                      formatOptionLabel={(data: OptionType) => (
+                        <div className="cursor-pointer text-sm">
+                          {data.label}
+                        </div>
+                      )}
                       isMulti={true}
-                      value={
-                        field.value && field.value.length > 0
-                          ? field.value.split(",").map((option) => ({
-                              label: option.trim(),
-                              value: option.trim(),
-                            }))
-                          : []
-                      }
-                      options={selectedOptions}
+                      value={field.value as OptionType[]}
+                      onChange={field.onChange}
+                      error={!!fieldState.error}
+                      placeholder="Pilih Spesialisasi"
                       hideSelectedOptions={true}
                       backspaceRemovesValue={false}
-                      onChange={(e) => {
-                        const val = e as unknown as OptionType[]
-                        const newVal = val?.filter((item) => item.value !== "")
-                        setSelectedOptions(newVal)
-                        field.onChange(
-                          newVal.map((item) => item.value).join(", ")
-                        )
-                      }}
-                      onInputChange={(newValue, actionMeta) => {
-                        if (actionMeta.action === "input-change") {
-                          const options = newValue.split(",").map((option) => ({
-                            label: option.trim(),
-                            value: option.trim(),
-                          }))
-                          setSelectedOptions(options)
-                        }
-                      }}
-                      error={!!fieldState.error}
                     />
                   )}
                 />
-                <span className="text-muted-foreground text-xs">
-                  Pisahkan dengan Enter
-                </span>
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormFieldItem
                     control={control}

@@ -23,7 +23,16 @@ export const validationSchemaEmployee = yup.object().shape({
     .required("Join Date is required")
     .typeError("Join Date must be a valid date"),
   gender: yup.string().required("Gender is required"),
-  specialist: yup.string().optional().nullable(),
+  specializations: yup
+    .array()
+    .of(
+      yup.object().shape({
+        value: yup.mixed().required(),
+        label: yup.string().required(),
+      })
+    )
+    .optional()
+    .default([]),
   address: yup.string().required("Address is required"),
   description: yup.string().optional().nullable(),
   enabled: yup.boolean().default(true),
@@ -111,7 +120,7 @@ export const useEmployeeValidation = (defaultValues?: CreateEmployeeSchema) => {
       identity_type: "ktp",
       join_date: dayjs().toDate(),
       enabled: true,
-      specialist: null,
+      specializations: [],
       earnings: {
         base_salary: 0,
         service: 0,
@@ -137,7 +146,7 @@ export const resetEmployeeForm = (
     identity_type: "ktp",
     join_date: dayjs().toDate(),
     enabled: true,
-    specialist: null,
+    specializations: [],
     earnings: {
       base_salary: 0,
       service: 0,

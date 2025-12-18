@@ -45,4 +45,5 @@ export const QUERY_KEY = {
   measurements: "measurements",
   commissionPackage: "commissionPackage",
   commissionProduct: "commissionProduct",
+  specializations: "specializations",
 }
