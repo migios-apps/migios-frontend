@@ -13,7 +13,7 @@ export type SidebarSide = "left" | "right"
 export interface ThemeConfig {
   dir: Direction
   font: Font
-  theme: Theme
+  theme?: Theme
   sidebar: Sidebar
   layout: Layout
   sidebar_state: boolean

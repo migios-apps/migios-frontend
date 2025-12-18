@@ -9,7 +9,7 @@ export interface ContainerProps {
 
 export interface Meta {
   container?: ContainerProps
-  themeConfig?: Partial<ThemeConfig>
+  themeConfig?: Partial<Omit<ThemeConfig, "theme">>
 }
 
 export type RouteProps = {
