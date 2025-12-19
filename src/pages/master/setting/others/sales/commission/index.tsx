@@ -364,7 +364,7 @@ const CommissionSetting = () => {
                                   </tr>
                                   <tr className="bg-muted/30">
                                     <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
-                                      Total Disc Global
+                                      Diskon
                                     </td>
                                     <td className="border-border border-b p-2 text-right font-bold">
                                       3.000,00
@@ -372,7 +372,7 @@ const CommissionSetting = () => {
                                   </tr>
                                   <tr className="bg-muted/30">
                                     <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
-                                      Total Pembayaran
+                                      Total
                                     </td>
                                     <td className="border-border border-b p-2 text-right font-bold">
                                       14.000,00
