@@ -117,8 +117,8 @@ const TaxSetting = () => {
     <LayoutOtherSetting>
       <Loading loading={settingsLoading || taxLoading || defaultTaxLoading}>
         <div className="relative mx-auto max-w-3xl space-y-6">
-          <Card>
-            <CardContent className="flex w-full flex-col items-center justify-between md:flex-row">
+          <Card className="gap-0 p-4">
+            <CardContent className="flex w-full flex-col items-center justify-between p-0 md:flex-row">
               <div>
                 <h6 className="text-xl font-bold">Penghitungan Pajak</h6>
                 <span className="text-foreground mt-1 text-sm">
@@ -138,8 +138,8 @@ const TaxSetting = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="gap-0 p-4">
+            <CardHeader className="p-0">
               <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
                 <CardTitle>Tarif Pajak</CardTitle>
                 <Button
@@ -153,7 +153,7 @@ const TaxSetting = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="flex flex-col">
                 {taxData && taxData.length > 0 ? (
                   taxData.map((tax, index) => (
@@ -200,14 +200,13 @@ const TaxSetting = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="gap-0 p-4">
+            <CardHeader className="p-0">
               <div className="flex w-full flex-col justify-between gap-2 md:flex-row md:items-center">
                 <div className="flex flex-col">
                   <CardTitle>Tarif Pajak Standar</CardTitle>
                   <div className="text-muted-foreground mt-1 text-sm md:mt-0">
-                    Anda masih dapat menimpa default dalam pengaturan produk,
-                    layanan, dan kelas individu
+                    Satu item dapat menerapkan beberapa tarif pajak sekaligus.
                   </div>
                 </div>
                 <Button
@@ -224,7 +223,7 @@ const TaxSetting = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="flex flex-col">
                 {TAX_TYPES.map((type, index) => (
                   <div

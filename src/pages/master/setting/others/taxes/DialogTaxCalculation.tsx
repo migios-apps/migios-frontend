@@ -85,10 +85,11 @@ const DialogTaxCalculation: React.FC<DialogTaxCalculationProps> = ({
                 Harga Retail Termasuk Pajak
               </div>
               <div className="text-muted-foreground text-sm">
-                Pajak = (Tarif Pajak * Harga retail) / (1 + Tarif Pajak)
+                Harga yang ditampilkan ke pelanggan sudah mencakup nilai pajak.
               </div>
               <div className="text-muted-foreground mt-1 text-sm">
-                Misalnya: pajak 20% untuk item $10,00 menjadi $1,67
+                Contoh: Harga barang Rp 11.000 (Pajak 10%), maka nilai barang
+                asli Rp 10.000 + Pajak Rp 1.000.
               </div>
             </div>
           </div>
@@ -117,10 +118,12 @@ const DialogTaxCalculation: React.FC<DialogTaxCalculationProps> = ({
                 Harga Retail Tidak Termasuk Pajak (Default)
               </div>
               <div className="text-muted-foreground text-sm">
-                Pajak = Tarif Pajak * Harga retail
+                Pajak akan ditambahkan pada saat checkout (belum termasuk dalam
+                harga barang).
               </div>
               <div className="text-muted-foreground mt-1 text-sm">
-                Misalnya: pajak 20% untuk item $10,00 menjadi $2,00
+                Contoh: Harga barang Rp 10.000 (Pajak 10%), maka total bayar
+                menjadi Rp 11.000 (Harga Rp 10.000 + Pajak Rp 1.000).
               </div>
             </div>
           </div>
