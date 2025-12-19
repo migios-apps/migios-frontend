@@ -31,6 +31,14 @@ import {
 import InputCurrency from "@/components/ui/input-currency"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { CreateCommissionSchema, useCommissionForm } from "./validation"
 
 const LoadingCommissionSetting = () => {
@@ -289,97 +297,106 @@ const CommissionSetting = () => {
                             proporsional untuk setiap item berdasarkan nilai
                             item tersebut terhadap total penjualan setelah
                             dikurangi diskon global dari transaksi.
-                            <br />
-                            <br />
+                          </FormDescription>
+
+                          <div className="mt-4">
                             <strong>Contoh Perhitungan:</strong>
                             <div className="border-border mt-2 overflow-hidden rounded-md border text-[10px] leading-tight md:text-xs">
-                              <table className="w-full border-collapse">
-                                <thead>
-                                  <tr className="bg-muted/50 text-muted-foreground tracking-wider uppercase">
-                                    <th className="border-border border-b p-2 text-left font-bold">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow className="bg-muted/50 hover:bg-muted/50 text-muted-foreground tracking-wider uppercase">
+                                    <TableHead className="text-xs font-bold">
                                       Item
-                                    </th>
-                                    <th className="border-border border-b p-2 text-right font-bold">
+                                    </TableHead>
+                                    <TableHead className="text-right text-xs font-bold">
                                       Harga
-                                    </th>
-                                    <th className="border-border border-b p-2 text-center font-bold">
+                                    </TableHead>
+                                    <TableHead className="text-center text-xs font-bold">
                                       Proporsional Disc
-                                    </th>
-                                    <th className="border-border border-b p-2 text-right font-bold">
+                                    </TableHead>
+                                    <TableHead className="text-right text-xs font-bold">
                                       Dasar Komisi
-                                    </th>
-                                    <th className="border-border border-b p-2 text-right font-bold">
+                                    </TableHead>
+                                    <TableHead className="text-right text-xs font-bold">
                                       Komisi (10%)
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td className="border-border border-b p-2">
-                                      Barang A
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right">
+                                    </TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  <TableRow className="hover:bg-transparent">
+                                    <TableCell>Barang A</TableCell>
+                                    <TableCell className="text-right text-xs">
                                       10.000,00
-                                    </td>
-                                    <td className="text-muted-foreground border-border border-b p-2 text-center">
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-center text-xs">
                                       (10rb / 17rb) x 3rb = 1.764,71
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right">
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs">
                                       8.235,29
-                                      <div className="text-muted-foreground text-[8px] font-normal">
+                                      <div className="text-muted-foreground text-xs font-normal">
                                         (10.000 - 1.764,71)
                                       </div>
-                                    </td>
-                                    <td className="text-primary border-border border-b p-2 text-right font-bold">
+                                    </TableCell>
+                                    <TableCell className="text-primary text-right text-xs font-bold">
                                       823,53
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="border-border border-b p-2">
-                                      Barang B
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right">
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow className="hover:bg-transparent">
+                                    <TableCell>Barang B</TableCell>
+                                    <TableCell className="text-right text-xs">
                                       7.000,00
-                                    </td>
-                                    <td className="text-muted-foreground border-border border-b p-2 text-center">
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-center text-xs">
                                       (7rb / 17rb) x 3rb = 1.235,29
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right">
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs">
                                       5.764,71
-                                      <div className="text-muted-foreground text-[8px] font-normal">
+                                      <div className="text-muted-foreground text-xs font-normal">
                                         (7.000 - 1.235,29)
                                       </div>
-                                    </td>
-                                    <td className="text-primary border-border border-b p-2 text-right font-bold">
+                                    </TableCell>
+                                    <TableCell className="text-primary text-right text-xs font-bold">
                                       576,47
-                                    </td>
-                                  </tr>
-                                  <tr className="bg-muted/30">
-                                    <td className="border-border border-b p-2 font-bold italic">
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                                    <TableCell className="text-xs font-bold italic">
                                       SUB TOTAL
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right font-bold">
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs font-bold">
                                       17.000,00
-                                    </td>
-                                  </tr>
-                                  <tr className="bg-muted/30">
-                                    <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
+                                    </TableCell>
+                                    <TableCell
+                                      colSpan={3}
+                                      className="p-0 text-xs"
+                                    ></TableCell>
+                                  </TableRow>
+                                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                                    <TableCell className="text-muted-foreground text-right text-xs font-medium">
                                       Diskon
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right font-bold">
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs font-bold">
                                       3.000,00
-                                    </td>
-                                  </tr>
-                                  <tr className="bg-muted/30">
-                                    <td className="text-muted-foreground border-border border-b p-2 text-right font-medium">
+                                    </TableCell>
+                                    <TableCell
+                                      colSpan={3}
+                                      className="p-0 text-xs"
+                                    ></TableCell>
+                                  </TableRow>
+                                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                                    <TableCell className="text-muted-foreground text-right text-xs font-medium">
                                       Total
-                                    </td>
-                                    <td className="border-border border-b p-2 text-right font-bold">
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs font-bold">
                                       14.000,00
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                                    </TableCell>
+                                    <TableCell
+                                      colSpan={3}
+                                      className="p-0 text-xs"
+                                    ></TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
                               <div className="bg-accent/30 space-y-1 border-t p-2">
                                 <p className="text-muted-foreground text-xs italic">
                                   * Rumus Dasar: (Harga Item / Sub Total) x
@@ -394,7 +411,7 @@ const CommissionSetting = () => {
                                 </p>
                               </div>
                             </div>
-                          </FormDescription>
+                          </div>
                         </div>
                         <FormControl>
                           <Switch
