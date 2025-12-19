@@ -1,7 +1,9 @@
-import React, { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import React, { useEffect, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TaxDefaultSaleItemType } from "@/services/api/@types/settings/taxes"
+import { CreateTaxCalculateType } from "@/services/api/@types/settings/taxes"
 import {
+  apiCreateOrUpdateTaxCalculate,
   apiGetDefaultTaxSaleItem,
   apiGetTaxList,
 } from "@/services/api/settings/TaxesService"
@@ -12,10 +14,10 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import Loading from "@/components/ui/loading"
 import LayoutOtherSetting from "../Layout"
 import DialogFormTax from "./DialogFormTax"
-import DialogTaxCalculation from "./DialogTaxCalculation"
 import DialogTaxesDefault from "./DialogTaxesDefault"
 import { useStandardRateForm, useTaxForm } from "./validation"
 
@@ -48,14 +50,14 @@ const TAX_TYPES: TaxType[] = [
 ]
 
 // Data standar pajak
-const DEFAULT_STANDARD_RATES: TaxDefaultSaleItemType[] = [
-  { type: "membership", tax_id: 2 },
-  { type: "pt_program", tax_id: 2 },
-  { type: "class", tax_id: 2 },
-  { type: "product", tax_id: 2 },
-  { type: "membership", tax_id: 1 },
-  // { type: 'pt_program', tax_id: 1 },
-]
+// const DEFAULT_STANDARD_RATES: TaxDefaultSaleItemType[] = [
+//   { type: "membership", tax_id: 2 },
+//   { type: "pt_program", tax_id: 2 },
+//   { type: "class", tax_id: 2 },
+//   { type: "product", tax_id: 2 },
+//   { type: "membership", tax_id: 1 },
+//   // { type: 'pt_program', tax_id: 1 },
+// ]
 
 // Fungsi untuk mendapatkan label pajak berdasarkan tipe
 const getStandardTaxLabel = (
@@ -84,12 +86,13 @@ const getStandardTaxLabel = (
 }
 
 const TaxSetting = () => {
+  const queryClient = useQueryClient()
   const [openDialog, setOpenDialog] = useState(false)
   const [openTaxDialog, setOpenTaxDialog] = useState(false)
   const [taxDialogType, setTaxDialogType] = useState<"create" | "update">(
     "create"
   )
-  const [openCalcDialog, setOpenCalcDialog] = useState(false)
+  const [taxCalculation, setTaxCalculation] = useState<number>(0)
 
   const taxFormProps = useTaxForm()
 
@@ -100,6 +103,13 @@ const TaxSetting = () => {
     queryFn: () => apiGetSettings(),
     select: (res) => res.data,
   })
+
+  // Sync state with fetched data
+  useEffect(() => {
+    if (settingsData?.tax_calculation !== undefined) {
+      setTaxCalculation(settingsData.tax_calculation)
+    }
+  }, [settingsData])
 
   const { data: taxData, isLoading: taxLoading } = useQuery({
     queryKey: [QUERY_KEY.taxList],
@@ -113,28 +123,90 @@ const TaxSetting = () => {
     select: (res) => res.data,
   })
 
+  // Mutations
+  const createCalculation = useMutation({
+    mutationFn: (data: CreateTaxCalculateType) =>
+      apiCreateOrUpdateTaxCalculate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.settings] })
+    },
+  })
+
   return (
     <LayoutOtherSetting>
       <Loading loading={settingsLoading || taxLoading || defaultTaxLoading}>
         <div className="relative mx-auto max-w-3xl space-y-6">
           <Card className="gap-0 p-4">
-            <CardContent className="flex w-full flex-col items-center justify-between p-0 md:flex-row">
-              <div>
-                <h6 className="text-xl font-bold">Penghitungan Pajak</h6>
-                <span className="text-foreground mt-1 text-sm">
-                  {settingsData?.tax_calculation === 1
-                    ? "Harga retail anda sudah termasuk pajak"
-                    : "Harga retail anda belum termasuk pajak"}
-                </span>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="font-semibold"
-                onClick={() => setOpenCalcDialog(true)}
+            <CardHeader className="p-0">
+              <CardTitle>Penghitungan Pajak</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 p-0 pt-4">
+              <div
+                className={cn(
+                  "border-border flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors",
+                  taxCalculation === 1
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-muted/50"
+                )}
+                onClick={() => setTaxCalculation(1)}
               >
-                Ganti
-              </Button>
+                <div className="flex items-center pt-1">
+                  <Checkbox checked={taxCalculation === 1} />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="text-foreground leading-none font-semibold">
+                    Harga Retail Termasuk Pajak
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    Harga yang ditampilkan ke pelanggan sudah mencakup nilai
+                    pajak.
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    Contoh: Harga barang Rp 11.000 (Pajak 10%), maka nilai
+                    barang asli Rp 10.000 + Pajak Rp 1.000.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  "border-border flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors",
+                  taxCalculation !== 1
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-muted/50"
+                )}
+                onClick={() => setTaxCalculation(0)}
+              >
+                <div className="flex items-center pt-1">
+                  <Checkbox checked={taxCalculation !== 1} />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="text-foreground leading-none font-semibold">
+                    Harga Retail Tidak Termasuk Pajak (Default)
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    Pajak akan ditambahkan pada saat checkout (belum termasuk
+                    dalam harga barang).
+                  </div>
+                  <p className="text-muted-foreground text-xs">
+                    Contoh: Harga barang Rp 10.000 (Pajak 10%), maka total bayar
+                    menjadi Rp 11.000 (Harga Rp 10.000 + Pajak Rp 1.000).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  disabled={createCalculation.isPending}
+                  onClick={() => {
+                    createCalculation.mutate({
+                      tax_calculation: taxCalculation,
+                    })
+                  }}
+                >
+                  {createCalculation.isPending ? "Menyimpan..." : "Simpan"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -174,7 +246,7 @@ const TaxSetting = () => {
                       <span className="text-foreground mr-2 font-bold">
                         {tax.name}
                       </span>
-                      <span className="text-foreground flex-shrink-0 font-medium md:text-right">
+                      <span className="text-foreground shrink-0 font-medium md:text-right">
                         {tax.rate} %
                       </span>
                     </div>
@@ -236,7 +308,7 @@ const TaxSetting = () => {
                     <span className="text-foreground mr-2 font-bold">
                       {type.label}
                     </span>
-                    <span className="text-foreground flex-shrink-0 md:text-right">
+                    <span className="text-foreground shrink-0 md:text-right">
                       {getStandardTaxLabel(
                         type.key,
                         taxData || [],
@@ -248,12 +320,6 @@ const TaxSetting = () => {
               </div>
             </CardContent>
           </Card>
-
-          <DialogTaxCalculation
-            settingsData={settingsData}
-            open={openCalcDialog}
-            onClose={() => setOpenCalcDialog(false)}
-          />
 
           <DialogTaxesDefault
             taxTypes={TAX_TYPES}
