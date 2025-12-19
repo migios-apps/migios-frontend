@@ -6,6 +6,7 @@ import { classRoute } from "./pages/class.route"
 import { clubSetupRoute } from "./pages/club-setup.route"
 import { employeeRoute } from "./pages/employee.route"
 import { financeRoute } from "./pages/finance.route"
+import { masterRoute } from "./pages/master.route"
 import { measurementRoute } from "./pages/measurement.route"
 import { memberRoute } from "./pages/member.route"
 import { packageRoute } from "./pages/package.route"
@@ -24,6 +25,7 @@ const protectedRoute: Routes = [
   ...classRoute,
   ...accountRoute,
   ...clubSetupRoute,
+  ...masterRoute,
   {
     path: `/clubs`,
     component: lazy(() => import("@/pages/clubs")),

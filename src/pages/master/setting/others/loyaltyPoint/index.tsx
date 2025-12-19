@@ -1,369 +1,485 @@
-import React, { useState } from "react"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
-import { TableQueries } from "@/@types/common"
-import { ChangeStatusLoyaltyType } from "@/services/api/@types/settings/loyalty"
-import {
-  apiChangeStatusLoyalty,
-  apiGetLoyaltyList,
-} from "@/services/api/settings/LoyaltyService"
-import { apiGetSettings } from "@/services/api/settings/settings"
-import {
-  ArrowRight,
-  Package,
-  Plus,
-  Search,
-  Settings,
-  Ticket,
-} from "lucide-react"
-import { dayjs } from "@/utils/dayjs"
-import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
+  apiGetSettings,
+  apiUpdateSettings,
+} from "@/services/api/settings/settings"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { AlertCircle, Minus, Plus, Save } from "lucide-react"
+import { toast } from "sonner"
+import * as yup from "yup"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import Loading from "@/components/ui/loading"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Switch } from "@/components/ui/switch"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import InputCurrency from "@/components/ui/input-currency"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import Loading from "@/components/ui/loading"
+import { Select } from "@/components/ui/react-select"
+import { Switch } from "@/components/ui/switch"
 import LayoutOtherSetting from "../Layout"
-import DialogFormDiscount from "./DialogFormDiscount"
-import DialogFormFreeItem from "./DialogFormFreeItem"
-import LoyaltyPointSettings from "./LoyaltyPointSettings"
-import { resetLoyaltyForm, useLoyaltyForm } from "./validation"
 
-const LayoutLoyaltyPoint = () => {
+const expiredTypeOptions = [
+  { label: "Tidak kedaluwarsa", value: "forever" },
+  { label: "Hari", value: "day" },
+  { label: "Minggu", value: "week" },
+  { label: "Bulan", value: "month" },
+  { label: "Tahun", value: "year" },
+]
+
+const validationSchema = yup.object().shape({
+  loyalty_earn_point_by_total_order: yup.boolean().default(false),
+  loyalty_points_earned_by_total_order: yup
+    .number()
+    .when("loyalty_earn_point_by_total_order", {
+      is: true,
+      then: (schema) =>
+        schema
+          .required("Poin diperoleh harus diisi")
+          .min(1, "Poin harus lebih besar atau sama dengan 1"),
+      otherwise: (schema) => schema.optional().nullable().default(0),
+    }),
+  loyalty_min_total_order: yup
+    .number()
+    .when("loyalty_earn_point_by_total_order", {
+      is: true,
+      then: (schema) =>
+        schema
+          .required("Minimum total order harus diisi")
+          .min(1, "Minimum total order harus lebih besar atau sama dengan 1"),
+      otherwise: (schema) => schema.optional().nullable().default(0),
+    }),
+  loyalty_expired_type_by_total_order: yup
+    .string()
+    .when("loyalty_earn_point_by_total_order", {
+      is: true,
+      then: (schema) =>
+        schema
+          .oneOf(
+            ["forever", "day", "week", "month", "year"],
+            "Tipe expired tidak valid"
+          )
+          .required("Tipe expired harus diisi"),
+      otherwise: (schema) => schema.optional().nullable().default("forever"),
+    }),
+  loyalty_expired_value_by_total_order: yup
+    .number()
+    .min(0, "Nilai expired harus lebih besar atau sama dengan 0")
+    .when(
+      [
+        "loyalty_earn_point_by_total_order",
+        "loyalty_expired_type_by_total_order",
+      ],
+      {
+        is: (earnByTotalOrder: boolean, expiredType: string) =>
+          earnByTotalOrder && expiredType !== "forever",
+        then: (schema) =>
+          schema
+            .required("Nilai expired harus diisi")
+            .min(1, "Nilai expired minimal 1"),
+        otherwise: (schema) => schema.optional().nullable().default(0),
+      }
+    ),
+  loyalty_earn_point_with_multiple: yup.boolean().default(false),
+  loyalty_earn_points_when_using_points: yup.boolean().default(true),
+})
+
+type LoyaltyPointSettingsFormSchema = yup.InferType<typeof validationSchema>
+
+const INITIAL_SETTINGS: LoyaltyPointSettingsFormSchema = {
+  loyalty_earn_point_by_total_order: false,
+  loyalty_points_earned_by_total_order: 0,
+  loyalty_min_total_order: 0,
+  loyalty_expired_type_by_total_order: "forever",
+  loyalty_expired_value_by_total_order: 0,
+  loyalty_earn_point_with_multiple: false,
+  loyalty_earn_points_when_using_points: true,
+}
+
+const LoyaltyPointSettingsPage = () => {
   const queryClient = useQueryClient()
-  const [tableData] = React.useState<TableQueries>({
-    pageIndex: 1,
-    pageSize: 10,
-    query: "",
-    sort: {
-      order: "",
-      key: "",
-    },
-  })
-  const [showDiscountDialog, setShowDiscountDialog] = useState(false)
-  const [showFreeItemDialog, setShowFreeItemDialog] = useState(false)
-  const [showSettingsSheet, setShowSettingsSheet] = useState(false)
-  const [dialogType, setDialogType] = useState<"create" | "update">("create")
 
-  const { data: settingsData, isLoading: settingsLoading } = useQuery({
+  // Fetch settings data
+  const { data: settingsData, isLoading: isLoadingSettings } = useQuery({
     queryKey: [QUERY_KEY.settings],
     queryFn: () => apiGetSettings(),
     select: (res) => res.data,
   })
 
-  const { data, isFetchingNextPage, isLoading, hasNextPage, fetchNextPage } =
-    useInfiniteQuery({
-      queryKey: [QUERY_KEY.loyaltyList, tableData],
-      initialPageParam: 1,
-      queryFn: async ({ pageParam }) => {
-        const res = await apiGetLoyaltyList({
-          page: pageParam,
-          per_page: 3,
-          sort_column: "id",
-          sort_type: "desc",
-        })
-        return res
-      },
-      getNextPageParam: (lastPage) =>
-        lastPage.data.meta.page !== lastPage.data.meta.total_page
-          ? lastPage.data.meta.page + 1
-          : undefined,
-    })
+  const formProps = useForm<LoyaltyPointSettingsFormSchema>({
+    resolver: yupResolver(validationSchema) as any,
+    defaultValues: INITIAL_SETTINGS,
+  })
 
-  const listData = React.useMemo(
-    () => (data ? data.pages.flatMap((page) => page.data.data) : []),
-    [data]
-  )
-  const totalData = data?.pages[0]?.data.meta.total ?? 0
+  const { control, handleSubmit, watch, formState, setValue, reset } = formProps
+  const watchData = watch()
 
-  const { containerRef: containerRefLoyalty } = useInfiniteScroll({
-    offset: "100px",
-    shouldStop: !hasNextPage || !data || listData.length === 0,
-    onLoadMore: async () => {
-      if (hasNextPage && data && listData.length > 0) {
-        await fetchNextPage()
-      }
+  // Set form values when settings data is loaded
+  useEffect(() => {
+    if (settingsData) {
+      reset({
+        loyalty_earn_point_by_total_order:
+          settingsData.loyalty_earn_point_by_total_order ?? false,
+        loyalty_points_earned_by_total_order:
+          settingsData.loyalty_points_earned_by_total_order ?? 0,
+        loyalty_min_total_order: settingsData.loyalty_min_total_order ?? 0,
+        loyalty_expired_type_by_total_order:
+          (settingsData.loyalty_expired_type_by_total_order ?? "forever") as
+            | "forever"
+            | "day"
+            | "week"
+            | "month"
+            | "year",
+        loyalty_expired_value_by_total_order:
+          settingsData.loyalty_expired_value_by_total_order ?? 0,
+        loyalty_earn_point_with_multiple:
+          settingsData.loyalty_earn_point_with_multiple ?? false,
+        loyalty_earn_points_when_using_points:
+          settingsData.loyalty_earn_points_when_using_points ?? true,
+      })
+    }
+  }, [settingsData, reset])
+
+  // Update settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: (data: LoyaltyPointSettingsFormSchema) =>
+      apiUpdateSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.settings] })
+      toast.success("Pengaturan loyalty point berhasil disimpan")
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.error?.message ||
+          "Gagal menyimpan pengaturan loyalty point"
+      )
     },
   })
 
-  const formProps = useLoyaltyForm()
-
-  const handlePrefecth = () => {
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.loyaltyList] })
-    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.settings] })
+  const handleSave = async (data: LoyaltyPointSettingsFormSchema) => {
+    updateSettingsMutation.mutate(data)
   }
 
-  const changeStatus = useMutation({
-    mutationFn: (data: ChangeStatusLoyaltyType) => apiChangeStatusLoyalty(data),
-    onError: (error) => {
-      console.log("error create", error)
-    },
-    onSuccess: handlePrefecth,
-  })
-
-  const handleToggleLoyalty = (checked: boolean) => {
-    changeStatus.mutate({
-      loyalty_enabled: checked ? 1 : 0,
-    })
+  const handlePointsIncrement = () => {
+    const currentValue = watchData.loyalty_points_earned_by_total_order || 0
+    setValue("loyalty_points_earned_by_total_order", currentValue + 1)
   }
 
-  const handleOpenDiscountDialog = () => {
-    setDialogType("create")
-    resetLoyaltyForm(formProps, {
-      type: "discount",
-      name: "",
-      enabled: true,
-      points_required: 0,
-      discount_type: "percent",
-      is_forever: false,
-      start_date: undefined,
-      end_date: undefined,
-    })
-    setShowDiscountDialog(true)
-  }
-
-  const handleCloseDiscountDialog = () => {
-    resetLoyaltyForm(formProps)
-    setShowDiscountDialog(false)
-  }
-
-  const handleOpenFreeItemDialog = () => {
-    setDialogType("create")
-    resetLoyaltyForm(formProps, {
-      type: "free_item",
-      name: "",
-      enabled: true,
-      points_required: 0,
-      reward_items: [],
-      is_forever: false,
-      start_date: undefined,
-      end_date: undefined,
-    })
-    setShowFreeItemDialog(true)
-  }
-
-  const handleCloseFreeItemDialog = () => {
-    resetLoyaltyForm(formProps)
-    setShowFreeItemDialog(false)
+  const handlePointsDecrement = () => {
+    const currentValue = watchData.loyalty_points_earned_by_total_order || 0
+    if (currentValue > 0) {
+      setValue("loyalty_points_earned_by_total_order", currentValue - 1)
+    }
   }
 
   return (
     <LayoutOtherSetting>
-      <div className="relative mx-auto flex w-full max-w-2xl">
-        <Loading loading={isLoading}>
-          <div className="relative flex w-full flex-col gap-2">
-            <Card className="py-2 shadow-none">
-              <CardContent className="flex items-center justify-between px-4 py-3">
-                <h4 className="text-xl font-semibold">Point Loyalitas</h4>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    disabled={changeStatus.isPending || settingsLoading}
-                    checked={settingsData?.loyalty_enabled === 1}
-                    onCheckedChange={handleToggleLoyalty}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowSettingsSheet(true)}
-                  >
-                    <Settings className="size-5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div
-              ref={containerRefLoyalty}
-              className="mt-3 overflow-y-auto"
-              style={{ height: "calc(70vh - 0px)" }}
-            >
-              <div className="mb-4 grid grid-cols-1 gap-4">
-                {data?.pages.map((page, pageIndex) => (
-                  <React.Fragment key={pageIndex}>
-                    {page.data.data.map((item, index: number) => (
-                      <Card
-                        key={index}
-                        className="hover:bg-muted cursor-pointer shadow-none transition-colors"
-                        onClick={() => {
-                          setDialogType("update")
-                          formProps.setValue("id", item.id)
-                          formProps.setValue("name", item.name)
-                          formProps.setValue(
-                            "type",
-                            item.type as "discount" | "free_item"
-                          )
-                          formProps.setValue(
-                            "points_required",
-                            item.points_required
-                          )
-                          formProps.setValue(
-                            "discount_type",
-                            item.discount_type as any
-                          )
-                          formProps.setValue(
-                            "discount_value",
-                            item.discount_value as any
-                          )
-                          formProps.setValue("enabled", item.enabled)
-                          formProps.setValue("reward_items", item.items)
-                          formProps.setValue("is_forever", item.is_forever)
-                          formProps.setValue(
-                            "start_date",
-                            item.start_date
-                              ? dayjs(item.start_date).toDate()
-                              : undefined
-                          )
-                          formProps.setValue(
-                            "end_date",
-                            item.end_date
-                              ? dayjs(item.end_date).toDate()
-                              : undefined
-                          )
-
-                          if (item.type === "discount") {
-                            setShowDiscountDialog(true)
-                          } else {
-                            setShowFreeItemDialog(true)
-                          }
-                        }}
-                      >
-                        <CardContent className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center">
-                              {item.type === "discount" ? (
-                                <div className="text-rose-500">
-                                  <Ticket className="size-8" />
-                                </div>
-                              ) : (
-                                <div className="text-emerald-500">
-                                  <Package className="size-8" />
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <h5 className="text-foreground text-sm font-medium">
-                                {item.type === "discount"
-                                  ? item.discount_type === "percent"
-                                    ? `Diskon ${item.discount_value}%`
-                                    : `Diskon ${item.fdiscount_value}`
-                                  : item.name}
-                              </h5>
-                              <p className="text-muted-foreground text-xs">
-                                {item.points_required} poin
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-muted-foreground">
-                            <ArrowRight className="size-5" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </React.Fragment>
-                ))}
-                {isFetchingNextPage &&
-                  Array.from({ length: 12 }, (_, i) => i + 1).map((_, i) => (
-                    <Skeleton key={i} className="h-[120px] rounded-xl" />
-                  ))}
-              </div>
-              {totalData > 0 && totalData === listData.length && (
-                <p className="col-span-full text-center text-gray-300 dark:text-gray-500">
-                  No more loyalty point to load
-                </p>
-              )}
-              {listData.length === 0 && (
-                <div className="bg-muted flex flex-col items-center justify-center rounded-lg py-10 text-center">
-                  <div className="text-muted-foreground mb-4">
-                    <Search className="size-16" />
-                  </div>
-                  <h6 className="text-foreground text-lg font-medium">
-                    Belum ada point loyalitas
-                  </h6>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Aktifkan atau klik tombol dibawah untuk menambahkan point
-                    loyalitas baru
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Floating Action Button */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+      <div className="mx-auto w-full max-w-2xl px-4 py-6">
+        <Loading loading={isLoadingSettings}>
+          <Form {...formProps}>
+            <form onSubmit={handleSubmit(handleSave)} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xl font-semibold">
+                  Pengaturan Loyalty Point
+                </h4>
                 <Button
-                  size="icon"
-                  className="fixed right-6 bottom-6 z-50 size-14 rounded-full shadow-lg"
+                  type="submit"
+                  disabled={
+                    isLoadingSettings ||
+                    updateSettingsMutation.isPending ||
+                    formState.isSubmitting
+                  }
+                  className="min-w-[120px]"
                 >
-                  <Plus className="size-6" />
+                  <Save className="mr-2 size-4" />
+                  {isLoadingSettings ||
+                  updateSettingsMutation.isPending ||
+                  formState.isSubmitting
+                    ? "Menyimpan..."
+                    : "Simpan"}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                <DropdownMenuItem onClick={handleOpenDiscountDialog}>
-                  <Plus className="mr-2 size-4" />
-                  Diskon
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleOpenFreeItemDialog}>
-                  <Plus className="mr-2 size-4" />
-                  Item Gratis
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
 
-            {/* Dialog untuk menambahkan diskon */}
-            <DialogFormDiscount
-              formProps={formProps}
-              type={dialogType}
-              open={showDiscountDialog}
-              onClose={handleCloseDiscountDialog}
-              onSuccess={() => {
-                if (
-                  dialogType === "create" &&
-                  settingsData?.loyalty_enabled === 0
-                ) {
-                  handleToggleLoyalty(true)
-                }
-              }}
-            />
+              <div className="space-y-6">
+                {/* Pengaturan Umum */}
+                <Card className="shadow-none">
+                  <CardHeader>
+                    <CardTitle>Pengaturan Umum</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel htmlFor="loyalty_earn_point_with_multiple">
+                          Berlaku Kelipatan
+                        </FormLabel>
+                        <Switch
+                          id="loyalty_earn_point_with_multiple"
+                          checked={watchData.loyalty_earn_point_with_multiple}
+                          onCheckedChange={(checked) =>
+                            setValue(
+                              "loyalty_earn_point_with_multiple",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Jika diaktifkan, poin yang didapatkan akan dikalikan
+                        berdasarkan kelipatan:
+                      </p>
+                      <ul className="text-muted-foreground ml-4 list-disc space-y-1 text-sm">
+                        <li>
+                          <strong>Untuk Total Order:</strong> Kelipatan
+                          berdasarkan harga. Contoh: min. 100rb dapat 10 poin,
+                          pembelian 250rb = 2x kelipatan = 20 poin.
+                        </li>
+                        <li>
+                          <strong>Untuk Item:</strong> Kelipatan berdasarkan
+                          qty. Contoh: 3 item × 10 poin = 30 poin.
+                        </li>
+                      </ul>
+                    </div>
 
-            {/* Dialog untuk menambahkan item gratis */}
-            <DialogFormFreeItem
-              type={dialogType}
-              formProps={formProps}
-              open={showFreeItemDialog}
-              onClose={handleCloseFreeItemDialog}
-              onSuccess={() => {
-                if (
-                  dialogType === "create" &&
-                  settingsData?.loyalty_enabled === 0
-                ) {
-                  handleToggleLoyalty(true)
-                }
-              }}
-            />
+                    <div className="space-y-2 border-t pt-4">
+                      <div className="flex items-center justify-between">
+                        <FormLabel
+                          htmlFor="loyalty_earn_points_when_using_points"
+                          className="text-sm"
+                        >
+                          Tambahan poin tetap didapat ketika menggunakan poin
+                        </FormLabel>
+                        <Switch
+                          id="loyalty_earn_points_when_using_points"
+                          checked={
+                            watchData.loyalty_earn_points_when_using_points
+                          }
+                          onCheckedChange={(checked) =>
+                            setValue(
+                              "loyalty_earn_points_when_using_points",
+                              checked
+                            )
+                          }
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Jika diaktifkan, customer tetap mendapatkan poin dari
+                        pembelian meskipun mereka menggunakan poin untuk redeem
+                        reward.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {/* Sheet untuk pengaturan loyalty point */}
-            <LoyaltyPointSettings
-              open={showSettingsSheet}
-              settingsData={settingsData}
-              isLoadingSettings={settingsLoading}
-              onClose={() => setShowSettingsSheet(false)}
-            />
-          </div>
+                {/* Pengaturan Jumlah Dibeli */}
+                <Card className="shadow-none">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Jumlah Dibeli</CardTitle>
+                      <Switch
+                        checked={watchData.loyalty_earn_point_by_total_order}
+                        onCheckedChange={(checked) => {
+                          setValue("loyalty_earn_point_by_total_order", checked)
+                        }}
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
+                      <AlertCircle className="h-4 w-4 text-orange-500" />
+                      <AlertDescription className="text-sm">
+                        Pelanggan akan mendapatkan poin setelah membeli pesanan
+                        dalam jumlah tertentu sebagai pengaturan berikut. Jika
+                        fitur ini diaktifkan, poin yang didapatkan berdasarkan
+                        item tidak lagi didapatkan.
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                      {/* Point Diperoleh */}
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_points_earned_by_total_order"
+                        label={<FormLabel>Point Diperoleh</FormLabel>}
+                        invalid={Boolean(
+                          formState.errors.loyalty_points_earned_by_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_points_earned_by_total_order
+                            ?.message
+                        }
+                        render={({ field }) => (
+                          <div className="flex w-full items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={handlePointsDecrement}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <InputGroup className="flex-1">
+                              <InputGroupInput
+                                type="number"
+                                min="0"
+                                {...field}
+                                value={field.value === 0 ? "" : field.value}
+                                onChange={(e) => {
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value)
+                                  field.onChange(value)
+                                }}
+                                className="text-center"
+                              />
+                            </InputGroup>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={handlePointsIncrement}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      />
+
+                      {/* Min. Total Order */}
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_min_total_order"
+                        label={<FormLabel>Min. Total Order</FormLabel>}
+                        invalid={Boolean(
+                          formState.errors.loyalty_min_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_min_total_order?.message
+                        }
+                        render={({ field }) => (
+                          <InputCurrency
+                            value={field.value}
+                            onValueChange={(value: string | undefined) =>
+                              field.onChange(parseFloat(value || "0") || 0)
+                            }
+                            placeholder="0"
+                            className="w-full"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Point Kedaluwarsa */}
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                      <FormFieldItem
+                        control={control}
+                        name="loyalty_expired_type_by_total_order"
+                        label={
+                          <FormLabel>
+                            Point Kedaluwarsa{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                        }
+                        invalid={Boolean(
+                          formState.errors.loyalty_expired_type_by_total_order
+                        )}
+                        errorMessage={
+                          formState.errors.loyalty_expired_type_by_total_order
+                            ?.message
+                        }
+                        render={({ field, fieldState }) => (
+                          <Select
+                            isSearchable={false}
+                            placeholder="Pilih masa berlaku"
+                            value={expiredTypeOptions.find(
+                              (opt) => opt.value === field.value
+                            )}
+                            options={expiredTypeOptions}
+                            error={!!fieldState.error}
+                            onChange={(option) => {
+                              field.onChange(option?.value)
+                              // Reset expired_value jika forever
+                              if (option?.value === "forever") {
+                                setValue(
+                                  "loyalty_expired_value_by_total_order",
+                                  0
+                                )
+                              }
+                            }}
+                            className="w-full"
+                          />
+                        )}
+                      />
+
+                      {watchData.loyalty_expired_type_by_total_order !==
+                        "forever" && (
+                        <FormFieldItem
+                          control={control}
+                          name="loyalty_expired_value_by_total_order"
+                          label={
+                            <FormLabel>
+                              Nilai Masa Berlaku{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(
+                            formState.errors
+                              .loyalty_expired_value_by_total_order
+                          )}
+                          errorMessage={
+                            formState.errors
+                              .loyalty_expired_value_by_total_order?.message
+                          }
+                          render={({ field }) => (
+                            <InputGroup className="w-full">
+                              <InputGroupInput
+                                type="number"
+                                autoComplete="off"
+                                {...field}
+                                value={field.value === 0 ? "" : field.value}
+                                onChange={(e) => {
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value)
+                                  field.onChange(value)
+                                }}
+                                className="w-full"
+                              />
+                              <InputGroupAddon align="inline-end">
+                                {watchData.loyalty_expired_type_by_total_order ===
+                                "day"
+                                  ? "Hari"
+                                  : watchData.loyalty_expired_type_by_total_order ===
+                                      "week"
+                                    ? "Minggu"
+                                    : watchData.loyalty_expired_type_by_total_order ===
+                                        "month"
+                                      ? "Bulan"
+                                      : "Tahun"}
+                              </InputGroupAddon>
+                            </InputGroup>
+                          )}
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </form>
+          </Form>
         </Loading>
       </div>
     </LayoutOtherSetting>
   )
 }
 
-export default LayoutLoyaltyPoint
+export default LoyaltyPointSettingsPage
