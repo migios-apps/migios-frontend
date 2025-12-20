@@ -76,7 +76,7 @@ const Commission = ({ employee }: { employee: EmployeeDetailPage | null }) => {
   const columns: ColumnDef<EmployeeCommissionType>[] = useMemo(
     () => [
       {
-        header: "Amount",
+        header: "Besaran Komisi",
         accessorKey: "famount",
         enableColumnActions: false,
         cell: (props) => {
@@ -85,7 +85,7 @@ const Commission = ({ employee }: { employee: EmployeeDetailPage | null }) => {
         },
       },
       {
-        header: "Type",
+        header: "Jenis Komisi",
         accessorKey: "type",
         enableColumnActions: false,
         cell: (props) => {
@@ -94,7 +94,7 @@ const Commission = ({ employee }: { employee: EmployeeDetailPage | null }) => {
         },
       },
       {
-        header: "Transaction",
+        header: "Faktur",
         accessorKey: "transaction_code",
         enableColumnActions: false,
         cell: (props) => {
@@ -113,7 +113,7 @@ const Commission = ({ employee }: { employee: EmployeeDetailPage | null }) => {
         },
       },
       {
-        header: "Due Date",
+        header: "Tanggal faktur",
         accessorKey: "due_date",
         enableColumnActions: false,
         cell: (props) => {
