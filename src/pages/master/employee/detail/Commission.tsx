@@ -9,6 +9,7 @@ import {
 } from "@/services/api/@types/employee"
 import { apiGetEmployeeCommissionList } from "@/services/api/EmployeeService"
 import dayjs from "dayjs"
+import { Link } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import DataTable from "@/components/ui/data-table"
 
@@ -90,6 +91,25 @@ const Commission = ({ employee }: { employee: EmployeeDetailPage | null }) => {
         cell: (props) => {
           const row = props.row.original
           return <span className="capitalize">{row.type}</span>
+        },
+      },
+      {
+        header: "Transaction",
+        accessorKey: "transaction_code",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          if (!row?.transaction_code) {
+            return <span>-</span>
+          }
+          return (
+            <Link
+              to={`/sales/${row?.transaction_code}`}
+              className="text-primary hover:underline"
+            >
+              #{row?.transaction_code}
+            </Link>
+          )
         },
       },
       {

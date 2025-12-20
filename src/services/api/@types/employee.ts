@@ -65,13 +65,22 @@ export interface EmployeeCommissionType {
   employee_id: number
   due_date: string
   type: string
-  created_at: string
-  updated_at: string
-  package_id?: number | null
-  session_id?: number | null
-  transaction_id?: number | null
-  notes: string
   amount: number
+  session_id: number | null
+  package_id: number | null
+  product_id: number | null
+  transaction_id: number | null
+  notes: string | null
+  employee_code: string
+  transaction_code: string | null
+  product?: {
+    id: number
+    name: string
+  } | null
+  package?: {
+    id: number
+    name: string
+  } | null
   famount: string
 }
 
@@ -80,9 +89,9 @@ export type EmployeeCommissionListTypeResponse = Omit<ApiTypes, "data"> & {
 }
 
 export interface EmployeeHeadType {
-  total_sales: string
-  total_session: string
-  total_class: string
+  total_sales: number
+  total_completed_session: number
+  total_completed_class: number
   total_commission_amount: number
   ftotal_commission_amount: string
 }

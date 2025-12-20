@@ -441,10 +441,10 @@ const EmployeeDetail = () => {
                 />
                 <div className="flex flex-1 flex-col gap-1">
                   <div className="text-foreground text-lg font-medium">
-                    {employeeHead?.total_session || 0}
+                    {employeeHead?.total_completed_session || 0}
                   </div>
                   <div className="text-muted-foreground text-xs">
-                    Total sesi bulan ini
+                    Total sesi terlaksana bulan ini
                   </div>
                 </div>
                 <Separator className="sm:hidden" />
@@ -454,10 +454,10 @@ const EmployeeDetail = () => {
                 />
                 <div className="flex flex-1 flex-col gap-1">
                   <div className="text-foreground text-lg font-medium">
-                    {employeeHead?.total_class || 0}
+                    {employeeHead?.total_completed_class || 0}
                   </div>
                   <div className="text-muted-foreground text-xs">
-                    Total class bulan ini
+                    Total kelas terlaksana bulan ini
                   </div>
                 </div>
                 <Separator className="sm:hidden" />
