@@ -18,6 +18,7 @@ import { ThemeSwitch } from "../theme-switch"
 import { PageLoader } from "../ui/page-loader"
 import Logo from "./Logo"
 import { Header } from "./header"
+import HeaderDropdown from "./header-dropdown"
 import { Main } from "./main"
 import { ProfileDropdown } from "./profile-dropdown"
 
@@ -78,6 +79,7 @@ export function AuthenticatedLayout({
           <Header fixed>
             <Search />
             <div className="ms-auto flex items-center space-x-4">
+              <HeaderDropdown />
               <ThemeSwitch />
               <ProfileDropdown />
             </div>

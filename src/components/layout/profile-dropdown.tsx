@@ -29,7 +29,7 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuContent className="w-56" align="end">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-1.5">
               <p className="text-sm leading-none font-medium">{user.name}</p>
@@ -40,19 +40,19 @@ export function ProfileDropdown() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer">
               <Link to="/account/profile">Profile</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer">
               <Link to="/account/account">Account</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer">
               <Link to="/settings/gym/about">Gym settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer">
               <Link to="/settings/others/membership">Membership settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer">
               <Link to="/clubs">All clubs</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
