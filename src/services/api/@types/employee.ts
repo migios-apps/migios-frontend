@@ -71,16 +71,13 @@ export interface EmployeeCommissionType {
   product_id: number | null
   transaction_id: number | null
   notes: string | null
+  item_name: string
+  employee_name: string
   employee_code: string
+  employee_email: string
+  employee_photo: string | null
   transaction_code: string | null
-  product?: {
-    id: number
-    name: string
-  } | null
-  package?: {
-    id: number
-    name: string
-  } | null
+  sales_item_type: string
   famount: string
 }
 

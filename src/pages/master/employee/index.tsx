@@ -3,64 +3,44 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import { EmployeeDetail } from "@/services/api/@types/employee"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
-import { Eye, Filter, UserPlus } from "lucide-react"
+import dayjs from "dayjs"
+import { Eye, UserPlus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
 import InputDebounce from "@/components/ui/input-debounce"
-import { FullPagination } from "@/components/ui/pagination"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import EmployeeLayout from "./Layout"
 
-const EmployeeCard = ({ data }: { data: EmployeeDetail }) => {
-  const navigate = useNavigate()
-  const handleViewDetails = (member: EmployeeDetail) => {
-    navigate(`/employee/detail/${member.code}`)
-  }
+export const NameColumn = ({ row }: { row: EmployeeDetail }) => {
   return (
-    <Card
-      className="cursor-pointer py-0"
-      onClick={() => handleViewDetails(data)}
-    >
-      <CardContent className="p-4">
-        <div className="mb-3 flex items-start justify-between">
-          <Avatar className="size-16">
-            <AvatarImage src={data.photo || ""} alt={data.name} />
-            <AvatarFallback>
-              {data.name?.charAt(0)?.toUpperCase() || "?"}
-            </AvatarFallback>
-          </Avatar>
-
-          <Button variant="ghost" size="icon" className="size-8">
-            <Eye className="size-4" />
-            <span className="sr-only">View details</span>
-          </Button>
-        </div>
-        <div className="mb-3 flex flex-col gap-0.5">
-          <span className="text-foreground line-clamp-1 leading-none font-medium">
-            {data.name}
-          </span>
-          <span className="text-muted-foreground line-clamp-1 text-xs leading-none capitalize">
-            {data.roles?.map((role) => role.name).join(", ") || "-"}
-          </span>
-        </div>
-        <div className="bg-muted flex flex-col gap-3 rounded-lg p-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-muted-foreground text-xs">Email</span>
-            <span className="text-foreground truncate text-sm font-medium">
-              {data.email ?? "-"}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-muted-foreground text-xs">Phone</span>
-            <span className="text-foreground text-sm font-medium">
-              {data.phone ?? "-"}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-2">
+      <Avatar className="size-10">
+        <AvatarImage src={row.photo || ""} alt={row.name} />
+        <AvatarFallback>
+          {row.name?.charAt(0)?.toUpperCase() || "?"}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-foreground leading-none font-medium">
+          {row.name}
+        </span>
+        <span className="text-muted-foreground text-xs leading-none font-semibold">
+          {row.email}
+        </span>
+        <span className="text-muted-foreground text-xs leading-none">
+          {row.code}
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -76,7 +56,7 @@ const EmployeeList = () => {
     },
   })
 
-  const { data, isLoading } = useInfiniteQuery({
+  const { data, isLoading, isFetchingNextPage } = useInfiniteQuery({
     queryKey: [QUERY_KEY.employees, tableData],
     initialPageParam: 1,
     queryFn: async () => {
@@ -118,18 +98,121 @@ const EmployeeList = () => {
   )
   const total = data?.pages[0]?.data.meta.total || 0
 
+  const handleViewDetails = (member: EmployeeDetail) => {
+    navigate(`/employee/detail/${member.code}`)
+  }
+
+  const columns = useMemo<DataTableColumnDef<EmployeeDetail>[]>(
+    () => [
+      {
+        header: "Nama",
+        accessorKey: "name",
+        cell: (props) => {
+          const row = props.row.original
+          return <NameColumn row={row} />
+        },
+      },
+      {
+        header: "Peran",
+        accessorKey: "roles",
+        cell: (props) => {
+          const row = props.row.original
+          return (
+            <span className="capitalize">
+              {row.roles?.map((role) => role.name).join(", ") || "-"}
+            </span>
+          )
+        },
+      },
+      {
+        header: "No. Telepon",
+        accessorKey: "phone",
+        cell: (props) => {
+          const row = props.row.original
+          return <span>{row.phone ?? "-"}</span>
+        },
+      },
+      {
+        header: "Gender",
+        accessorKey: "gender",
+        size: 80,
+        cell: (props) => {
+          const row = props.row.original
+          return (
+            <span className="capitalize">
+              {row.gender === "m" ? "Laki-laki" : "Perempuan"}
+            </span>
+          )
+        },
+      },
+      {
+        header: "Tanggal Lahir",
+        accessorKey: "birth_date",
+        size: 150,
+        cell: (props) => {
+          const row = props.row.original
+          return (
+            <span>
+              {row.birth_date
+                ? dayjs(row.birth_date).format("DD MMM YYYY")
+                : "-"}
+            </span>
+          )
+        },
+      },
+      {
+        header: "Status",
+        accessorKey: "enabled",
+        size: 100,
+        cell: (props) => {
+          const row = props.row.original
+          return (
+            <Badge variant={row.enabled ? "default" : "destructive"}>
+              {row.enabled ? "Aktif" : "Tidak Aktif"}
+            </Badge>
+          )
+        },
+      },
+      {
+        header: "",
+        id: "action",
+        size: 50,
+        enableColumnActions: false,
+        cell: (props) => (
+          <div className="flex items-center gap-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleViewDetails(props.row.original)}
+                  >
+                    <Eye className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>View</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ),
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <h3 className="text-foreground">
-          <span className="text-primary mr-2">{total}</span>
-          Employees
-        </h3>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <Filter className="mr-2 size-4" />
-            Filter
-          </Button>
+    <EmployeeLayout>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <InputDebounce
+            placeholder="Cari nama..."
+            handleOnchange={(value) => {
+              setTableData({ ...tableData, query: value, pageIndex: 1 })
+            }}
+          />
 
           <Button
             onClick={() => {
@@ -140,83 +223,42 @@ const EmployeeList = () => {
             Tambah
           </Button>
         </div>
-      </div>
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <InputDebounce
-          placeholder="Search name..."
-          handleOnchange={(value) => {
-            setTableData({ ...tableData, query: value, pageIndex: 1 })
-          }}
-        />
-      </div>
 
-      {isLoading ? (
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        <DataTable
+          columns={columns}
+          data={employeeList}
+          noData={!isLoading && employeeList.length === 0}
+          loading={isLoading || isFetchingNextPage}
+          pagingData={{
+            total: total as number,
+            pageIndex: tableData.pageIndex as number,
+            pageSize: tableData.pageSize as number,
           }}
-        >
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index} className="py-0">
-              <CardContent className="p-4">
-                <div className="mb-3 flex items-start justify-between">
-                  <Skeleton className="size-16 rounded-full" />
-                  <Skeleton className="size-8 rounded-md" />
-                </div>
-                <div className="mb-3 flex flex-col gap-0.5">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <div className="bg-muted flex flex-col gap-3 rounded-lg p-4">
-                  <div className="flex flex-col gap-1">
-                    <Skeleton className="h-3 w-12" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Skeleton className="h-3 w-12" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          pinnedColumns={{
+            right: ["action"],
           }}
-        >
-          {employeeList.map((employee) => (
-            <EmployeeCard key={employee.id} data={employee} />
-          ))}
-        </div>
-      )}
-
-      {!isLoading && (
-        <FullPagination
-          displayTotal
-          total={total}
-          pageSize={tableData.pageSize}
-          currentPage={tableData.pageIndex}
-          onChange={(value) => {
+          onPaginationChange={(val) => {
             setTableData({
               ...tableData,
-              pageIndex: value,
+              pageIndex: val,
             })
           }}
-          onPageSizeChange={(value) => {
+          onSelectChange={(val) => {
             setTableData({
               ...tableData,
-              pageSize: value,
+              pageSize: val,
               pageIndex: 1,
             })
           }}
+          onSort={(val) => {
+            setTableData({
+              ...tableData,
+              sort: val,
+            })
+          }}
         />
-      )}
-    </div>
+      </div>
+    </EmployeeLayout>
   )
 }
 

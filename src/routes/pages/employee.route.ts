@@ -6,6 +6,21 @@ export const employeeRoute: Routes = [
     path: "/employee",
     component: lazy(() => import("@/pages/master/employee")),
     authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
+  },
+  {
+    path: "/employee/commission",
+    component: lazy(() => import("@/pages/master/employee/commission")),
+    authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
   },
   {
     path: "/employee/detail/:id",
