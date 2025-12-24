@@ -6,10 +6,20 @@ import { Filter } from "@/services/api/@types/api"
 import { EmployeeCommissionType } from "@/services/api/@types/employee"
 import { apiGetEmployeeCommissionList } from "@/services/api/EmployeeService"
 import dayjs from "dayjs"
+import { X } from "lucide-react"
+import { DateRange } from "react-day-picker"
 import { Link } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import DataTable from "@/components/ui/data-table"
+import { DataTableDateFilter } from "@/components/ui/data-table/data-table-date-filter"
+import {
+  DataTableExport,
+  ExportType,
+} from "@/components/ui/data-table/data-table-export"
+import { DataTableFacetedFilter } from "@/components/ui/data-table/data-table-faceted-filter"
+import InputDebounce from "@/components/ui/input-debounce"
 import EmployeeLayout from "../Layout"
 
 export const NameColumn = ({ row }: { row: EmployeeCommissionType }) => {
@@ -37,6 +47,8 @@ export const NameColumn = ({ row }: { row: EmployeeCommissionType }) => {
 }
 
 const EmployeeCommission = () => {
+  const [commissionFilter, setCommissionFilter] = useState<string[]>([])
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
   const [tableData, setTableData] = useState<TableQueries>({
     pageIndex: 1,
     pageSize: 10,
@@ -46,8 +58,32 @@ const EmployeeCommission = () => {
       key: "",
     },
   })
+
+  const hasActiveFilters =
+    tableData.query !== "" || commissionFilter.length > 0 || dateRange !== null
+
+  const handleResetFilters = () => {
+    setTableData({ ...tableData, query: "", pageIndex: 1 })
+    setCommissionFilter([])
+    setDateRange(null)
+  }
+
+  const handleExport = (type: ExportType) => {
+    console.log(`Export as ${type.toUpperCase()}`, {
+      filters: {
+        query: tableData.query,
+        gender: commissionFilter,
+      },
+    })
+  }
+
   const { data, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: [QUERY_KEY.employeeCommission, tableData],
+    queryKey: [
+      QUERY_KEY.employeeCommission,
+      tableData,
+      commissionFilter.length,
+      dateRange,
+    ],
     initialPageParam: 1,
     queryFn: async () => {
       const res = await apiGetEmployeeCommissionList({
@@ -67,12 +103,47 @@ const EmployeeCommission = () => {
             ? [{}]
             : ([
                 {
-                  search_operator: "and",
-                  search_column: "name",
+                  search_column: "employee_name",
+                  search_condition: "like",
+                  search_text: tableData.query,
+                },
+                {
+                  search_column: "transaction_code",
+                  search_condition: "like",
+                  search_text: tableData.query,
+                },
+                {
+                  search_column: "item_name",
                   search_condition: "like",
                   search_text: tableData.query,
                 },
               ] as Filter[])),
+
+          ...((commissionFilter.length > 0
+            ? commissionFilter.map((item, index) => ({
+                search_operator: index === 0 ? "and" : "or",
+                search_column: "gender",
+                search_condition: "=",
+                search_text: `${item}`,
+              }))
+            : []) as Filter[]),
+
+          ...((dateRange?.from && dateRange?.to
+            ? [
+                {
+                  search_operator: "and",
+                  search_column: "due_date",
+                  search_condition: ">=",
+                  search_text: `${dayjs(dateRange?.from).format("YYYY-MM-DD")}`,
+                },
+                {
+                  search_operator: "and",
+                  search_column: "due_date",
+                  search_condition: "<=",
+                  search_text: `${dayjs(dateRange?.to).format("YYYY-MM-DD")}`,
+                },
+              ]
+            : []) as Filter[]),
         ],
       })
 
@@ -171,9 +242,73 @@ const EmployeeCommission = () => {
   return (
     <EmployeeLayout>
       <div className="flex w-full flex-col gap-3">
-        <h2 className="text-lg font-medium">Daftar Komisi Karyawan</h2>
         <div className="p-0">
           <DataTable
+            renderViewOptions={(_table) => (
+              <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-2">
+                  <InputDebounce
+                    placeholder="Cari (Staff, Faktur, Item)"
+                    className="max-w-[200px]"
+                    handleOnchange={(value) => {
+                      setTableData({ ...tableData, query: value, pageIndex: 1 })
+                    }}
+                  />
+                  <DataTableFacetedFilter
+                    title="Jenis Komisi"
+                    options={[
+                      {
+                        label: "Penjualan",
+                        value: "sales",
+                      },
+                      {
+                        label: "Session",
+                        value: "session",
+                      },
+                      {
+                        label: "Kelas",
+                        value: "class",
+                      },
+                    ]}
+                    value={commissionFilter}
+                    onChange={(val) => {
+                      setCommissionFilter(val)
+                      setTableData({ ...tableData, pageIndex: 1 })
+                    }}
+                  />
+                  <DataTableDateFilter
+                    title="Tanggal Faktur"
+                    variant="range"
+                    value={dateRange}
+                    onChange={(value) => {
+                      setDateRange(value)
+                      setTableData({ ...tableData, pageIndex: 1 })
+                    }}
+                  />
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      onClick={handleResetFilters}
+                      className="h-8 px-2 lg:px-3"
+                    >
+                      Reset
+                      <X className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* <DataTableViewOptions table={table} /> */}
+                  <DataTableExport
+                    options={[
+                      { title: "Export PDF", type: "pdf" },
+                      { title: "Export Excel", type: "excel" },
+                      { title: "Export CSV", type: "csv" },
+                    ]}
+                    onExportClick={handleExport}
+                  />
+                </div>
+              </div>
+            )}
             columns={columns}
             data={trainerList}
             noData={!isLoading && trainerList.length === 0}
