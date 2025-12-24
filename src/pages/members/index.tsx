@@ -193,10 +193,10 @@ const MemberList = () => {
   )
 
   return (
-    <>
+    <div className="container mx-auto max-w-7xl">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <h3>Members</h3>
+          <h3 className="text-2xl font-bold">Members</h3>
         </div>
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <InputDebounce
@@ -257,7 +257,7 @@ const MemberList = () => {
           }}
         />
       </div>
-    </>
+    </div>
   )
 }
 
