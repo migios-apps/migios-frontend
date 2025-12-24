@@ -32,7 +32,7 @@ const InputDebounce = forwardRef<HTMLInputElement, InputDebounceProps>(
 
     // return <Input ref={ref} {...rest} type="search" onChange={onInputChange} />
     return (
-      <InputGroup>
+      <InputGroup title={props?.placeholder}>
         <InputGroupAddon>
           <SearchNormal1 />
         </InputGroupAddon>

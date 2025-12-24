@@ -27,6 +27,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type Table as TanStackTable,
 } from "@tanstack/react-table"
 import {
   ArrowDown,
@@ -40,6 +41,13 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import {
   Pagination,
   PaginationContent,
@@ -71,13 +79,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/animate-ui/components/radix/dropdown-menu"
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "./empty"
 
 // Inline Components
 const FileNotFound = () => (
@@ -198,6 +199,7 @@ type DataTableProps<T> = {
   enableColumnResizing?: boolean
   className?: string
   showPagination?: boolean
+  renderViewOptions?: (table: TanStackTable<T>) => React.ReactNode
 }
 
 interface IndeterminateCheckboxProps {
@@ -302,6 +304,7 @@ function _DataTable<T>(
     enableColumnResizing = false,
     className,
     showPagination = true,
+    renderViewOptions,
     ...rest
   } = props
 
@@ -631,6 +634,7 @@ function _DataTable<T>(
   return (
     <Loading loading={Boolean(loading && data.length !== 0)} type="cover">
       <div className={cn("w-full", className)}>
+        {renderViewOptions ? renderViewOptions(table) : null}
         <div className="rounded-md border">
           <Table {...rest}>
             <TableHeader>
