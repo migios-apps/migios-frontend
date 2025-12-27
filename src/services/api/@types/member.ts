@@ -225,3 +225,8 @@ export type LoyaltyPointListResponse = Omit<ApiTypes, "data"> & {
 export type LoyaltyPointRedeemListResponse = Omit<ApiTypes, "data"> & {
   data: { data: LoyaltyPointRedeem[]; meta: MetaApi }
 }
+
+export interface UpdatePackageStatusTypes {
+  status: string
+  start_date?: string
+}

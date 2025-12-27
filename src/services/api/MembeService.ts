@@ -10,6 +10,7 @@ import {
   MemberDetailResponse,
   MemberPackageListTypesResponse,
   OriginalMemberDetail,
+  UpdatePackageStatusTypes,
 } from "./@types/member"
 
 export async function apiGetMemberList(params?: ParamsFilter) {
@@ -111,6 +112,17 @@ export async function apiAdjustMemberLoyaltyPoint(
   return ApiService.fetchDataWithAxios({
     url: `/member/${code}/loyalty/adjust`,
     method: "post",
+    data,
+  })
+}
+
+export async function apiUpdateMemberPackageStatus(
+  id: number,
+  data: UpdatePackageStatusTypes
+) {
+  return ApiService.fetchDataWithAxios({
+    url: `/member/package/${id}/status`,
+    method: "patch",
     data,
   })
 }

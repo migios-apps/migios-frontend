@@ -1,9 +1,12 @@
 import React from "react"
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { MemberDetail, MemberPackageTypes } from "@/services/api/@types/member"
-import { apiGetMemberPackages } from "@/services/api/MembeService"
+import {
+  apiGetMemberPackages,
+  apiUpdateMemberPackageStatus,
+} from "@/services/api/MembeService"
 import { Eye } from "iconsax-reactjs"
 import {
   ArrowDownUp,
@@ -17,6 +20,7 @@ import {
   User,
   X,
 } from "lucide-react"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -25,8 +29,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
 import { DataTableFacetedFilter } from "@/components/ui/data-table/data-table-faceted-filter"
+import { DateTimePicker } from "@/components/ui/date-picker"
 import InputDebounce from "@/components/ui/input-debounce"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import {
   Tooltip,
   TooltipContent,
@@ -54,46 +61,122 @@ const PackageDetailDialog = ({
   open,
   onOpenChange,
   data,
+  onSuccess,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   data: MemberPackageTypes | null
+  onSuccess?: () => void
 }) => {
+  const [status, setStatus] = React.useState<string>("")
+  const [startDate, setStartDate] = React.useState<Date | undefined>(new Date())
+  const [loading, setLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    if (data) {
+      setStatus(data.duration_status_code === 1 ? "active" : "inactive")
+      setStartDate(dayjs(data.start_date).toDate())
+    }
+  }, [data, open])
+
   if (!data) return null
 
   const isPT = data.package?.type === "pt_program"
   const isClass = data.package?.type === "class"
   const hasSessions = data.session_duration > 0 || (data.extra_session || 0) > 0
 
+  const isDirty =
+    (data.duration_status_code === 1 ? "active" : "inactive") !== status ||
+    (status === "active" &&
+      dayjs(data.start_date).format("YYYY-MM-DD") !==
+        dayjs(startDate).format("YYYY-MM-DD"))
+
+  const handleSave = async () => {
+    if (!data || !status) return
+
+    setLoading(true)
+    try {
+      await apiUpdateMemberPackageStatus(data.id, {
+        status,
+        ...(status === "active" && {
+          start_date: dayjs(startDate).format("YYYY-MM-DD"),
+        }),
+      })
+      toast.success("Status paket berhasil diperbarui")
+      onSuccess?.()
+      onOpenChange(false)
+    } catch (error) {
+      toast.error("Gagal memperbarui status paket")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-2xl">
+      <DialogContent scrollBody className="p-0 sm:max-w-2xl">
         {/* Header Section */}
-        <div className="bg-primary/5 space-y-4 p-6 pb-4">
+        <div className="bg-primary/5 space-y-2 p-6 pb-4">
           <div className="flex items-start gap-4">
             <div className="space-y-1">
-              <span className="text-primary text-[10px] font-bold tracking-widest uppercase">
+              <span className="text-primary text-[10px] font-bold tracking-wider uppercase">
                 Detail Paket
               </span>
-              <DialogTitle className="text-xl font-black tracking-tight sm:text-2xl">
+              <DialogTitle className="text-xl font-bold tracking-tight sm:text-2xl">
                 {data.package?.name}
               </DialogTitle>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge
-              className={cn(
-                "border-none px-3 py-1 text-[10px] font-bold tracking-wider uppercase shadow-sm",
-                statusColor[data.duration_status]
-              )}
-            >
-              {data.duration_status}
-            </Badge>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Badge
+                className={cn(
+                  "border-none px-3 py-1 text-[10px] font-bold tracking-wider uppercase shadow-sm",
+                  statusColor[data.duration_status]
+                )}
+              >
+                {data.duration_status}
+              </Badge>
+              <div className="bg-background flex items-center gap-2 rounded-full border p-1 pr-2">
+                <Switch
+                  id="package-status"
+                  checked={status === "active"}
+                  onCheckedChange={(checked) =>
+                    setStatus(checked ? "active" : "inactive")
+                  }
+                />
+                <Label
+                  htmlFor="package-status"
+                  className="text-[10px] font-bold tracking-wider uppercase"
+                >
+                  {status === "active" ? "Aktif" : "Non-Aktif"}
+                </Label>
+              </div>
+            </div>
+
+            {status === "active" && (
+              <div className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 duration-300">
+                <div className="flex flex-col">
+                  <Label className="text-muted-foreground w-max text-[10px] font-bold tracking-wider uppercase">
+                    Mulai Dari
+                  </Label>
+                  <DateTimePicker
+                    value={startDate}
+                    onChange={(date) => setStartDate(date as Date)}
+                    hideTime={true}
+                    classNames={{
+                      trigger:
+                        "h-8 text-[10px] font-bold uppercase min-w-[140px]",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-8 p-6 pt-2">
+        <div className="space-y-4 p-6 pt-2">
           {/* Stats Section */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="bg-muted/30 hover:bg-muted/50 flex items-center gap-3 rounded-2xl p-3 transition-all sm:gap-4 sm:p-4">
@@ -101,10 +184,10 @@ const PackageDetailDialog = ({
                 <Layers className="text-primary size-4 sm:size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                   Tipe Paket
                 </p>
-                <p className="text-xs leading-tight font-black sm:text-sm">
+                <p className="text-xs leading-tight font-semibold sm:text-sm">
                   {isClass ? "Kelas" : isPT ? "Program PT" : "Membership"}
                 </p>
               </div>
@@ -115,10 +198,10 @@ const PackageDetailDialog = ({
                 <Clock className="text-primary size-4 sm:size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                   Durasi
                 </p>
-                <p className="text-xs leading-tight font-black sm:text-sm">
+                <p className="text-xs leading-tight font-semibold sm:text-sm">
                   {data.fduration}
                 </p>
               </div>
@@ -129,10 +212,10 @@ const PackageDetailDialog = ({
                 <Info className="size-4 text-blue-500 sm:size-5" />
               </div>
               <div>
-                <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                   ID Transaksi
                 </p>
-                <p className="text-xs leading-tight font-black sm:text-sm">
+                <p className="text-xs leading-tight font-semibold sm:text-sm">
                   #{data.transaction_id}
                 </p>
               </div>
@@ -144,10 +227,10 @@ const PackageDetailDialog = ({
                   <Dumbbell className="text-primary size-4 sm:size-5" />
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                  <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                     Total Sesi
                   </p>
-                  <p className="text-base leading-none font-black sm:text-lg">
+                  <p className="text-base leading-none font-semibold sm:text-lg">
                     {data.session_duration + (data.extra_session || 0)}
                   </p>
                   {(data.extra_session || 0) > 0 && (
@@ -165,10 +248,10 @@ const PackageDetailDialog = ({
                   <Calendar className="size-4 text-green-500 sm:size-5" />
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                  <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                     Extra Hari
                   </p>
-                  <p className="text-base leading-none font-black sm:text-lg">
+                  <p className="text-base leading-none font-semibold sm:text-lg">
                     {data.extra_day} Hari
                   </p>
                 </div>
@@ -181,10 +264,10 @@ const PackageDetailDialog = ({
                   <User className="size-4 text-orange-500 sm:size-5" />
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                  <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase sm:text-[10px]">
                     Pelatih
                   </p>
-                  <p className="line-clamp-1 text-base leading-none font-black sm:text-lg">
+                  <p className="line-clamp-1 text-base leading-none font-semibold sm:text-lg">
                     {data.trainer.name}
                   </p>
                 </div>
@@ -196,7 +279,7 @@ const PackageDetailDialog = ({
 
           {/* Dates Section */}
           <div className="space-y-4">
-            <h4 className="flex items-center gap-2 text-sm font-black tracking-tight uppercase">
+            <h4 className="flex items-center gap-2 text-sm font-bold tracking-tight uppercase">
               <Calendar className="text-primary size-4" />
               Masa Berlaku
             </h4>
@@ -234,7 +317,7 @@ const PackageDetailDialog = ({
           {data.classes && data.classes.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="flex items-center gap-2 text-sm font-black tracking-tight uppercase">
+                <h4 className="flex items-center gap-2 text-sm font-bold tracking-tight uppercase">
                   <Layers className="text-primary size-4" />
                   Kelas Terdaftar
                 </h4>
@@ -283,7 +366,7 @@ const PackageDetailDialog = ({
                           )}
                         </div>
                         <div className="flex flex-col justify-center gap-1.5">
-                          <p className="group-hover:text-primary text-sm leading-none font-black transition-colors">
+                          <p className="group-hover:text-primary text-sm leading-none font-semibold transition-colors">
                             {cls.name}
                           </p>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -342,7 +425,7 @@ const PackageDetailDialog = ({
           {/* Notes Section */}
           {data.notes && (
             <div className="space-y-3 rounded-2xl border border-orange-500/10 bg-orange-500/5 p-5">
-              <h4 className="flex items-center gap-2 text-[10px] font-black tracking-widest text-orange-600 uppercase">
+              <h4 className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-orange-600 uppercase">
                 <Info className="size-3.5" />
                 Catatan Paket
               </h4>
@@ -352,12 +435,32 @@ const PackageDetailDialog = ({
             </div>
           )}
         </div>
+
+        <div className="bg-muted/20 flex items-center justify-end gap-3 border-t p-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            size="sm"
+            className="rounded-xl font-bold"
+          >
+            Batal
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-xl font-bold"
+            disabled={!isDirty || loading}
+            onClick={handleSave}
+          >
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )
 }
 
 const Package: React.FC<PackageProps> = ({ member }) => {
+  const queryClient = useQueryClient()
   const [selectedPackage, setSelectedPackage] =
     React.useState<MemberPackageTypes | null>(null)
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -692,6 +795,11 @@ const Package: React.FC<PackageProps> = ({ member }) => {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         data={selectedPackage}
+        onSuccess={() => {
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEY.memberPackages],
+          })
+        }}
       />
     </>
   )
