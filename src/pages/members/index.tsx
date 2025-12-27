@@ -48,7 +48,7 @@ const MemberList = () => {
   const navigate = useNavigate()
   const [tableData, setTableData] = useState<TableQueries>({
     pageIndex: 1,
-    pageSize: 5,
+    pageSize: 10,
     query: "",
     sort: {
       order: "",
