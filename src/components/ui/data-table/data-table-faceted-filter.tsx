@@ -28,6 +28,8 @@ interface DataTableFacetedFilterProps {
   }[]
   value?: string[]
   onChange?: (value: string[]) => void
+  isMulti?: boolean
+  icon?: React.ComponentType<{ className?: string }>
 }
 
 export function DataTableFacetedFilter({
@@ -35,6 +37,8 @@ export function DataTableFacetedFilter({
   options,
   value,
   onChange,
+  isMulti = true,
+  icon: Icon = PlusCircle,
 }: DataTableFacetedFilterProps) {
   const selectedValues = new Set(value || [])
 
@@ -42,7 +46,7 @@ export function DataTableFacetedFilter({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <PlusCircle />
+          <Icon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues?.size > 0 && (
             <>
@@ -91,6 +95,15 @@ export function DataTableFacetedFilter({
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
+                      if (!isMulti) {
+                        if (isSelected) {
+                          onChange?.([])
+                        } else {
+                          onChange?.([option.value])
+                        }
+                        return
+                      }
+
                       const newSelectedValues = new Set(selectedValues)
                       if (isSelected) {
                         newSelectedValues.delete(option.value)
@@ -106,7 +119,8 @@ export function DataTableFacetedFilter({
                         "flex size-4 items-center justify-center rounded-lg border",
                         isSelected
                           ? "bg-primary border-primary text-primary-foreground"
-                          : "border-input [&_svg]:invisible"
+                          : "border-input [&_svg]:invisible",
+                        !isMulti && "rounded-full"
                       )}
                     >
                       <Check className="text-primary-foreground size-3.5" />

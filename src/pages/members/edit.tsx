@@ -53,7 +53,7 @@ const EditMember = () => {
 
   const onClose = () => {
     console.log("code", code)
-    navigate(`/members/details/${code}`)
+    navigate(`/members/detail/${code}`)
   }
 
   return (

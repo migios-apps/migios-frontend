@@ -26,7 +26,7 @@ const MemberColumn = ({ row }: { row: MemberAttendanceLogType }) => {
   const navigate = useNavigate()
 
   const handleView = useCallback(() => {
-    navigate(`/members/details/${row.code}`)
+    navigate(`/members/detail/${row.code}`)
   }, [navigate, row])
 
   return (

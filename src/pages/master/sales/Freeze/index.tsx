@@ -92,7 +92,7 @@ const Freeze = () => {
           return (
             <div
               className="group flex cursor-pointer items-center gap-2 hover:opacity-80"
-              onClick={() => navigate(`/members/details/${row.member_code}`)}
+              onClick={() => navigate(`/members/detail/${row.member_code}`)}
             >
               {row.member_photo && (
                 <img

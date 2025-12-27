@@ -94,6 +94,29 @@ export interface MemberPackageTypes {
     type: string
     session_duration: number
   }
+  classes: {
+    id: number
+    name: string
+    photo: string | null
+    description: string | null
+    level: number
+    allow_all_instructor: boolean
+    burn_calories: number
+    is_publish: number
+    embed_video: string | null
+    background_color: string
+    color: string
+    start_date: string
+    end_date: string
+    available_for: number
+    visible_for: number
+    class_type: number
+    start_time: string
+    end_time: string
+    duration_time: number
+    duration_time_type: string
+    enabled: boolean
+  }[]
   trainer?: {
     id: number
     name: string

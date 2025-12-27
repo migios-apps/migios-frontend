@@ -848,7 +848,7 @@ function _DataTable<T>(
                                   className={cn(
                                     "px-4 py-3",
                                     isPinned &&
-                                      "bg-background/95 supports-backdrop-filter:bg-background/60 backdrop-blur"
+                                      "bg-background/95 supports-backdrop-filter:bg-background/90 backdrop-blur"
                                   )}
                                   style={{
                                     ...(getCommonPinningStyles(column) as any),

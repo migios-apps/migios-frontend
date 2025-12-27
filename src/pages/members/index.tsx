@@ -5,7 +5,7 @@ import { MemberDetail } from "@/services/api/@types/member"
 import { apiGetMemberList } from "@/services/api/MembeService"
 import dayjs from "dayjs"
 import { Eye, UserPlus } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -22,7 +22,10 @@ import {
 
 export const NameColumn = ({ row }: { row: MemberDetail }) => {
   return (
-    <div className="flex items-center gap-2">
+    <Link
+      to={`/members/detail/${row.code}`}
+      className="group flex items-center gap-2"
+    >
       <Avatar className="size-10">
         <AvatarImage src={row.photo || ""} alt={row.name} />
         <AvatarFallback>
@@ -30,17 +33,17 @@ export const NameColumn = ({ row }: { row: MemberDetail }) => {
         </AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-0.5">
-        <span className="text-foreground leading-none font-medium">
+        <span className="text-foreground group-hover:text-primary leading-none font-medium">
           {row.name}
         </span>
-        <span className="text-muted-foreground text-xs leading-none font-semibold">
+        <span className="text-muted-foreground group-hover:text-primary text-xs leading-none font-semibold">
           {row.email}
         </span>
         <span className="text-muted-foreground text-xs leading-none">
           {row.code}
         </span>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -104,7 +107,7 @@ const MemberList = () => {
 
   const handleViewDetails = (member: MemberDetail) => {
     // Navigate ke detail page
-    navigate(`/members/details/${member.code}`)
+    navigate(`/members/detail/${member.code}`)
     // Old version (dialog form) - Dikomentar
     // setShowForm(true)
     // setFormType('update')

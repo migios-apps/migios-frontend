@@ -18,7 +18,7 @@ export const memberRoute: Routes = [
     authority: [],
   },
   {
-    path: "/members/details/:id",
+    path: "/members/detail/:id",
     component: lazy(() => import("@/pages/members/detail")),
     authority: [],
   },
