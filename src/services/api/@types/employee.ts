@@ -65,20 +65,32 @@ export interface EmployeeCommissionType {
   employee_id: number
   due_date: string
   type: string
-  amount: number
   session_id: number | null
   package_id: number | null
   product_id: number | null
   transaction_id: number | null
-  notes: string | null
-  item_name: string
+  amount: number
+  base_amount: number
+  commission_base_amount: number
+  proportional_discount_amount: number
+  staff_com_sales: number
+  staff_com_sales_type: string
+  is_include_tax: number
+  is_include_discount: number
+  is_proportional: number
+  notes: string
   employee_name: string
   employee_code: string
   employee_email: string
-  employee_photo: string | null
+  employee_photo: any
   transaction_code: string | null
+  item_name: string
   sales_item_type: string
   famount: string
+  fbase_amount: string
+  fcommission_base_amount: string
+  fproportional_discount_amount: string
+  fstaff_com_sales: string
 }
 
 export type EmployeeCommissionListTypeResponse = Omit<ApiTypes, "data"> & {

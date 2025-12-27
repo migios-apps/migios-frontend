@@ -24,7 +24,10 @@ import EmployeeLayout from "../Layout"
 
 export const NameColumn = ({ row }: { row: EmployeeCommissionType }) => {
   return (
-    <div className="flex items-center gap-2">
+    <Link
+      to={`/employee/detail/${row.employee_code}`}
+      className="group flex items-center gap-2"
+    >
       <Avatar className="size-10">
         <AvatarImage src={row.employee_photo || ""} alt={row.employee_name} />
         <AvatarFallback>
@@ -32,17 +35,17 @@ export const NameColumn = ({ row }: { row: EmployeeCommissionType }) => {
         </AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-0.5">
-        <span className="text-foreground leading-none font-medium">
+        <span className="text-foreground group-hover:text-primary leading-none font-medium">
           {row.employee_name}
         </span>
-        <span className="text-muted-foreground text-xs leading-none font-semibold">
+        <span className="text-muted-foreground group-hover:text-primary text-xs leading-none font-semibold">
           {row.employee_email}
         </span>
         <span className="text-muted-foreground text-xs leading-none">
           {row.employee_code}
         </span>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -173,6 +176,24 @@ const EmployeeCommission = () => {
         },
       },
       {
+        header: "Jenis Komisi",
+        accessorKey: "type",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          return (
+            <div className="flex flex-col">
+              <span className="capitalize">{row.type}</span>
+              {row.sales_item_type ? (
+                <span className="text-muted-foreground text-xs capitalize">
+                  ({row.sales_item_type})
+                </span>
+              ) : null}
+            </div>
+          )
+        },
+      },
+      {
         header: "Faktur",
         accessorKey: "transaction_code",
         enableColumnActions: false,
@@ -200,31 +221,65 @@ const EmployeeCommission = () => {
           return dayjs(row.due_date).format("DD MMM YYYY")
         },
       },
+
       {
-        header: "Besaran Komisi",
+        header: "Harga jual",
+        accessorKey: "base_amount",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          const arr = [
+            row.is_include_tax ? "Termasuk Pajak" : null,
+            row.is_include_discount ? "Termasuk diskon" : null,
+          ]
+          return (
+            <div className="flex flex-col">
+              <span>{row.fbase_amount}</span>
+              <span className="text-muted-foreground text-[10px]">
+                {arr.filter(Boolean).join(", ")}
+              </span>
+            </div>
+          )
+        },
+      },
+
+      {
+        header: "Proporsi diskon",
+        accessorKey: "proportional_discount_amount",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          return <span>{row.fproportional_discount_amount}</span>
+        },
+      },
+
+      {
+        header: "Nilai Jual",
+        accessorKey: "commission_base_amount",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          return <span>{row.fcommission_base_amount}</span>
+        },
+      },
+
+      {
+        header: "Nilai komisi",
+        accessorKey: "staff_com_sales",
+        enableColumnActions: false,
+        cell: (props) => {
+          const row = props.row.original
+          return <span>{row.fstaff_com_sales}</span>
+        },
+      },
+
+      {
+        header: "Komisi didapat",
         accessorKey: "famount",
         enableColumnActions: false,
         cell: (props) => {
           const row = props.row.original
           return <span>{row.famount}</span>
-        },
-      },
-      {
-        header: "Jenis Komisi",
-        accessorKey: "type",
-        enableColumnActions: false,
-        cell: (props) => {
-          const row = props.row.original
-          return (
-            <div className="flex flex-col">
-              <span className="capitalize">{row.type}</span>
-              {row.sales_item_type ? (
-                <span className="text-muted-foreground text-xs capitalize">
-                  ({row.sales_item_type})
-                </span>
-              ) : null}
-            </div>
-          )
         },
       },
       {

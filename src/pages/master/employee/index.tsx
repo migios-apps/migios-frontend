@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -38,7 +39,10 @@ import EmployeeLayout from "./Layout"
 
 export const NameColumn = ({ row }: { row: EmployeeDetail }) => {
   return (
-    <div className="flex items-center gap-2">
+    <Link
+      to={`/employee/detail/${row.code}`}
+      className="group flex items-center gap-2"
+    >
       <Avatar className="size-10">
         <AvatarImage src={row.photo || ""} alt={row.name} />
         <AvatarFallback>
@@ -46,17 +50,17 @@ export const NameColumn = ({ row }: { row: EmployeeDetail }) => {
         </AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-0.5">
-        <span className="text-foreground leading-none font-medium">
+        <span className="text-foreground group-hover:text-primary leading-none font-medium">
           {row.name}
         </span>
-        <span className="text-muted-foreground text-xs leading-none font-semibold">
+        <span className="text-muted-foreground group-hover:text-primary text-xs leading-none font-semibold">
           {row.email}
         </span>
         <span className="text-muted-foreground text-xs leading-none">
           {row.code}
         </span>
       </div>
-    </div>
+    </Link>
   )
 }
 
