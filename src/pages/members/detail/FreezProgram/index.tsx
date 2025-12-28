@@ -4,11 +4,13 @@ import { TableQueries } from "@/@types/common"
 import { FreezeProgramDetail, MemberDetail } from "@/services/api/@types/member"
 import { apiGetMemberFreezeList } from "@/services/api/MembeService"
 import { Add } from "iconsax-reactjs"
+import { createPortal } from "react-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
+import { useTabs } from "@/components/animate-ui/primitives/animate/tabs"
 import FormFreeze from "@/components/form/member/freeze/FormFreeze"
 import { useTransactionFreezeForm } from "@/components/form/member/freeze/freezeValidation"
 
@@ -17,6 +19,7 @@ interface FreezProgramProps {
 }
 
 const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
+  const { activeValue } = useTabs()
   const [open, setOpen] = React.useState(false)
   const [tableData, setTableData] = React.useState<TableQueries>({
     pageIndex: 1,
@@ -148,13 +151,17 @@ const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
         }}
       />
 
-      <Button
-        size="icon"
-        className="fixed right-6 bottom-6 z-50 size-14 rounded-full shadow-lg"
-        onClick={() => setOpen(true)}
-      >
-        <Add size="32" color="currentColor" variant="Outline" />
-      </Button>
+      {activeValue === "tab4" &&
+        createPortal(
+          <Button
+            size="icon"
+            className="fixed right-6 bottom-6 z-50 size-14 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90"
+            onClick={() => setOpen(true)}
+          >
+            <Add size="32" color="currentColor" variant="Outline" />
+          </Button>,
+          document.body
+        )}
 
       <FormFreeze
         open={open}
