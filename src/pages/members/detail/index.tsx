@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { apiGetMember } from "@/services/api/MembeService"
 import dayjs from "dayjs"
@@ -6,25 +5,24 @@ import {
   Calendar2,
   CalendarTick,
   Cards,
-  Copy,
   HomeHashtag,
   MessageText1,
   NoteFavorite,
   ScanBarcode,
   TagUser,
-  TickSquare,
   Whatsapp,
 } from "iconsax-reactjs"
 import isEmpty from "lodash/isEmpty"
 import { Pencil } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
-import useCopyToClipboard from "@/utils/hooks/useCopyToClipboard"
+import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import CopyButton from "@/components/ui/copy-button"
 import Loading from "@/components/ui/loading"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -41,8 +39,8 @@ import {
   TabsTrigger,
 } from "@/components/animate-ui/components/animate/tabs"
 import { useMember } from "../store/useMember"
+import HistoryAttandance from "./Attandance"
 import FreezProgram from "./FreezProgram"
-import InformasiDetail from "./InformasiDetail"
 import LoyaltyPoint from "./LoyaltyPoint"
 import Mesurement from "./Mesurement"
 import Package from "./Package"
@@ -55,8 +53,6 @@ import Package from "./Package"
 const MemberDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [copiedField, setCopiedField] = useState<string | null>(null)
-  const { copy } = useCopyToClipboard()
   const { setMember } = useMember()
 
   const {
@@ -91,18 +87,36 @@ const MemberDetail = () => {
         <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-7">
           <aside className="col-span-1 flex flex-col gap-4 lg:sticky lg:top-20 lg:col-span-2 lg:self-start">
             <div className="relative flex w-full flex-col items-center justify-center">
-              <div className="outline-muted relative z-10 size-16 rounded-full outline-4">
-                <Avatar className="size-16">
-                  <AvatarImage
-                    src={member?.photo || "https://placehold.co/64x64"}
-                    alt={member?.name || ""}
-                  />
-                  <AvatarFallback>
-                    {member?.name?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="bg-sidebar-inset relative -mt-11 flex w-full items-center justify-center rounded-2xl p-4 pt-14">
+              <div className="bg-accent relative flex w-full items-center rounded-2xl p-4">
+                <div className="flex items-center gap-4">
+                  <div className="outline-muted relative size-16 rounded-full outline-4">
+                    <Avatar className="size-16">
+                      <AvatarImage
+                        src={member?.photo || "https://placehold.co/64x64"}
+                        alt={member?.name || ""}
+                      />
+                      <AvatarFallback>
+                        {member?.name?.charAt(0)?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-lg leading-none font-medium">
+                      {member?.name}
+                    </span>
+                    <span className="text-muted-foreground text-sm leading-none">
+                      {member?.code}
+                    </span>
+                    <Badge
+                      className={cn(
+                        "mt-2",
+                        statusColor[member.membeship_status]
+                      )}
+                    >
+                      {member.membeship_status}
+                    </Badge>
+                  </div>
+                </div>
                 <div className="absolute top-3 right-3">
                   <TooltipProvider>
                     <Tooltip>
@@ -110,7 +124,7 @@ const MemberDetail = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="bg-primary-foreground/10 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground size-8"
+                          className="bg-background text-muted-foreground hover:bg-background/80 hover:text-foreground size-8"
                           onClick={() =>
                             navigate(`/members/edit/${member?.code}`)
                           }
@@ -124,14 +138,6 @@ const MemberDetail = () => {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </div>
-                <div className="flex flex-col items-center justify-center gap-0.5">
-                  <span className="text-sidebar-inset-text text-center text-lg leading-none font-medium">
-                    {member?.name}
-                  </span>
-                  <Badge className={statusColor[member.membeship_status]}>
-                    {member.membeship_status}
-                  </Badge>
                 </div>
               </div>
             </div>
@@ -185,31 +191,7 @@ const MemberDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(member?.code || "")
-                        setCopiedField("code")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "code" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy code</span>
-                    </Button>
+                    <CopyButton value={member?.code || ""} label="Copy code" />
                   </div>
                 </div>
                 <Separator />
@@ -231,31 +213,10 @@ const MemberDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(member?.phone || "")
-                        setCopiedField("phone")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "phone" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy phone</span>
-                    </Button>
+                    <CopyButton
+                      value={member?.phone || ""}
+                      label="Copy phone"
+                    />
                   </div>
                 </div>
                 <Separator />
@@ -277,31 +238,10 @@ const MemberDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(member?.email || "")
-                        setCopiedField("email")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "email" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy email</span>
-                    </Button>
+                    <CopyButton
+                      value={member?.email || ""}
+                      label="Copy email"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -455,20 +395,21 @@ const MemberDetail = () => {
 
             <Card className="p-3 shadow-none">
               <CardContent className="p-0">
-                <Tabs defaultValue="tab1">
+                <Tabs defaultValue="tab2">
                   <div className="overflow-x-auto">
                     <TabsList className="min-w-fit justify-start sm:w-fit">
-                      <TabsTrigger value="tab1">Informasi detail</TabsTrigger>
+                      {/* <TabsTrigger value="tab1">Informasi detail</TabsTrigger> */}
                       <TabsTrigger value="tab2">Paket member</TabsTrigger>
                       <TabsTrigger value="tab3">Pengukuran</TabsTrigger>
                       <TabsTrigger value="tab4">Freeze</TabsTrigger>
                       <TabsTrigger value="tab5">Loyalty Point</TabsTrigger>
+                      <TabsTrigger value="tab6">Riwayat Absensi</TabsTrigger>
                     </TabsList>
                   </div>
                   <TabsContents>
-                    <TabsContent value="tab1">
+                    {/* <TabsContent value="tab1">
                       <InformasiDetail member={member} />
-                    </TabsContent>
+                    </TabsContent> */}
                     <TabsContent value="tab2">
                       <Package member={member} />
                     </TabsContent>
@@ -480,6 +421,9 @@ const MemberDetail = () => {
                     </TabsContent>
                     <TabsContent value="tab5">
                       <LoyaltyPoint member={member} />
+                    </TabsContent>
+                    <TabsContent value="tab6">
+                      <HistoryAttandance member={member} />
                     </TabsContent>
                   </TabsContents>
                 </Tabs>

@@ -3,40 +3,53 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { MemberAttendanceLogType } from "@/services/api/@types/attendance"
+import { MemberDetail } from "@/services/api/@types/member"
 import { apiGetMemberAttendanceLogList } from "@/services/api/Attendance"
 import dayjs from "dayjs"
+import { X } from "lucide-react"
+import { DateRange } from "react-day-picker"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
-import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
-import DatePickerAIO, {
-  DatePickerAIOPropsValue,
-} from "@/components/ui/date-picker/date-picker-aio"
-import InputDebounce from "@/components/ui/input-debounce"
+import { DataTableDateFilter } from "@/components/ui/data-table/data-table-date-filter"
 
-const History = () => {
+interface HistoryAttandanceProps {
+  member: MemberDetail | null
+}
+
+const HistoryAttandance = ({ member }: HistoryAttandanceProps) => {
+  const [dateRange, setDateRange] = React.useState<DateRange | null>(null)
   const [tableData, setTableData] = React.useState<TableQueries>({
     pageIndex: 1,
     pageSize: 10,
-    query: "",
+    query: member?.code || "",
     sort: { order: "", key: "" },
   })
 
-  const defaultMenu = getMenuShortcutDatePickerByType("all").menu
-  const [valueDateRangePicker, setValueDateRangePicker] =
-    React.useState<DatePickerAIOPropsValue>({
-      type: defaultMenu?.type,
-      name: defaultMenu.name,
-      date: [
-        defaultMenu.options.defaultStartDate,
-        defaultMenu.options.defaultEndDate,
-      ],
-    })
+  // Sync query with member code if member changes
+  React.useEffect(() => {
+    if (member?.code) {
+      setTableData((prev) => ({ ...prev, query: member.code }))
+    }
+  }, [member?.code])
+
+  const hasActiveFilters = dateRange !== null
+
+  const handleResetFilters = () => {
+    setDateRange(null)
+    setTableData({ ...tableData, pageIndex: 1 })
+  }
 
   const { data, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: [QUERY_KEY.memberAttendanceLog, tableData, valueDateRangePicker],
+    queryKey: [
+      QUERY_KEY.memberAttendanceLog,
+      tableData,
+      dateRange,
+      member?.code,
+    ],
     initialPageParam: 1,
     queryFn: async () => {
       const res = await apiGetMemberAttendanceLogList({
@@ -49,38 +62,32 @@ const History = () => {
             }
           : { sort_column: "id", sort_type: "desc" }),
         search: [
-          ...((valueDateRangePicker.type === "all"
-            ? []
-            : [
+          ...(dateRange?.from
+            ? ([
                 {
                   search_column: "date",
                   search_condition: ">=",
-                  search_text: dayjs(valueDateRangePicker.date[0]).format(
-                    "YYYY-MM-DD"
-                  ),
+                  search_text: dayjs(dateRange.from).format("YYYY-MM-DD"),
                 },
-                {
-                  search_operator: "and",
-                  search_column: "date",
-                  search_condition: "<=",
-                  search_text: dayjs(valueDateRangePicker.date[1]).format(
-                    "YYYY-MM-DD"
-                  ),
-                },
-              ]) as Filter[]),
+                ...(dateRange.to
+                  ? [
+                      {
+                        search_operator: "and",
+                        search_column: "date",
+                        search_condition: "<=",
+                        search_text: dayjs(dateRange.to).format("YYYY-MM-DD"),
+                      },
+                    ]
+                  : []),
+              ] as Filter[])
+            : []),
           ...((tableData.query === ""
             ? []
             : [
                 {
                   search_operator: "and",
                   search_column: "code",
-                  search_condition: "like",
-                  search_text: tableData.query,
-                },
-                {
-                  search_operator: "or",
-                  search_column: "name",
-                  search_condition: "like",
+                  search_condition: "=",
                   search_text: tableData.query,
                 },
               ]) as Filter[]),
@@ -175,33 +182,36 @@ const History = () => {
   )
 
   return (
-    <Card className="gap-0 pt-4">
-      <CardHeader>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <CardTitle>Riwayat Absensi</CardTitle>
-            <DatePickerAIO
-              variant="range"
-              align="end"
-              value={valueDateRangePicker}
-              onChange={(value) => {
-                setValueDateRangePicker(value)
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <InputDebounce
-              placeholder="Pencarian cepat (kode member atau nama)..."
-              handleOnchange={(value) => {
-                setTableData({ ...tableData, query: value, pageIndex: 1 })
-              }}
-            />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <Card className="gap-0 border-0 pt-0 shadow-none">
+      <CardContent className="px-0">
         <div className="flex flex-col gap-2">
           <DataTable
+            renderViewOptions={() => (
+              <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <CardTitle className="text-lg">Riwayat Absensi</CardTitle>
+                <div className="flex items-center gap-2">
+                  <DataTableDateFilter
+                    title="Pilih Tanggal"
+                    variant="range"
+                    value={dateRange}
+                    onChange={(value) => {
+                      setDateRange(value)
+                      setTableData({ ...tableData, pageIndex: 1 })
+                    }}
+                  />
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      onClick={handleResetFilters}
+                      className="h-8 px-2 lg:px-3"
+                    >
+                      Reset
+                      <X className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
             columns={columns}
             data={listData}
             noData={!isLoading && listData.length === 0}
@@ -227,4 +237,4 @@ const History = () => {
   )
 }
 
-export default History
+export default HistoryAttandance

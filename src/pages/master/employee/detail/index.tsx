@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   EmployeeDetailPage,
@@ -12,24 +11,23 @@ import dayjs from "dayjs"
 import {
   Calendar2,
   CalendarTick,
-  Copy,
-  Edit2,
   HomeHashtag,
   MessageText1,
   Notepad2,
   ScanBarcode,
   SecurityUser,
   TagUser,
-  TickSquare,
   Whatsapp,
 } from "iconsax-reactjs"
 import isEmpty from "lodash/isEmpty"
+import { Edit2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
-import useCopyToClipboard from "@/utils/hooks/useCopyToClipboard"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import CopyButton from "@/components/ui/copy-button"
 import Loading from "@/components/ui/loading"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -52,8 +50,6 @@ import PtPrograms from "./PtPrograms"
 const EmployeeDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [copiedField, setCopiedField] = useState<string | null>(null)
-  const { copy } = useCopyToClipboard()
 
   const {
     data: employee,
@@ -85,48 +81,58 @@ const EmployeeDetail = () => {
       {!isEmpty(employee) && !errorEmployee && (
         <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-7">
           <aside className="col-span-1 flex flex-col gap-4 lg:sticky lg:top-20 lg:col-span-2 lg:self-start">
-            <div className="relative flex w-full flex-col items-center justify-center">
-              <div className="outline-muted relative z-10 size-16 rounded-full outline-4">
-                <Avatar className="size-16">
-                  <AvatarImage
-                    src={employee?.photo || "https://placehold.co/64x64"}
-                    alt={employee?.name || ""}
-                  />
-                  <AvatarFallback>
-                    {employee?.name?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="bg-sidebar-inset relative -mt-11 flex w-full items-center justify-center rounded-2xl p-4 pt-14">
-                <div className="absolute top-3 right-3">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="bg-primary-foreground/10 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground size-8"
-                          onClick={() => navigate(`/employee/edit/${id}`)}
-                        >
-                          <Edit2 className="size-4" />
-                          <span className="sr-only">Edit employee</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit employee</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+            <div className="bg-accent relative flex w-full items-center rounded-2xl p-4">
+              <div className="flex items-center gap-4">
+                <div className="outline-muted relative size-16 rounded-full outline-4">
+                  <Avatar className="size-16">
+                    <AvatarImage
+                      src={employee?.photo || "https://placehold.co/64x64"}
+                      alt={employee?.name || ""}
+                    />
+                    <AvatarFallback>
+                      {employee?.name?.charAt(0)?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
-                <div className="flex flex-col items-center justify-center gap-0.5">
-                  <span className="text-sidebar-inset-text text-center text-lg leading-none font-medium">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-lg leading-none font-medium">
                     {employee?.name}
                   </span>
-                  <span className="text-primary-foreground/80 text-center text-sm leading-none capitalize">
-                    {employee?.roles?.map((role) => role.name).join(", ") ||
-                      "-"}
+                  <span className="text-muted-foreground text-sm leading-none">
+                    {employee?.code}
                   </span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {employee?.roles?.map((role) => (
+                      <Badge
+                        key={role.id}
+                        variant="secondary"
+                        className="text-[10px] capitalize"
+                      >
+                        {role.name}
+                      </Badge>
+                    )) || "-"}
+                  </div>
                 </div>
+              </div>
+              <div className="absolute top-3 right-3">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="bg-background text-muted-foreground hover:bg-background/80 hover:text-foreground size-8"
+                        onClick={() => navigate(`/employee/edit/${id}`)}
+                      >
+                        <Edit2 className="size-4" />
+                        <span className="sr-only">Edit employee</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit employee</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
 
@@ -181,31 +187,10 @@ const EmployeeDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(employee?.code || "")
-                        setCopiedField("code")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "code" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy code</span>
-                    </Button>
+                    <CopyButton
+                      value={employee?.code || ""}
+                      label="Copy code"
+                    />
                   </div>
                 </div>
                 <Separator />
@@ -227,31 +212,10 @@ const EmployeeDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(employee?.phone || "")
-                        setCopiedField("phone")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "phone" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy phone</span>
-                    </Button>
+                    <CopyButton
+                      value={employee?.phone || ""}
+                      label="Copy phone"
+                    />
                   </div>
                 </div>
                 <Separator />
@@ -273,31 +237,10 @@ const EmployeeDetail = () => {
                       </span>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => {
-                        copy(employee?.email || "")
-                        setCopiedField("email")
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === "email" ? (
-                        <TickSquare
-                          size="16"
-                          color="hsl(var(--primary))"
-                          variant="Bold"
-                        />
-                      ) : (
-                        <Copy
-                          size="16"
-                          color="currentColor"
-                          variant="Outline"
-                        />
-                      )}
-                      <span className="sr-only">Copy email</span>
-                    </Button>
+                    <CopyButton
+                      value={employee?.email || ""}
+                      label="Copy email"
+                    />
                   </div>
                 </div>
               </CardContent>
