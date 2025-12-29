@@ -52,7 +52,8 @@ function AsyncSelect<
           input: () => "m-0 p-0",
           loadingIndicator: () => "",
           loadingMessage: () => "text-muted-foreground p-2 text-sm",
-          menu: () => "p-1 mt-1 border bg-popover shadow-md rounded-md z-50",
+          menu: () =>
+            "p-1 mt-1 border bg-popover shadow-md rounded-md z-[9999]",
           menuList: () => "",
           menuPortal: () => "",
           multiValue: () =>
@@ -90,6 +91,10 @@ function AsyncSelect<
           control: (base) => ({
             ...base,
             transition: "none",
+          }),
+          menu: (base) => ({
+            ...base,
+            zIndex: 9999,
           }),
           menuList: (base) => ({
             ...base,
