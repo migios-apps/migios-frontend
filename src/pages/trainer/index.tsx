@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { cn } from "@/lib/utils"
+import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,11 +31,27 @@ import InputDebounce from "@/components/ui/input-debounce"
 import { SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/animate-ui/components/radix/dropdown-menu"
+import TrainerDetailSheet from "./components/TrainerDetailSheet"
 
 const MemberCard = ({ member }: { member: TrainerMember }) => {
   return (
-    <Card className="group border-muted-foreground/10 cursor-pointer gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md">
-      <CardContent className="p-3">
+    <Card
+      className={cn(
+        "group cursor-pointer gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
+        member.membership_status === "freeze"
+          ? cn("border-l-4", statusColor[member.membership_status])
+          : "border-muted-foreground/10"
+      )}
+    >
+      <CardContent className="bg-card p-3">
         <div className="mb-2 flex items-center gap-3">
           <Avatar className="h-8 w-8 border">
             <AvatarImage src={member.photo || ""} alt={member.name} />
@@ -43,9 +60,21 @@ const MemberCard = ({ member }: { member: TrainerMember }) => {
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="group-hover:text-primary mb-1 truncate text-sm leading-none font-semibold">
-              {member.name}
-            </p>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <p className="group-hover:text-primary truncate text-sm leading-none font-semibold">
+                {member.name}
+              </p>
+              {member.membership_status && (
+                <Badge
+                  className={cn(
+                    "h-4 px-1 text-[9px] font-medium transition-all",
+                    statusColor[member.membership_status]
+                  )}
+                >
+                  <span className="capitalize">{member.membership_status}</span>
+                </Badge>
+              )}
+            </div>
             <p className="group-hover:text-primary text-muted-foreground truncate text-[10px] tracking-wider uppercase">
               {member.code}
             </p>
@@ -58,16 +87,28 @@ const MemberCard = ({ member }: { member: TrainerMember }) => {
               className="bg-accent/50 border-accent rounded-md border p-1.5 text-[11px]"
             >
               <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
-                <BookOpen className="h-3 w-3 shrink-0" />
+                <BookOpen className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{pkg.package_name}</span>
               </div>
-              <div className="text-muted-foreground flex items-center justify-between pl-4 text-[10px]">
-                <span>
-                  Berakhir: {new Date(pkg.end_date).toLocaleDateString("id-ID")}
-                </span>
+              <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-1 pl-5 text-[10px]">
+                <div className="flex items-center gap-1.5 opacity-80">
+                  <span className="text-primary font-bold">
+                    {pkg.total_available_session} Sesi
+                  </span>
+                  <span className="bg-muted-foreground/30 h-1 w-1 rounded-full" />
+                  <span className="text-muted-foreground">
+                    Berakhir:{" "}
+                    {new Date(pkg.end_date).toLocaleDateString("id-ID")}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
+          {member.total_active_packages > 2 && (
+            <p className="text-muted-foreground pt-0.5 text-center text-[10px] font-bold tracking-widest capitalize">
+              + {member.total_active_packages - 2} Paket Lainnya
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -77,9 +118,11 @@ const MemberCard = ({ member }: { member: TrainerMember }) => {
 const TrainerColumn = ({
   trainer,
   index,
+  onViewDetail,
 }: {
   trainer: TrainerDetail
   index: number
+  onViewDetail: (trainer: TrainerDetail) => void
 }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -157,9 +200,34 @@ const TrainerColumn = ({
                 Paket Aktif: {trainer.total_active_package}
               </Badge>
               <div className="flex-1" />
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-muted-foreground hover:text-foreground transition-colors outline-none">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Aksi Trainer</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onViewDetail(trainer)}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Lihat Detail</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Jadwal Trainer</span>
+                  </DropdownMenuItem>
+                  {trainer.total_active_members > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive">
+                        <ArrowDownUp className="mr-2 h-4 w-4" />
+                        <span>Ganti Trainer</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -267,6 +335,15 @@ const TrainerPage = () => {
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(
     null
   )
+
+  const [selectedTrainerDetail, setSelectedTrainerDetail] =
+    useState<TrainerDetail | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+
+  const handleOpenDetail = (trainer: TrainerDetail) => {
+    setSelectedTrainerDetail(trainer)
+    setIsSheetOpen(true)
+  }
   const [sortValue, setSortValue] = useState<string>("member-desc")
 
   const hasActiveFilters =
@@ -463,6 +540,7 @@ const TrainerPage = () => {
                     key={trainer.id}
                     trainer={trainer}
                     index={index}
+                    onViewDetail={handleOpenDetail}
                   />
                 ))
               ) : (
@@ -510,6 +588,12 @@ const TrainerPage = () => {
           )}
         </AnimatePresence>
       </div>
+
+      <TrainerDetailSheet
+        trainer={selectedTrainerDetail}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
     </div>
   )
 }

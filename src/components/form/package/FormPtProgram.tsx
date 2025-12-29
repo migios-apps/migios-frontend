@@ -180,16 +180,17 @@ const FormPtProgram: React.FC<FormProps> = ({
   })
 
   const onSubmit: SubmitHandler<PtTrainerFormSchema> = (data) => {
-    const loyaltyPoint = data.loyalty_point
-      ? {
-          points: data.loyalty_point.points,
-          expired_type: data.loyalty_point.expired_type,
-          expired_value:
-            data.loyalty_point.expired_type === "forever"
-              ? 0
-              : (data.loyalty_point.expired_value ?? 0),
-        }
-      : null
+    const loyaltyPoint =
+      data.loyalty_point && data.loyalty_point.points
+        ? {
+            points: data.loyalty_point.points ?? 0,
+            expired_type: (data.loyalty_point.expired_type as any) ?? "forever",
+            expired_value:
+              data.loyalty_point.expired_type === "forever"
+                ? 0
+                : (data.loyalty_point.expired_value ?? 0),
+          }
+        : null
 
     const body: CreatePackageDto = {
       club_id: club?.id as number,
@@ -390,9 +391,11 @@ const FormPtProgram: React.FC<FormProps> = ({
                                   onClick={() => {
                                     if (watchData.loyalty_point) {
                                       loyaltyPointForm.reset({
-                                        points: watchData.loyalty_point.points,
+                                        points:
+                                          watchData.loyalty_point.points ?? 0,
                                         expired_type:
-                                          watchData.loyalty_point.expired_type,
+                                          (watchData.loyalty_point
+                                            .expired_type as any) ?? "month",
                                         expired_value:
                                           watchData.loyalty_point
                                             .expired_value ?? 0,

@@ -71,16 +71,17 @@ export const validationSchemaMembership = yup.object().shape({
   loyalty_point: yup
     .object()
     .shape({
-      points: yup.number().min(0).required(),
+      points: yup.number().min(0).optional().nullable(),
       expired_type: yup
         .string()
         .oneOf(["forever", "day", "week", "month", "year"])
-        .required(),
+        .optional()
+        .nullable(),
       expired_value: yup
         .number()
         .min(0)
         .when("expired_type", {
-          is: (val: string) => val !== "forever",
+          is: (val: string) => val !== "forever" && !!val,
           then: (schema) => schema.required().min(1),
           otherwise: (schema) => schema.optional().default(0),
         }),
@@ -176,16 +177,17 @@ export const validationSchemaPtTrainer = yup.object().shape({
   loyalty_point: yup
     .object()
     .shape({
-      points: yup.number().min(0).required(),
+      points: yup.number().min(0).optional().nullable(),
       expired_type: yup
         .string()
         .oneOf(["forever", "day", "week", "month", "year"])
-        .required(),
+        .optional()
+        .nullable(),
       expired_value: yup
         .number()
         .min(0)
         .when("expired_type", {
-          is: (val: string) => val !== "forever",
+          is: (val: string) => val !== "forever" && !!val,
           then: (schema) => schema.required().min(1),
           otherwise: (schema) => schema.optional().default(0),
         }),
@@ -282,16 +284,17 @@ export const validationSchemaClass = yup.object().shape({
   loyalty_point: yup
     .object()
     .shape({
-      points: yup.number().min(0).required(),
+      points: yup.number().min(0).optional().nullable(),
       expired_type: yup
         .string()
         .oneOf(["forever", "day", "week", "month", "year"])
-        .required(),
+        .optional()
+        .nullable(),
       expired_value: yup
         .number()
         .min(0)
         .when("expired_type", {
-          is: (val: string) => val !== "forever",
+          is: (val: string) => val !== "forever" && !!val,
           then: (schema) => schema.required().min(1),
           otherwise: (schema) => schema.optional().default(0),
         }),
