@@ -1,7 +1,11 @@
 import { useState } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { Filter } from "@/services/api/@types/api"
-import { TrainerDetail, TrainerMember } from "@/services/api/@types/trainer"
+import {
+  TrainerDetail,
+  TrainerMember,
+  TrainerPackage,
+} from "@/services/api/@types/trainer"
 import { apiGetTrainerActiveMembers } from "@/services/api/TrainerService"
 import { Calendar2, Profile2User } from "iconsax-reactjs"
 import {
@@ -63,6 +67,9 @@ const TrainerDetailSheet = ({
   const [statusFilter, setStatusFilter] = useState<string[]>([])
 
   const [selectedMember, setSelectedMember] = useState<TrainerMember | null>(
+    null
+  )
+  const [selectedPackage, setSelectedPackage] = useState<TrainerPackage | null>(
     null
   )
   const [isMemberSheetOpen, setIsMemberSheetOpen] = useState(false)
@@ -420,12 +427,8 @@ const TrainerDetailSheet = ({
                                 {allMembers.map((member, idx) => (
                                   <Card
                                     key={`${member.id}-${idx}`}
-                                    onClick={() => {
-                                      setSelectedMember(member)
-                                      setIsMemberSheetOpen(true)
-                                    }}
                                     className={cn(
-                                      "group cursor-pointer gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
+                                      "group gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
                                       member.membership_status === "freeze"
                                         ? cn(
                                             "border-l-4",
@@ -449,7 +452,7 @@ const TrainerDetailSheet = ({
                                         </Avatar>
                                         <div className="min-w-0 flex-1">
                                           <div className="mb-1 flex items-center justify-between gap-2">
-                                            <p className="group-hover:text-primary truncate text-sm leading-none font-semibold transition-all">
+                                            <p className="truncate text-sm leading-none font-semibold transition-all">
                                               {member.name}
                                             </p>
                                             {member.membership_status && (
@@ -467,7 +470,7 @@ const TrainerDetailSheet = ({
                                               </Badge>
                                             )}
                                           </div>
-                                          <p className="group-hover:text-primary text-muted-foreground truncate text-xs tracking-wider uppercase">
+                                          <p className="text-muted-foreground truncate text-xs tracking-wider uppercase">
                                             {member.code}
                                           </p>
                                         </div>
@@ -476,7 +479,13 @@ const TrainerDetailSheet = ({
                                         {member.packages?.map((pkg) => (
                                           <div
                                             key={pkg.id}
-                                            className="bg-accent/50 border-accent rounded-md border p-1.5 text-xs"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setSelectedMember(member)
+                                              setSelectedPackage(pkg)
+                                              setIsMemberSheetOpen(true)
+                                            }}
+                                            className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-xs transition-colors"
                                           >
                                             <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
                                               <BookOpen className="h-3.5 w-3.5 shrink-0" />
@@ -578,6 +587,7 @@ const TrainerDetailSheet = ({
       <MemberDetailSheet
         member={selectedMember}
         trainer={trainer}
+        pkg={selectedPackage}
         open={isMemberSheetOpen}
         onOpenChange={setIsMemberSheetOpen}
       />

@@ -1,15 +1,10 @@
 import { useState } from "react"
-import { TrainerDetail, TrainerMember } from "@/services/api/@types/trainer"
 import {
-  Profile2User,
-  Calendar2,
-  Call,
-  Sms,
-  Clock,
-  TaskSquare,
-  Man,
-  Woman,
-} from "iconsax-reactjs"
+  TrainerDetail,
+  TrainerMember,
+  TrainerPackage,
+} from "@/services/api/@types/trainer"
+import { Profile2User, Calendar2, Clock, TaskSquare } from "iconsax-reactjs"
 import { User, BookOpen, ArrowRightLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
@@ -39,6 +34,7 @@ import TransferMemberDialog from "./TransferMemberDialog"
 interface MemberDetailSheetProps {
   member: TrainerMember | null
   trainer: TrainerDetail | null
+  pkg: TrainerPackage | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -46,10 +42,11 @@ interface MemberDetailSheetProps {
 const MemberDetailSheet = ({
   member,
   trainer,
+  pkg,
   open,
   onOpenChange,
 }: MemberDetailSheetProps) => {
-  const [activeTab, setActiveTab] = useState("packages")
+  const [activeTab, setActiveTab] = useState("package")
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
 
   if (!member) return null
@@ -66,7 +63,7 @@ const MemberDetailSheet = ({
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
                 <SheetTitle className="text-base font-semibold tracking-tight">
-                  Detail Member
+                  Detail Paket Member
                 </SheetTitle>
               </div>
             </div>
@@ -141,60 +138,6 @@ const MemberDetailSheet = ({
                         {member.code}
                       </div>
                     </div>
-
-                    {/* Precise Info Grid - Refactored with Cards */}
-                    {/* Precise Info Grid - Optimized Layout */}
-                    <div className="mt-6 flex w-full flex-col gap-2">
-                      <div className="grid w-full grid-cols-2 gap-2">
-                        <Card className="flex flex-col items-center justify-center gap-1 rounded-xl border p-2 py-2.5 shadow-none">
-                          <div className="rounded-md bg-blue-500/10 p-1 text-blue-600">
-                            <Call className="h-3 w-3" variant="Bulk" />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-muted-foreground text-[10px]">
-                              Telepon
-                            </p>
-                            <p className="text-xs font-semibold">
-                              {member.phone || "-"}
-                            </p>
-                          </div>
-                        </Card>
-                        <Card className="flex flex-col items-center justify-center gap-1 rounded-xl border p-2 py-2.5 shadow-none">
-                          <div className="rounded-md bg-purple-500/10 p-1 text-purple-600">
-                            {member.gender?.toLowerCase() === "male" ? (
-                              <Man className="h-3 w-3" variant="Bulk" />
-                            ) : (
-                              <Woman className="h-3 w-3" variant="Bulk" />
-                            )}
-                          </div>
-                          <div className="text-center">
-                            <p className="text-muted-foreground text-[10px]">
-                              Gender
-                            </p>
-                            <p className="text-xs font-semibold">
-                              {!member?.gender
-                                ? "-"
-                                : member.gender === "m"
-                                  ? "Laki-laki"
-                                  : "Perempuan"}
-                            </p>
-                          </div>
-                        </Card>
-                      </div>
-                      <Card className="flex flex-col items-center justify-center gap-1 rounded-xl border p-2 py-2.5 shadow-none">
-                        <div className="rounded-md bg-green-500/10 p-1 text-green-600">
-                          <Sms className="h-3 w-3" variant="Bulk" />
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground text-[10px]">
-                            Email
-                          </p>
-                          <p className="text-xs font-semibold">
-                            {member.email || "-"}
-                          </p>
-                        </div>
-                      </Card>
-                    </div>
                   </div>
                 </div>
 
@@ -202,12 +145,12 @@ const MemberDetailSheet = ({
                 <Tabs
                   value={activeTab}
                   onValueChange={setActiveTab}
-                  className="mt-2 w-full"
+                  className="mt-4 w-full"
                 >
                   <TabsList className="h-auto w-full justify-start gap-1">
-                    <TabsTrigger value="packages">
+                    <TabsTrigger value="package">
                       <TaskSquare className="h-3 w-3" variant="Bulk" />
-                      Paket Aktif
+                      Detail Paket
                     </TabsTrigger>
                     <TabsTrigger value="history">
                       <Clock className="h-3 w-3" variant="Bulk" />
@@ -216,52 +159,86 @@ const MemberDetailSheet = ({
                   </TabsList>
 
                   <TabsContents>
-                    <TabsContent value="packages" className="space-y-2 pt-1">
-                      {member.packages && member.packages.length > 0 ? (
-                        member.packages.map((pkg) => (
-                          <Card
-                            key={pkg.id}
-                            className="bg-card relative overflow-hidden border p-0 shadow-none"
-                          >
-                            <CardContent className="p-3">
-                              <div className="mb-2 flex items-start justify-between gap-2">
-                                <div className="flex items-center gap-2.5">
-                                  <div className="bg-muted text-foreground rounded-lg p-2">
-                                    <BookOpen className="h-4 w-4" />
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="mb-0.5 text-xs leading-none font-bold">
-                                      {pkg.package_name}
-                                    </span>
-                                    {/* <span className="text-muted-foreground text-xs">
-                                      PT Program
-                                    </span> */}
-                                  </div>
+                    <TabsContent value="package" className="space-y-2 pt-1">
+                      {pkg ? (
+                        <Card className="bg-card relative overflow-hidden border p-0 shadow-none">
+                          <CardContent className="p-3">
+                            <div className="mb-3 flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5">
+                                <div className="bg-primary/10 text-primary rounded-lg p-2">
+                                  <BookOpen className="h-4 w-4" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                                    Nama Paket
+                                  </span>
+                                  <span className="text-sm leading-tight font-bold">
+                                    {pkg.package_name}
+                                  </span>
                                 </div>
                               </div>
+                              <Badge
+                                variant="outline"
+                                className="border-primary/20 bg-primary/5 text-primary h-5 px-1.5 text-[10px] uppercase"
+                              >
+                                {pkg.package_type?.replace("_", " ")}
+                              </Badge>
+                            </div>
 
-                              <div className="bg-muted/50 flex items-center justify-between rounded-lg border p-2 text-xs">
-                                <div className="flex flex-col gap-0.5">
-                                  <p className="text-muted-foreground">
-                                    Berakhir
-                                  </p>
-                                  <div className="flex items-center gap-1 font-semibold">
-                                    <Calendar2 className="h-2.5 w-2.5" />
-                                    {dayjs(pkg.end_date).format("DD MMM YYYY")}
-                                  </div>
-                                </div>
-                                <div className="bg-background min-w-[50px] rounded-md border px-2 py-1 text-center">
-                                  <p className="text-xs leading-none font-semibold">
+                            <div className="mb-3 grid grid-cols-2 gap-2">
+                              <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
+                                <p className="text-muted-foreground mb-1 text-[10px]">
+                                  Total Sesi
+                                </p>
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-lg font-bold">
                                     {pkg.total_available_session}
-                                  </p>
-                                  <p className="text-muted-foreground text-xs">
+                                  </span>
+                                  <span className="text-muted-foreground text-[10px] font-semibold">
                                     Sesi
-                                  </p>
+                                  </span>
                                 </div>
                               </div>
-                            </CardContent>
-                          </Card>
-                        ))
+                              <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
+                                <p className="text-muted-foreground mb-1 text-[10px]">
+                                  Durasi
+                                </p>
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-lg font-bold">
+                                    {pkg.duration}
+                                  </span>
+                                  <span className="text-muted-foreground text-[10px] font-semibold uppercase">
+                                    {pkg.duration_type}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-muted/30 flex items-center justify-between rounded-lg border border-dashed p-2 text-xs">
+                              <div className="flex flex-col gap-0.5">
+                                <p className="text-muted-foreground text-[10px]">
+                                  Mulai
+                                </p>
+                                <div className="flex items-center gap-1 font-semibold">
+                                  <Calendar2 className="text-primary h-3 w-3" />
+                                  {dayjs(pkg.start_date).format("DD MMM YYYY")}
+                                </div>
+                              </div>
+                              <div className="bg-border h-8 w-px" />
+                              <div className="flex flex-col gap-0.5 text-right">
+                                <p className="text-muted-foreground text-[10px]">
+                                  Berakhir
+                                </p>
+                                <div className="flex items-center justify-end gap-1 font-semibold">
+                                  <span className="text-red-500">
+                                    {dayjs(pkg.end_date).format("DD MMM YYYY")}
+                                  </span>
+                                  <Calendar2 className="h-3 w-3 text-red-500" />
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       ) : (
                         <div className="bg-muted/30 flex flex-col items-center justify-center rounded-xl border border-dashed py-10 opacity-50">
                           <Profile2User
@@ -270,7 +247,7 @@ const MemberDetailSheet = ({
                             className="text-muted-foreground"
                           />
                           <p className="text-muted-foreground mt-2 text-xs font-semibold">
-                            Tidak ada paket aktif
+                            Tidak ada paket yang dipilih
                           </p>
                         </div>
                       )}
@@ -348,7 +325,10 @@ const MemberDetailSheet = ({
       <TransferMemberDialog
         open={isTransferDialogOpen}
         onOpenChange={setIsTransferDialogOpen}
-        member={member}
+        member={{
+          ...member,
+          packages: pkg ? [pkg] : member.packages,
+        }}
         trainer={trainer}
         onSuccess={() => onOpenChange(false)}
       />

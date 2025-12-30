@@ -2,7 +2,11 @@ import React, { useState } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { Filter } from "@/services/api/@types/api"
 import { MemberDetail } from "@/services/api/@types/member"
-import { TrainerDetail, TrainerMember } from "@/services/api/@types/trainer"
+import {
+  TrainerDetail,
+  TrainerMember,
+  TrainerPackage,
+} from "@/services/api/@types/trainer"
 import { apiGetMemberList } from "@/services/api/MembeService"
 import {
   apiGetTrainerList,
@@ -47,13 +51,12 @@ const MemberCard = ({
   onClick,
 }: {
   member: TrainerMember
-  onClick: () => void
+  onClick: (pkg: TrainerPackage) => void
 }) => {
   return (
     <Card
-      onClick={onClick}
       className={cn(
-        "group cursor-pointer gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
+        "gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
         member.membership_status === "freeze"
           ? cn("border-l-4", statusColor[member.membership_status])
           : "border-muted-foreground/10"
@@ -69,7 +72,7 @@ const MemberCard = ({
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center justify-between gap-2">
-              <p className="group-hover:text-primary truncate text-sm leading-none font-semibold">
+              <p className="truncate text-sm leading-none font-semibold">
                 {member.name}
               </p>
               {member.membership_status && (
@@ -83,7 +86,7 @@ const MemberCard = ({
                 </Badge>
               )}
             </div>
-            <p className="group-hover:text-primary text-muted-foreground truncate text-[10px] tracking-wider uppercase">
+            <p className="text-muted-foreground truncate text-[10px] tracking-wider uppercase">
               {member.code}
             </p>
           </div>
@@ -92,7 +95,8 @@ const MemberCard = ({
           {member.packages?.map((pkg) => (
             <div
               key={pkg.id}
-              className="bg-accent/50 border-accent rounded-md border p-1.5 text-[11px]"
+              onClick={() => onClick(pkg)}
+              className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-[11px] transition-colors"
             >
               <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
                 <BookOpen className="h-3.5 w-3.5 shrink-0" />
@@ -132,7 +136,11 @@ const TrainerColumn = ({
   trainer: TrainerDetail
   index: number
   onViewDetail: (trainer: TrainerDetail) => void
-  onMemberClick: (member: TrainerMember, trainer: TrainerDetail) => void
+  onMemberClick: (
+    member: TrainerMember,
+    trainer: TrainerDetail,
+    pkg: TrainerPackage
+  ) => void
 }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -255,11 +263,12 @@ const TrainerColumn = ({
           ) : (
             <>
               {allMembers.map((member, idx) => (
-                <MemberCard
-                  key={`${member.id}-${idx}`}
-                  member={member}
-                  onClick={() => onMemberClick(member, trainer)}
-                />
+                <div key={`${member.id}-${idx}`}>
+                  <MemberCard
+                    member={member}
+                    onClick={(pkg) => onMemberClick(member, trainer, pkg)}
+                  />
+                </div>
               ))}
 
               {hasNextPage && (
@@ -356,6 +365,8 @@ const TrainerPage = () => {
 
   const [selectedMemberDetail, setSelectedMemberDetail] =
     useState<TrainerMember | null>(null)
+  const [selectedMemberPackage, setSelectedMemberPackage] =
+    useState<TrainerPackage | null>(null)
   const [selectedMemberTrainer, setSelectedMemberTrainer] =
     useState<TrainerDetail | null>(null)
   const [isMemberSheetOpen, setIsMemberSheetOpen] = useState(false)
@@ -561,8 +572,9 @@ const TrainerPage = () => {
                     trainer={trainer}
                     index={index}
                     onViewDetail={handleOpenDetail}
-                    onMemberClick={(member, trainer) => {
+                    onMemberClick={(member, trainer, pkg) => {
                       setSelectedMemberDetail(member)
+                      setSelectedMemberPackage(pkg)
                       setSelectedMemberTrainer(trainer)
                       setIsMemberSheetOpen(true)
                     }}
@@ -623,6 +635,7 @@ const TrainerPage = () => {
       <MemberDetailSheet
         member={selectedMemberDetail}
         trainer={selectedMemberTrainer}
+        pkg={selectedMemberPackage}
         open={isMemberSheetOpen}
         onOpenChange={setIsMemberSheetOpen}
       />

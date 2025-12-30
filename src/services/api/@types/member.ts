@@ -24,15 +24,12 @@ export interface MemberDetail {
   age: number
   membeship_status: "active" | "inactive" | "freeze"
   membeship_status_code: number
-  total_active_membership: number
-  total_active_ptprogram: number
-  total_active_class: number
-  freeze?: {
-    id: number
-    start_date: string
-    end_date: string
-    notes: string
-  } | null
+  last_freeze_id?: number | null
+  freeze_start_date?: string | null
+  freeze_end_date?: string | null
+  // total_active_membership: number
+  // total_active_ptprogram: number
+  // total_active_class: number
 }
 
 export type OriginalMemberDetail = Omit<
@@ -43,7 +40,9 @@ export type OriginalMemberDetail = Omit<
   | "total_active_membership"
   | "total_active_ptprogram"
   | "total_active_class"
-  | "freeze"
+  | "last_freeze_id"
+  | "freeze_start_date"
+  | "freeze_end_date"
 >
 
 export interface CreateMemberTypes {
