@@ -39,11 +39,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/animate-ui/components/radix/dropdown-menu"
+import MemberDetailSheet from "./components/MemberDetailSheet"
 import TrainerDetailSheet from "./components/TrainerDetailSheet"
 
-const MemberCard = ({ member }: { member: TrainerMember }) => {
+const MemberCard = ({
+  member,
+  onClick,
+}: {
+  member: TrainerMember
+  onClick: () => void
+}) => {
   return (
     <Card
+      onClick={onClick}
       className={cn(
         "group cursor-pointer gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
         member.membership_status === "freeze"
@@ -119,10 +127,12 @@ const TrainerColumn = ({
   trainer,
   index,
   onViewDetail,
+  onMemberClick,
 }: {
   trainer: TrainerDetail
   index: number
   onViewDetail: (trainer: TrainerDetail) => void
+  onMemberClick: (member: TrainerMember, trainer: TrainerDetail) => void
 }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -245,7 +255,11 @@ const TrainerColumn = ({
           ) : (
             <>
               {allMembers.map((member, idx) => (
-                <MemberCard key={`${member.id}-${idx}`} member={member} />
+                <MemberCard
+                  key={`${member.id}-${idx}`}
+                  member={member}
+                  onClick={() => onMemberClick(member, trainer)}
+                />
               ))}
 
               {hasNextPage && (
@@ -339,6 +353,12 @@ const TrainerPage = () => {
   const [selectedTrainerDetail, setSelectedTrainerDetail] =
     useState<TrainerDetail | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+
+  const [selectedMemberDetail, setSelectedMemberDetail] =
+    useState<TrainerMember | null>(null)
+  const [selectedMemberTrainer, setSelectedMemberTrainer] =
+    useState<TrainerDetail | null>(null)
+  const [isMemberSheetOpen, setIsMemberSheetOpen] = useState(false)
 
   const handleOpenDetail = (trainer: TrainerDetail) => {
     setSelectedTrainerDetail(trainer)
@@ -541,6 +561,11 @@ const TrainerPage = () => {
                     trainer={trainer}
                     index={index}
                     onViewDetail={handleOpenDetail}
+                    onMemberClick={(member, trainer) => {
+                      setSelectedMemberDetail(member)
+                      setSelectedMemberTrainer(trainer)
+                      setIsMemberSheetOpen(true)
+                    }}
                   />
                 ))
               ) : (
@@ -593,6 +618,13 @@ const TrainerPage = () => {
         trainer={selectedTrainerDetail}
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
+      />
+
+      <MemberDetailSheet
+        member={selectedMemberDetail}
+        trainer={selectedMemberTrainer}
+        open={isMemberSheetOpen}
+        onOpenChange={setIsMemberSheetOpen}
       />
     </div>
   )
