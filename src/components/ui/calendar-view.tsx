@@ -15,6 +15,7 @@ import interactionPlugin from "@fullcalendar/interaction"
 import listPlugin from "@fullcalendar/list"
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
+import type { Dayjs } from "dayjs"
 import "dayjs/locale/id"
 import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -36,8 +37,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip"
-
-dayjs.locale("id")
 
 /* ============================================================================
  * TYPE DEFINITIONS
@@ -96,7 +95,7 @@ const getNavigationDate = (
   action: "prev" | "next" | "today",
   currentView: string,
   currentApiDate: Date
-): dayjs.Dayjs => {
+): Dayjs => {
   if (action === "prev") {
     if (currentView === "timeGridDay") {
       return dayjs(currentApiDate).subtract(1, "day")
@@ -132,7 +131,7 @@ const formatDateRange = (startDate: Date, view: string): string => {
   let start = dayjs(startDate)
 
   // Adjust range based on view
-  let end: dayjs.Dayjs
+  let end: Dayjs
   if (view === "dayGridMonth") {
     start = start.startOf("month")
     end = start.endOf("month")
@@ -1093,7 +1092,7 @@ const CalendarView = (props: CalendarViewProps) => {
                 setCurrentView(viewType)
               }
 
-              let viewDate: dayjs.Dayjs
+              let viewDate: Dayjs
               if (viewType === "dayGridMonth") {
                 const start = dayjs(view.view.activeStart)
                 const end = dayjs(view.view.activeEnd)

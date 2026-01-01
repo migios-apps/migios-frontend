@@ -140,10 +140,7 @@ const MemberDetailSheet = ({
           ...(type === "create"
             ? [
                 {
-                  day_of_week: dayjs()
-                    .locale("en")
-                    .format("dddd")
-                    .toLowerCase(),
+                  day_of_week: dayjs().format("dddd").toLowerCase(),
                   start_time: dayjs().format("HH:mm"),
                   end_time: dayjs().add(1, "hour").format("HH:mm"),
                 },
