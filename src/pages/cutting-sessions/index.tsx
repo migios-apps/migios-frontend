@@ -94,6 +94,9 @@ const CuttingSessions = () => {
   const [showForm, setShowForm] = useState<boolean>(false)
   const [formType, setFormType] = useState<"create" | "update">("create")
   const [showChangeStatus, setShowChangeStatus] = useState<boolean>(false)
+  const [memberPackageId, setMemberPackageId] = useState<number | undefined>(
+    undefined
+  )
 
   const formProps = useCuttingSessionForm()
   const formChangeStatusProps = useChangeStatusForm()
@@ -144,11 +147,10 @@ const CuttingSessions = () => {
     setShowForm(true)
     setFormType("update")
     formProps.setValue("id", item.id)
-    formProps.setValue("club_id", item.club_id)
     formProps.setValue("member_id", item.member_id)
     formProps.setValue("member", item.member)
     formProps.setValue("member_package_id", item.member_package_id)
-    formProps.setValue("member_package", { id: item.member_package_id })
+    setMemberPackageId(item.member_package_id)
     formProps.setValue("trainer_id", item.trainer_id)
     formProps.setValue("trainer", item.trainer)
     formProps.setValue("type", item.type)
@@ -383,6 +385,7 @@ const CuttingSessions = () => {
         open={showForm}
         type={formType}
         formProps={formProps}
+        member_package_id={memberPackageId}
         onClose={() => {
           setShowForm(false)
         }}

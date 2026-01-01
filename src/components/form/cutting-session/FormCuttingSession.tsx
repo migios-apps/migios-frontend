@@ -3,7 +3,7 @@ import { SubmitHandler, useFieldArray } from "react-hook-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CreateCuttingSession } from "@/services/api/@types/cutting-session"
 import { EmployeeDetail } from "@/services/api/@types/employee"
-import { MemberDetail } from "@/services/api/@types/member"
+import { MemberDetail, MemberPackageTypes } from "@/services/api/@types/member"
 import {
   apiCreateCuttingSession,
   apiDeleteCuttingSession,
@@ -16,7 +16,6 @@ import {
 } from "@/services/api/MembeService"
 import { Plus, Trash2, User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
-import { useSessionUser } from "@/stores/auth-store"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
@@ -50,6 +49,7 @@ type FormProps = {
   type: "create" | "update"
   formProps: ReturnCuttingSessionFormSchema
   onClose: () => void
+  member_package_id?: number
 }
 
 const FormCuttingSession: React.FC<FormProps> = ({
@@ -57,9 +57,9 @@ const FormCuttingSession: React.FC<FormProps> = ({
   type,
   formProps,
   onClose,
+  member_package_id,
 }) => {
   const queryClient = useQueryClient()
-  const club = useSessionUser((state) => state.club)
   const {
     watch,
     control,
@@ -68,6 +68,7 @@ const FormCuttingSession: React.FC<FormProps> = ({
     formState: { errors },
   } = formProps
   const watchData = watch()
+  // console.log("watchData", { watchData, errors })
   const [confirmDelete, setConfirmDelete] = React.useState(false)
 
   const {
@@ -77,27 +78,6 @@ const FormCuttingSession: React.FC<FormProps> = ({
   } = useFieldArray({
     control,
     name: "exercises",
-  })
-
-  const { data: memberPackages } = useQuery({
-    queryKey: [QUERY_KEY.memberPackages, watchData.member?.code],
-    queryFn: async () => {
-      if (!watchData.member?.code) return { data: { data: [] } }
-      const res = await apiGetMemberPackages(watchData.member.code, {
-        page: 1,
-        per_page: 100,
-        search: [
-          {
-            search_column: "duration_status_code",
-            search_condition: "=",
-            search_text: "1",
-          },
-        ],
-      })
-      return res
-    },
-    enabled: !!watchData.member?.code,
-    select: (res) => res.data.data,
   })
 
   React.useEffect(() => {
@@ -186,6 +166,68 @@ const FormCuttingSession: React.FC<FormProps> = ({
     []
   )
 
+  const getMemberPackageList = React.useCallback(
+    async (
+      inputValue: string,
+      _: OptionsOrGroups<any, GroupBase<any>>,
+      additional?: { page: number }
+    ) => {
+      if (!watchData.member?.code) {
+        return {
+          options: [],
+          hasMore: false,
+          additional: { page: 1 },
+        }
+      }
+
+      const response = await apiGetMemberPackages(watchData.member.code, {
+        page: additional?.page,
+        per_page: 10,
+        search: [
+          (inputValue || "").length > 0
+            ? ({
+                search_column: "package_name",
+                search_condition: "like",
+                search_text: `${inputValue}`,
+              } as any)
+            : null,
+          {
+            search_column: "duration_status_code",
+            search_condition: "=",
+            search_text: "1",
+          },
+        ],
+      })
+
+      return {
+        options: response.data.data,
+        hasMore: response.data.data.length >= 1,
+        additional: {
+          page: additional!.page + 1,
+        },
+      }
+    },
+    [watchData.member?.code]
+  )
+
+  useQuery<MemberPackageTypes>({
+    queryKey: ["member_package", member_package_id, watchData.member?.code],
+    queryFn: async () => {
+      const response = await apiGetMemberPackages(`${watchData.member?.code}`, {
+        search: [
+          {
+            search_column: "id",
+            search_condition: "=",
+            search_text: `${member_package_id}`,
+          },
+        ],
+      })
+      setValue("member_package", response.data.data[0])
+      return response.data.data[0]
+    },
+    enabled: open && type === "update" && !!member_package_id,
+  })
+
   const handleClose = () => {
     formProps.reset({})
     onClose()
@@ -223,26 +265,22 @@ const FormCuttingSession: React.FC<FormProps> = ({
 
   const onSubmit: SubmitHandler<CuttingSessionFormSchema> = (data) => {
     const payload: CreateCuttingSession = {
-      club_id: club?.id as number,
       member_id: data.member_id,
       member_package_id: data.member_package_id,
       trainer_id: data.trainer_id,
       type: data.type,
       session_cut: data.session_cut,
       description: data.description || null,
-      due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
-      start_date: dayjs(data.start_date).format("YYYY-MM-DD HH:mm"),
-      end_date: dayjs(data.end_date).format("YYYY-MM-DD HH:mm"),
+      due_date: dayjs(data.due_date).toISOString(),
+      start_date: dayjs(data.start_date).toISOString(),
+      end_date: dayjs(data.end_date).toISOString(),
       exercises: data.exercises || [],
     }
 
-    if (type === "update") {
-      update.mutate(payload)
-      return
-    }
     if (type === "create") {
       create.mutate(payload)
-      return
+    } else {
+      update.mutate(payload)
     }
   }
 
@@ -340,32 +378,22 @@ const FormCuttingSession: React.FC<FormProps> = ({
                       invalid={Boolean(errors.member_package_id)}
                       errorMessage={errors.member_package_id?.message}
                       render={({ field, fieldState }) => (
-                        <Select
-                          isSearchable={false}
+                        <SelectAsyncPaginate
+                          isClearable
                           placeholder="Select Member Package"
                           error={!!fieldState.error}
-                          value={
-                            memberPackages?.find(
-                              (pkg) => pkg.id === watchData.member_package_id
-                            )
-                              ? {
-                                  label:
-                                    memberPackages.find(
-                                      (pkg) =>
-                                        pkg.id === watchData.member_package_id
-                                    )?.package?.name || "",
-                                  value: watchData.member_package_id,
-                                }
-                              : null
-                          }
-                          options={memberPackages?.map((pkg) => ({
-                            label: `${pkg.package?.name || ""} (${pkg.session_duration} sessions)`,
-                            value: pkg.id,
-                          }))}
+                          loadOptions={getMemberPackageList as any}
+                          additional={{ page: 1 }}
+                          value={field.value}
                           isDisabled={!watchData.member_id}
-                          onChange={(option) => {
+                          cacheUniqs={[watchData.member?.code]}
+                          getOptionLabel={(option: any) =>
+                            `${option.package?.name || ""} (${option.session_duration} sessions)`
+                          }
+                          getOptionValue={(option: any) => `${option.id}`}
+                          onChange={(option: any) => {
                             field.onChange(option)
-                            setValue("member_package_id", option?.value || 0)
+                            setValue("member_package_id", option?.id || 0)
                           }}
                         />
                       )}
@@ -475,7 +503,7 @@ const FormCuttingSession: React.FC<FormProps> = ({
                           error={!!fieldState.error}
                           value={
                             field.value
-                              ? (field.value as unknown as Date)
+                              ? dayjs(field.value).toDate()
                               : undefined
                           }
                           onChange={field.onChange}
@@ -497,7 +525,7 @@ const FormCuttingSession: React.FC<FormProps> = ({
                           error={!!fieldState.error}
                           value={
                             field.value
-                              ? (field.value as unknown as Date)
+                              ? dayjs(field.value).toDate()
                               : undefined
                           }
                           onChange={field.onChange}
@@ -519,14 +547,10 @@ const FormCuttingSession: React.FC<FormProps> = ({
                           error={!!fieldState.error}
                           value={
                             field.value
-                              ? (field.value as unknown as Date)
+                              ? dayjs(field.value).toDate()
                               : undefined
                           }
-                          onChange={(date) => {
-                            field.onChange(
-                              date ? dayjs(date).format("YYYY-MM-DD") : ""
-                            )
-                          }}
+                          onChange={field.onChange}
                           hideTime={true}
                           clearable
                         />

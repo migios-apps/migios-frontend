@@ -1,11 +1,10 @@
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
+import dayjs from "dayjs"
 import * as yup from "yup"
-import { dayjs } from "@/utils/dayjs"
 
 export const validationSchemaCuttingSession = yup.object().shape({
   id: yup.number().optional().nullable(),
-  club_id: yup.number().required("Club ID is required"),
   member_id: yup
     .number()
     .required("Member is required")
@@ -62,32 +61,22 @@ export const validationSchemaCuttingSession = yup.object().shape({
   start_date: yup
     .string()
     .required("Start Date is required")
-    .test(
-      "is-valid-date",
-      "Start date must be a valid date in format YYYY-MM-DD HH:mm",
-      (value) => {
-        return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-      }
+    .test("is-valid-date", "Start date is invalid", (value) =>
+      dayjs(value).isValid()
     ),
   end_date: yup
     .string()
     .required("End date is required")
-    .test(
-      "is-valid-date",
-      "End date must be a valid date in format YYYY-MM-DD HH:mm",
-      (value) => {
-        return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-      }
+    .test("is-valid-date", "End date is invalid", (value) =>
+      dayjs(value).isValid()
     )
     .test(
       "is-after-start",
       "End date must be after the start date",
       function (value) {
-        const { start } = this.parent
-        if (!start || !value) return true // Skip if one of the values is missing
-        return dayjs(value, "YYYY-MM-DD HH:mm").isAfter(
-          dayjs(start, "YYYY-MM-DD HH:mm")
-        )
+        const { start_date } = this.parent
+        if (!start_date || !value) return true
+        return dayjs(value).isAfter(dayjs(start_date))
       }
     ),
   exercises: yup

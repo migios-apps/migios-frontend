@@ -74,7 +74,6 @@ export type CuttingSessionListsResponse = Omit<ApiTypes, "data"> & {
 }
 
 export interface CreateCuttingSession {
-  club_id: number
   member_id: number
   member_package_id: number
   trainer_id: number

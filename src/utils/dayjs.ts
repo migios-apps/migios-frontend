@@ -8,11 +8,12 @@ globalDayjs.extend(customParseFormat)
 globalDayjs.locale("id")
 globalDayjs.extend(dayjsRelativeTime)
 
-export const dayjs = (date?: string | Date | Dayjs) => {
-  // if (typeof date === 'string') {
-  //   return globalDayjs(date, 'DD-MM-YYYY')
-  // }
-  return globalDayjs(date)
+export const dayjs = (
+  date?: string | Date | Dayjs | number | null,
+  format?: string,
+  strict?: boolean
+) => {
+  return globalDayjs(date, format, strict)
 }
 
 // Mapping dari label Indonesia ke English value

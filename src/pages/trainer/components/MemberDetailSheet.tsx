@@ -6,6 +6,7 @@ import {
   TrainerMember,
   TrainerPackage,
 } from "@/services/api/@types/trainer"
+import { apiGetCuttingSessionLists } from "@/services/api/CuttingSessionService"
 import { apiGetEventListOriginal } from "@/services/api/EventService"
 import { Calendar2, Clock } from "iconsax-reactjs"
 import { User, BookOpen, ArrowRightLeft, Plus, Pencil } from "lucide-react"
@@ -121,9 +122,66 @@ const MemberDetailSheet = ({
       },
     })
 
+  const {
+    data: historyData,
+    isFetchingNextPage: isFetchingMoreHistory,
+    isLoading: isLoadingHistory,
+    hasNextPage: hasNextPageHistory,
+    fetchNextPage: fetchNextHistory,
+  } = useInfiniteQuery({
+    queryKey: [
+      QUERY_KEY.cuttingSessions,
+      member?.id,
+      pkg?.member_package_id,
+      member,
+    ],
+    enabled: !!member && open,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      if (!member) return null
+      const res = await apiGetCuttingSessionLists({
+        page: pageParam,
+        per_page: 10,
+        sort_column: "id",
+        sort_type: "desc",
+        search: [
+          // {
+          //   search_column: "type",
+          //   search_condition: "=",
+          //   search_text: "pt_program",
+          // },
+          ...(pkg?.member_package_id
+            ? [
+                {
+                  search_operator: "and",
+                  search_column: "member_package_id",
+                  search_condition: "=",
+                  search_text: pkg.member_package_id.toString(),
+                },
+              ]
+            : []),
+        ] as Filter[],
+      })
+      return res
+    },
+    getNextPageParam: (lastPage) => {
+      const meta = lastPage?.data?.meta
+      if (!meta) return undefined
+      return meta.page !== meta.total_page ? meta.page + 1 : undefined
+    },
+  })
+
   const listData = useMemo(
     () => (data ? data.pages.flatMap((page) => page?.data.data || []) : []),
     [data]
+  )
+
+  const listHistory = useMemo(
+    () =>
+      historyData
+        ? historyData.pages.flatMap((page) => page?.data.data || [])
+        : [],
+    [historyData]
   )
 
   const handleCreateSchedule = (type: DialogCreatePTScheduleProps["type"]) => {
@@ -244,7 +302,7 @@ const MemberDetailSheet = ({
                     </div>
                   </div>
                 </div>
-                <Card className="bg-card relative mt-4 overflow-hidden border-none p-0 shadow-none">
+                <Card className="relative mt-4 overflow-hidden border-none bg-transparent p-0 shadow-none">
                   <CardContent className="border-none p-0">
                     <div className="mb-3 flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5">
@@ -334,7 +392,7 @@ const MemberDetailSheet = ({
                     </TabsTrigger>
                     <TabsTrigger value="history">
                       <Clock className="h-3 w-3" variant="Bulk" />
-                      Timeline Sesi
+                      Riwayat Sesi
                     </TabsTrigger>
                   </TabsList>
 
@@ -536,52 +594,142 @@ const MemberDetailSheet = ({
                     </TabsContent>
 
                     <TabsContent value="history" className="space-y-0 pt-3">
-                      <div className="relative space-y-0 pl-1">
-                        <div className="bg-border absolute top-1.5 left-[5.5px] h-[calc(100%-12px)] w-px" />
-
-                        {[1, 2, 3].map((i) => (
-                          <div
-                            key={i}
-                            className="group relative flex items-start gap-3 pb-4 last:pb-1"
-                          >
-                            <div className="border-background bg-primary relative z-10 flex h-3 w-3 items-center justify-center rounded-full border shadow-sm transition-transform group-hover:scale-110">
-                              <div className="h-1 w-1 rounded-full bg-white" />
-                            </div>
-
-                            <div className="bg-muted/50 hover:bg-muted flex-1 rounded-lg p-2.5 shadow-none transition-all">
-                              <div className="mb-1.5 flex items-center justify-between">
-                                <div className="flex items-center gap-1">
-                                  <Calendar2 className="h-2.5 w-2.5" />
-                                  <p className="text-xs font-semibold tracking-wide">
-                                    {30 - i} Des 2023 • 14:30
-                                  </p>
-                                </div>
-                                <Badge
-                                  variant="secondary"
-                                  className="h-3.5 px-1 text-xs font-semibold"
-                                >
-                                  Sesi #{i}
-                                </Badge>
+                      {isLoadingHistory ? (
+                        <div className="space-y-3">
+                          {[1, 2, 3].map((i) => (
+                            <Card key={i} className="p-3">
+                              <div className="flex flex-col gap-2">
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-3 w-1/2" />
+                                <Skeleton className="h-10 w-full rounded-md" />
                               </div>
-                              <p className="text-sm leading-tight font-semibold">
-                                Latihan Personal bersama {trainer?.name}
-                              </p>
-                              <p className="text-muted-foreground mt-1 text-xs leading-relaxed font-medium">
-                                Sesi fokus pada penguatan power and
-                                conditioning.
-                              </p>
-                            </div>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : listHistory.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                          <div className="bg-primary/10 text-primary rounded-full p-3">
+                            <Clock className="h-6 w-6" variant="Bulk" />
                           </div>
-                        ))}
-                      </div>
+                          <h3 className="mt-3 text-sm font-semibold">
+                            Belum Ada Riwayat Sesi
+                          </h3>
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            Member ini belum pernah melakukan sesi latihan untuk
+                            paket ini.
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="relative space-y-0 pl-1">
+                            <div className="bg-border absolute top-1.5 left-[5.5px] h-[calc(100%-12px)] w-px" />
 
-                      <div className="mt-4 flex items-center justify-center">
-                        <div className="bg-border h-px flex-1" />
-                        <p className="text-muted-foreground px-3 text-xs font-semibold">
-                          Timeline Riwayat
-                        </p>
-                        <div className="bg-border h-px flex-1" />
-                      </div>
+                            {listHistory.map((item, i) => (
+                              <div
+                                key={item.id}
+                                className="group relative flex items-start gap-3 pb-4 last:pb-1"
+                              >
+                                <div className="border-background bg-primary relative z-10 flex h-3 w-3 items-center justify-center rounded-full border shadow-sm transition-transform group-hover:scale-110">
+                                  <div className="h-1 w-1 rounded-full bg-white" />
+                                </div>
+
+                                <div className="bg-muted/50 hover:bg-muted flex-1 rounded-lg p-2.5 shadow-none transition-all">
+                                  <div className="mb-1.5 flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                      <Calendar2 className="h-2.5 w-2.5" />
+                                      <p className="text-xs font-semibold tracking-wide">
+                                        {dayjs(item.start_date).format(
+                                          "DD MMM YYYY • HH:mm"
+                                        )}{" "}
+                                        - {dayjs(item.end_date).format("HH:mm")}
+                                      </p>
+                                    </div>
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-3.5 px-1 text-[10px] font-semibold"
+                                    >
+                                      Sesi #{listHistory.length - i}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm leading-tight font-semibold">
+                                    Latihan Personal bersama{" "}
+                                    {item.trainer?.name}
+                                  </p>
+                                  {item.description && (
+                                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed font-medium">
+                                      {item.description}
+                                    </p>
+                                  )}
+
+                                  {item.exercises &&
+                                    item.exercises.length > 0 && (
+                                      <div className="mt-2 space-y-1.5">
+                                        <div className="bg-border/50 h-px w-full" />
+                                        <div className="grid grid-cols-1 gap-1.5">
+                                          {item.exercises.map((ex: any) => (
+                                            <div
+                                              key={ex.id}
+                                              className="flex flex-col gap-0.5"
+                                            >
+                                              <p className="text-[11px] font-bold">
+                                                {ex.name}
+                                              </p>
+                                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                <Badge
+                                                  variant="outline"
+                                                  className="bg-primary/5 h-4 px-1 text-[9px] font-medium"
+                                                >
+                                                  {ex.sets} Sets × {ex.reps}{" "}
+                                                  Reps
+                                                </Badge>
+                                                {ex.weight_kg > 0 && (
+                                                  <Badge
+                                                    variant="outline"
+                                                    className="h-4 bg-orange-500/5 px-1 text-[9px] font-medium text-orange-600"
+                                                  >
+                                                    {ex.weight_kg} Kg
+                                                  </Badge>
+                                                )}
+                                                <Badge
+                                                  variant="outline"
+                                                  className="h-4 bg-blue-500/5 px-1 text-[9px] font-medium text-blue-600"
+                                                >
+                                                  RPE {ex.rpe}
+                                                </Badge>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {hasNextPageHistory && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 w-full text-xs"
+                              onClick={() => fetchNextHistory()}
+                              disabled={isFetchingMoreHistory}
+                            >
+                              {isFetchingMoreHistory
+                                ? "Memuat..."
+                                : "Muat Lebih Banyak"}
+                            </Button>
+                          )}
+
+                          <div className="mt-4 flex items-center justify-center">
+                            <div className="bg-border h-px flex-1" />
+                            <p className="text-muted-foreground px-3 text-xs font-semibold">
+                              Timeline Riwayat
+                            </p>
+                            <div className="bg-border h-px flex-1" />
+                          </div>
+                        </>
+                      )}
                     </TabsContent>
                   </TabsContents>
                 </Tabs>
