@@ -271,9 +271,9 @@ const FormCuttingSession: React.FC<FormProps> = ({
       type: data.type,
       session_cut: data.session_cut,
       description: data.description || null,
-      due_date: dayjs(data.due_date).toISOString(),
-      start_date: dayjs(data.start_date).toISOString(),
-      end_date: dayjs(data.end_date).toISOString(),
+      due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
+      start_date: dayjs(data.start_date).format("YYYY-MM-DDTHH:mm:ss"),
+      end_date: dayjs(data.end_date).format("YYYY-MM-DDTHH:mm:ss"),
       exercises: data.exercises || [],
     }
 
