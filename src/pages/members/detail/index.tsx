@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiGetMember } from "@/services/api/MembeService"
-import dayjs from "dayjs"
 import {
   Calendar2,
   CalendarTick,
@@ -16,6 +15,7 @@ import isEmpty from "lodash/isEmpty"
 import { Pencil } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

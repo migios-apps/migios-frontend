@@ -14,10 +14,10 @@ import {
   apiUpdateClass,
 } from "@/services/api/ClassService"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
-import dayjs from "dayjs"
 import { Trash2, Plus, User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

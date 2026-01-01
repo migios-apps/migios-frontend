@@ -13,11 +13,11 @@ import {
   apiGetRekeningList,
   apiUpdateFinancialRecord,
 } from "@/services/api/FinancialService"
-import dayjs from "dayjs"
 import { Trash2 } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"

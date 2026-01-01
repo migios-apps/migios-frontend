@@ -7,11 +7,11 @@ import {
   apiDeleteMember,
   apiUpdateMember,
 } from "@/services/api/MembeService"
-import dayjs from "dayjs"
 import { Trash } from "iconsax-reactjs"
 import { ArrowLeft, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useSessionUser } from "@/stores/auth-store"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

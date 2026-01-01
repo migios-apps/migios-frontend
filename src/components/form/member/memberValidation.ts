@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form"
 import { MemberDetail } from "@/services/api/@types/member"
 import { yupResolver } from "@hookform/resolvers/yup"
-import dayjs from "dayjs"
 import * as yup from "yup"
+import { dayjs } from "@/utils/dayjs"
 
 export const validationSchemaMember = yup.object().shape({
   code: yup.string().optional().nullable(),

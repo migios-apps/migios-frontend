@@ -11,9 +11,9 @@ import {
   apiGetMemberLoyaltyList,
   apiGetMemberLoyaltyRedeem,
 } from "@/services/api/MembeService"
-import dayjs from "dayjs"
 import { MedalStar } from "iconsax-reactjs"
 import { Edit } from "lucide-react"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"

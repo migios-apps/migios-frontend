@@ -18,7 +18,6 @@ import {
   apiGetResultTrend,
   apiGetWeightTrend,
 } from "@/services/api/MeasurementService"
-import dayjs from "dayjs"
 import {
   Area,
   AreaChart,
@@ -31,6 +30,7 @@ import {
   YAxis,
 } from "recharts"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {

@@ -1,7 +1,7 @@
 import React from "react"
 import { LoyaltyType } from "@/services/api/@types/settings/loyalty"
-import dayjs from "dayjs"
 import { Gift, Tag } from "lucide-react"
+import { dayjs } from "@/utils/dayjs"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { currencyFormat } from "@/components/ui/input-currency"

@@ -1,7 +1,7 @@
 import React from "react"
 import { useFieldArray } from "react-hook-form"
-import dayjs from "dayjs"
 import { Ticket } from "lucide-react"
+import { dayjs } from "@/utils/dayjs"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { FormLabel } from "@/components/ui/form"

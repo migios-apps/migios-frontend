@@ -459,16 +459,6 @@ const MemberDetailSheet = ({
                                             : "update_weekly"
                                         )
                                         setOpenDialogSchedule(true)
-
-                                        console.log({
-                                          ...item,
-                                          selected_weekdays:
-                                            item.selected_weekdays,
-                                          is_specific_time:
-                                            item.frequency === "daily"
-                                              ? false
-                                              : true,
-                                        })
                                       }}
                                     >
                                       <Pencil className="h-4 w-4" />

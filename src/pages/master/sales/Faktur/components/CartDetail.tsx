@@ -3,7 +3,6 @@ import { useFieldArray } from "react-hook-form"
 import { PaymentStatus, SalesDetailType } from "@/services/api/@types/sales"
 import { LoyaltyType } from "@/services/api/@types/settings/loyalty"
 import { SettingsType } from "@/services/api/@types/settings/settings"
-import dayjs from "dayjs"
 import {
   Gift,
   Location,
@@ -14,6 +13,7 @@ import {
 } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Badge } from "@/components/ui/badge"

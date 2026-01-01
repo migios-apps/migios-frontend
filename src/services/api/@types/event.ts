@@ -80,6 +80,10 @@ export type EventsDataListResponse = Omit<ApiTypes, "data"> & {
   data: { data: EventsData[]; meta: MetaApi }
 }
 
+export type GenerateEventsDataListResponse = Omit<ApiTypes, "data"> & {
+  data: EventsData[]
+}
+
 export interface OriginalEvenetType {
   id: number
   club_id: number

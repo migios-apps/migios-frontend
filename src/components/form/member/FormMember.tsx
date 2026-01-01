@@ -7,9 +7,9 @@ import {
   apiDeleteMember,
   apiUpdateMember,
 } from "@/services/api/MembeService"
-import dayjs from "dayjs"
 import { Trash, UserCirlceAdd } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

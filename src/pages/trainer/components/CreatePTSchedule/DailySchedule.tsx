@@ -1,7 +1,7 @@
 import { useFieldArray, Controller } from "react-hook-form"
 import { TrainerPackage } from "@/services/api/@types/trainer"
-import dayjs from "dayjs"
 import { Plus, Trash2 } from "lucide-react"
+import { dayjs } from "@/utils/dayjs"
 import { formatTime, getTimeValue } from "@/utils/dayjs"
 import { Button } from "@/components/ui/button"
 import { DateTimePicker, SimpleTimePicker } from "@/components/ui/date-picker"

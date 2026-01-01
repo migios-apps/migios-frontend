@@ -11,9 +11,9 @@ import {
   apiUpdateMemberMeasurement,
 } from "@/services/api/MeasurementService"
 import { apiGetMemberList } from "@/services/api/MembeService"
-import dayjs from "dayjs"
 import { ArrowLeft, Trash2, User } from "lucide-react"
 import type { GroupBase, OptionsOrGroups } from "react-select"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

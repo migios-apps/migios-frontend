@@ -4,7 +4,6 @@ import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { EmployeeDetail } from "@/services/api/@types/employee"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
-import dayjs from "dayjs"
 import {
   CheckCircle2,
   Edit,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Link } from "react-router-dom"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"

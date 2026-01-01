@@ -5,9 +5,9 @@ import {
   apiReportSales,
   apiReportSalesByRekening,
 } from "@/services/api/SalesService"
-import dayjs from "dayjs"
 import { ChevronDown } from "lucide-react"
 import { Pie, PieChart } from "recharts"
+import { dayjs } from "@/utils/dayjs"
 import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

@@ -1,17 +1,25 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSessionUser } from "@/auth"
-import { CreateEventRequest } from "@/services/api/@types/event"
+import {
+  CreateEventRequest,
+  UpdateEventRequest,
+} from "@/services/api/@types/event"
 import {
   TrainerDetail,
   TrainerMember,
   TrainerPackage,
 } from "@/services/api/@types/trainer"
-import { apiBulkCreateEvent } from "@/services/api/EventService"
-import dayjs from "dayjs"
-import { TickCircle } from "iconsax-reactjs"
+import {
+  apiBulkCreateEvent,
+  apiDeleteOriginalEvent,
+  apiUpdateOriginalEvent,
+} from "@/services/api/EventService"
+import { TickCircle, Trash } from "iconsax-reactjs"
 import { toast } from "sonner"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import AlertConfirm from "@/components/ui/alert-confirm"
 import { Button } from "@/components/ui/button"
 import { ColorPalettePicker } from "@/components/ui/color-palette-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
@@ -37,8 +45,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/animate-ui/components/radix/dialog"
 import DailySchedule from "./DailySchedule"
+import GeneratedEventsTab from "./GeneratedEventsTab"
 import WeeklySchedule from "./WeeklySchedule"
 import {
   EventTrainerFormValues,
@@ -68,6 +78,7 @@ const DialogCreatePTSchedule = ({
   const form = formInstance
   const club = useSessionUser((state) => state.club)
   const [activeTab, setActiveTab] = useState("form")
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   // useEffect(() => {
   //   if (open && (type === "create" || type === "create_daily")) {
@@ -98,13 +109,14 @@ const DialogCreatePTSchedule = ({
   //   }
   // }, [open, pkg, form, type])
 
-  const {
-    watch,
-    formState: { errors },
-  } = form
-  console.log("Watched:", watch("events"))
-  console.log("Errors:", JSON.stringify(errors, null, 2))
+  // const {
+  //   watch,
+  //   formState: { errors },
+  // } = form
+  // console.log("Watched:", watch("events"))
+  // console.log("Errors:", JSON.stringify(errors, null, 2))
 
+  const eventId = form.watch("events.0.id")
   const watchedFrequency = form.watch("events.0.frequency")
   const watchedIsSpecificTime = form.watch("events.0.is_specific_time")
   const watchedBgColor = form.watch("events.0.background_color")
@@ -170,14 +182,34 @@ const DialogCreatePTSchedule = ({
       events: [],
     })
     onOpenChange(false)
+    setActiveTab("form")
   }
 
   const queryClient = useQueryClient()
 
+  // Mutation untuk delete original event
+  const deleteOriginalMutation = useMutation({
+    mutationFn: (eventId: number) => apiDeleteOriginalEvent(eventId),
+    onSuccess: () => {
+      toast.success("Jadwal berhasil dihapus")
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
+      setDeleteConfirmOpen(false)
+      onCloseDialog()
+    },
+  })
+
+  const updateEvent = useMutation({
+    mutationFn: (data: UpdateEventRequest) => apiUpdateOriginalEvent(data),
+    onSuccess: () => {
+      toast.success("Jadwal berhasil diperbarui")
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
+      onCloseDialog()
+    },
+  })
+
   const bulkCreate = useMutation({
     mutationFn: (data: CreateEventRequest[]) => apiBulkCreateEvent(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.events] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.originalEvents] })
       toast.success("Jadwal Berhasil Disimpan")
       onCloseDialog()
@@ -220,7 +252,13 @@ const DialogCreatePTSchedule = ({
       })) || []
 
     if (type?.includes("update")) {
-      console.log("Update Jadwal Latihan", basePayload)
+      const updatePayload = basePayload[0]
+      if (updatePayload && eventId) {
+        updateEvent.mutate({
+          ...updatePayload,
+          id: eventId,
+        } as unknown as Record<string, unknown> & UpdateEventRequest)
+      }
     } else {
       bulkCreate.mutate(
         basePayload as unknown as Record<string, unknown> & CreateEventRequest[]
@@ -230,13 +268,14 @@ const DialogCreatePTSchedule = ({
 
   return (
     <Dialog open={open} onOpenChange={onCloseDialog}>
-      <DialogContent scrollBody className="max-w-2xl">
+      <DialogContent scrollBody className="max-w-2xl pb-2">
         <DialogHeader>
           <DialogTitle>
             {type?.includes("update")
               ? "Ubah Jadwal Latihan"
               : "Buat Jadwal Latihan"}
           </DialogTitle>
+          <DialogDescription />
         </DialogHeader>
 
         <div className="relative flex-1 overflow-hidden">
@@ -245,20 +284,22 @@ const DialogCreatePTSchedule = ({
             onValueChange={setActiveTab}
             className="mb-2 w-full"
           >
-            <TabsList className="h-auto w-full justify-start gap-1">
-              <TabsTrigger value="form">Ubah jadwal mingguan</TabsTrigger>
-              <TabsTrigger value="delete_recurring">
-                Hapus pengulangan hari
-              </TabsTrigger>
-            </TabsList>
+            {type === "update_weekly" ? (
+              <TabsList className="h-auto w-full justify-start gap-1">
+                <TabsTrigger value="form">Ubah jadwal mingguan</TabsTrigger>
+                <TabsTrigger value="generated">
+                  Hapus pengulangan hari
+                </TabsTrigger>
+              </TabsList>
+            ) : null}
 
             <TabsContents>
               <TabsContent value="form" className="px-1">
-                <div className="flex flex-col gap-3">
+                <div className="flex w-full flex-col gap-3">
                   <Form {...form}>
                     <form
                       onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-4"
+                      className="w-full space-y-4"
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-start">
                         <div className="flex-1">
@@ -419,24 +460,67 @@ const DialogCreatePTSchedule = ({
                         />
                       )}
 
-                      <DialogFooter>
+                      <DialogFooter className="flex w-full items-center justify-between!">
+                        {type.includes("update") ? (
+                          <Button
+                            variant="destructive"
+                            type="button"
+                            onClick={() => {
+                              if (eventId) {
+                                setDeleteConfirmOpen(true)
+                              } else {
+                                toast.error("Jadwal tidak ditemukan")
+                              }
+                            }}
+                            className="flex items-center gap-1"
+                          >
+                            <Trash
+                              color="currentColor"
+                              size="24"
+                              variant="Outline"
+                            />
+                          </Button>
+                        ) : (
+                          <div></div>
+                        )}
                         <Button type="submit" disabled={bulkCreate.isPending}>
                           {bulkCreate.isPending
                             ? "Menyimpan..."
-                            : "Simpan Jadwal"}
+                            : type?.includes("update")
+                              ? "Update Jadwal"
+                              : "Simpan Jadwal"}
                         </Button>
                       </DialogFooter>
                     </form>
                   </Form>
                 </div>
               </TabsContent>
-              <TabsContent value="delete_recurring" className="px-1">
-                <div className="flex flex-col gap-3">delete recurring</div>
+              <TabsContent value="generated" className="px-1">
+                <GeneratedEventsTab
+                  open={open}
+                  type={type}
+                  pkg={pkg}
+                  form={form}
+                />
               </TabsContent>
             </TabsContents>
           </Tabs>
         </div>
       </DialogContent>
+      <AlertConfirm
+        open={deleteConfirmOpen}
+        type="delete"
+        title="Hapus Jadwal"
+        description="Apakah Anda yakin ingin menghapus jadwal ini? Semua data jadwal akan dihapus secara permanen."
+        loading={deleteOriginalMutation.isPending}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onLeftClick={() => setDeleteConfirmOpen(false)}
+        onRightClick={() => {
+          if (eventId) {
+            deleteOriginalMutation.mutate(eventId)
+          }
+        }}
+      />
     </Dialog>
   )
 }

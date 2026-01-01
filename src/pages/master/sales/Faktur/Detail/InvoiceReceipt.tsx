@@ -1,6 +1,6 @@
 import { SalesDetailType } from "@/services/api/@types/sales"
-import dayjs from "dayjs"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 
 interface InvoiceReceiptProps {
   detail: SalesDetailType

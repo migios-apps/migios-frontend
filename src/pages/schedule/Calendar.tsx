@@ -8,8 +8,8 @@ import type {
   DatesSetArg,
   EventClickArg,
 } from "@fullcalendar/core"
-import dayjs from "dayjs"
 import cloneDeep from "lodash/cloneDeep"
+import { dayjs } from "@/utils/dayjs"
 import { getStartAndEndOfMonth } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import CalendarView from "@/components/ui/calendar-view"

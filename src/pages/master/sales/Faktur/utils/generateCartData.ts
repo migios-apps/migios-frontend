@@ -1,5 +1,5 @@
 import { SettingsType } from "@/services/api/@types/settings/settings"
-import dayjs from "dayjs"
+import { dayjs } from "@/utils/dayjs"
 import parseToDecimal from "@/utils/parseToDecimal"
 import { currencyFormat } from "@/components/ui/input-currency"
 import {

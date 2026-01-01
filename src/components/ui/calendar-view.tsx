@@ -15,11 +15,11 @@ import interactionPlugin from "@fullcalendar/interaction"
 import listPlugin from "@fullcalendar/list"
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
-import dayjs from "dayjs"
 import "dayjs/locale/id"
 import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

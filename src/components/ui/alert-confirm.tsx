@@ -63,17 +63,18 @@ const AlertConfirm: React.FC<AlertConfirmProps> = ({
         animation="zoomBounce"
         from="top"
       >
-        <div className="flex flex-col items-center justify-center">
+        <div className="relative flex flex-col items-center justify-center">
           {icon && <div className="mb-2">{icon}</div>}
           <DialogHeader className="text-center">
             <DialogTitle className="text-center">{title}</DialogTitle>
-            {description && (
-              <DialogDescription className="text-center">
-                {description}
-              </DialogDescription>
-            )}
+            <DialogDescription className="text-center"></DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-6 w-full flex-col gap-4 sm:flex-col">
+          {description && (
+            <div className="text-muted-foreground text-center text-sm">
+              {description}
+            </div>
+          )}
+          <DialogFooter className="mt-6 grid w-full grid-cols-1 gap-2 md:grid-cols-2">
             {onLeftClick && (
               <Button
                 className={cn("w-full", leftButtonClassName)}

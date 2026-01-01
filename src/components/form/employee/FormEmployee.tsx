@@ -7,9 +7,9 @@ import {
   apiDeleteEmployee,
   apiUpdateEmployee,
 } from "@/services/api/EmployeeService"
-import dayjs from "dayjs"
 import { Trash, UserCirlceAdd } from "iconsax-reactjs"
 import { useSessionUser } from "@/stores/auth-store"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"

@@ -1,4 +1,4 @@
-import dayjs from "dayjs"
+import { dayjs } from "@/utils/dayjs"
 
 export type OptionsDatePicker = {
   defaultStartDate: string | undefined | null

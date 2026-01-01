@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import dayjs from "dayjs"
 import * as Yup from "yup"
+import { dayjs } from "@/utils/dayjs"
 
 // {
 //     "item_type": "freeze",

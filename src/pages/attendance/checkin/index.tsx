@@ -18,9 +18,9 @@ import {
   apiGetMemberAttendanceList,
 } from "@/services/api/Attendance"
 import handleApiError from "@/services/handleApiError"
-import dayjs from "dayjs"
 import { Camera, Scan } from "iconsax-reactjs"
 import { Link } from "react-router-dom"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

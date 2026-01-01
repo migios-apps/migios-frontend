@@ -1,5 +1,5 @@
 import { SalesDetailType } from "@/services/api/@types/sales"
-import dayjs from "dayjs"
+import { dayjs } from "@/utils/dayjs"
 
 interface InvoiceA5Props {
   detail: SalesDetailType

@@ -8,8 +8,8 @@ import {
   EmployeeDetailPage,
 } from "@/services/api/@types/employee"
 import { apiGetEmployeeCommissionList } from "@/services/api/EmployeeService"
-import dayjs from "dayjs"
 import { Link } from "react-router"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import DataTable from "@/components/ui/data-table"
 

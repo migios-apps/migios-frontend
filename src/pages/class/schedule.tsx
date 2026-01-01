@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { EventsData } from "@/services/api/@types/event"
 import { apiGetEventList } from "@/services/api/EventService"
-import dayjs from "dayjs"
+import { dayjs } from "@/utils/dayjs"
 import { getStartAndEndOfWeek } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { useIsMobile } from "@/hooks/use-mobile"

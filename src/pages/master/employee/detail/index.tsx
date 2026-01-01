@@ -7,7 +7,6 @@ import {
   apiGetEmployeeDetailPage,
   apiGetEmployeeHead,
 } from "@/services/api/EmployeeService"
-import dayjs from "dayjs"
 import {
   Calendar2,
   CalendarTick,
@@ -22,6 +21,7 @@ import {
 import isEmpty from "lodash/isEmpty"
 import { Edit2 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
+import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
