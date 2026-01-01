@@ -78,7 +78,7 @@ const MemberCard = ({
               {member.membership_status && (
                 <Badge
                   className={cn(
-                    "h-4 px-1 text-[9px] font-medium transition-all",
+                    "h-4 px-1 text-xs font-medium transition-all",
                     statusColor[member.membership_status]
                   )}
                 >
@@ -86,23 +86,23 @@ const MemberCard = ({
                 </Badge>
               )}
             </div>
-            <p className="text-muted-foreground truncate text-[10px] tracking-wider uppercase">
+            <p className="text-muted-foreground truncate text-xs">
               {member.code}
             </p>
           </div>
         </div>
         <div className="space-y-1.5">
-          {member.packages?.map((pkg) => (
+          {member.packages?.map((pkg, index) => (
             <div
-              key={pkg.id}
+              key={index}
               onClick={() => onClick(pkg)}
-              className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-[11px] transition-colors"
+              className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-xs transition-colors"
             >
               <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
                 <BookOpen className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{pkg.package_name}</span>
               </div>
-              <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-1 pl-5 text-[10px]">
+              <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-1 pl-5 text-xs">
                 <div className="flex items-center gap-1.5 opacity-80">
                   <span className="text-primary font-bold">
                     {pkg.total_available_session} Sesi
@@ -117,7 +117,7 @@ const MemberCard = ({
             </div>
           ))}
           {member.total_active_packages > 2 && (
-            <p className="text-muted-foreground pt-0.5 text-center text-[10px] font-bold tracking-widest capitalize">
+            <p className="text-muted-foreground pt-0.5 text-center text-xs font-bold tracking-widest capitalize">
               + {member.total_active_packages - 2} Paket Lainnya
             </p>
           )}
@@ -197,14 +197,14 @@ const TrainerColumn = ({
                   <h3 className="mb-1 max-w-[150px] truncate text-sm leading-none font-bold">
                     {trainer.name}
                   </h3>
-                  <p className="text-muted-foreground text-[10px] font-medium tracking-widest uppercase">
+                  <p className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
                     {trainer.code}
                   </p>
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className="bg-background h-6 px-2 font-mono text-[10px] font-bold"
+                className="bg-background h-6 px-2 font-mono text-xs font-bold"
               >
                 <Users className="mr-1 h-3 w-3" />
                 {trainer.total_active_members}
@@ -213,7 +213,7 @@ const TrainerColumn = ({
             <div className="flex items-center gap-2">
               <Badge
                 variant="secondary"
-                className="h-5 px-1.5 text-[10px] font-normal"
+                className="h-5 px-1.5 text-xs font-normal"
               >
                 Paket Aktif: {trainer.total_active_package}
               </Badge>
@@ -235,15 +235,6 @@ const TrainerColumn = ({
                     <Users className="mr-2 h-4 w-4" />
                     <span>Jadwal Trainer</span>
                   </DropdownMenuItem>
-                  {trainer.total_active_members > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive">
-                        <ArrowDownUp className="mr-2 h-4 w-4" />
-                        <span>Ganti Trainer</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -292,7 +283,7 @@ const TrainerColumn = ({
                       {/* <div className="bg-primary/10 text-primary group-hover:bg-primary flex h-8 w-8 items-center justify-center rounded-full transition-all group-hover:text-white">
                         <ChevronsRight className="h-4 w-4 rotate-90" />
                       </div> */}
-                      <span className="text-primary/70 group-hover:text-primary text-[10px] font-bold tracking-widest uppercase">
+                      <span className="text-primary/70 group-hover:text-primary text-xs font-bold tracking-widest uppercase">
                         Muat Member Lainnya
                       </span>
                     </button>

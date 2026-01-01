@@ -30,23 +30,30 @@ export const endTypeOptions = [
 ]
 
 export const dayOfWeekOptions = [
-  { label: "Sunday", value: "sunday" },
-  { label: "Monday", value: "monday" },
-  { label: "Tuesday", value: "tuesday" },
-  { label: "Wednesday", value: "wednesday" },
-  { label: "Thursday", value: "thursday" },
-  { label: "Friday", value: "friday" },
-  { label: "Saturday", value: "saturday" },
+  { label: "Minggu", value: "sunday", key: 0 },
+  { label: "Senin", value: "monday", key: 1 },
+  { label: "Selasa", value: "tuesday", key: 2 },
+  { label: "Rabu", value: "wednesday", key: 3 },
+  { label: "Kamis", value: "thursday", key: 4 },
+  { label: "Jumat", value: "friday", key: 5 },
+  { label: "Sabtu", value: "saturday", key: 6 },
 ]
 
 export const initialEventValues = {
+  id: null,
   club_id: null,
   class_id: null,
   history_id: null,
+  employee_id: null,
+  member_id: null,
+  package_id: null,
+  member_package_id: null,
   title: "",
   description: "",
-  start: undefined,
-  end: undefined,
+  start_date: undefined,
+  end_date: undefined,
+  start_time: undefined,
+  end_time: undefined,
   background_color: "#f6fa00",
   color: "#000",
   frequency: undefined,
@@ -57,13 +64,47 @@ export const initialEventValues = {
   end_type: "on",
   type: null,
   event_type: null,
+  status_string: null,
+  is_publish: 1,
 }
 
 export const validationEventSchema = yup.object().shape({
   id: yup.number().optional().nullable(),
-  club_id: yup.number().nullable().typeError("Club ID must be a number"),
-  class_id: yup.number().nullable().typeError("Package ID must be a number"),
-  history_id: yup.number().nullable().typeError("History ID must be a number"),
+  club_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Club ID must be a number"),
+  class_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Class ID must be a number"),
+  history_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("History ID must be a number"),
+  employee_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Employee ID must be a number"),
+  member_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Member ID must be a number"),
+  package_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Package ID must be a number"),
+  member_package_id: yup
+    .number()
+    .nullable()
+    .optional()
+    .typeError("Member Package ID must be a number"),
   title: yup.string().required("Title is required"),
   description: yup
     .string()
@@ -80,101 +121,79 @@ export const validationEventSchema = yup.object().shape({
     .string()
     .nullable()
     .matches(
-      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/,
-      "Background color must be a valid hex code"
+      /^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})|rgba?\([\d\s,.]+\))$/,
+      "Background color must be a valid hex code, rgb(), or rgba()"
     ),
   color: yup
     .string()
     .nullable()
     .matches(
-      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/,
-      "Color must be a valid hex code"
+      /^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})|rgba?\([\d\s,.]+\))$/,
+      "Color must be a valid hex code, rgb(), or rgba()"
     ),
-  start: yup
+  start_date: yup
     .string()
     .required("Start date is required")
-    .when("frequency", {
-      is: "weekly",
-      then: (schema) =>
-        schema.test(
-          "is-valid-date",
-          "Start date must be a valid date in format YYYY-MM-DD",
-          (value) => {
-            return dayjs(value, "YYYY-MM-DD", true).isValid()
-          }
-        ),
-      otherwise: (schema) =>
-        schema.test(
-          "is-valid-date",
-          "Start date must be a valid date in format YYYY-MM-DD HH:mm",
-          (value) => {
-            return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-          }
-        ),
-    }),
-  end: yup
-    .string()
-    .required("End date is required")
-    .when("frequency", {
-      is: "weekly",
-      then: (schema) =>
-        schema.test(
-          "is-valid-date",
-          "End date must be a valid date in format YYYY-MM-DD",
-          (value) => {
-            return dayjs(value, "YYYY-MM-DD", true).isValid()
-          }
-        ),
-      otherwise: (schema) =>
-        schema.test(
-          "is-valid-date",
-          "End date must be a valid date in format YYYY-MM-DD HH:mm",
-          (value) => {
-            return dayjs(value, "YYYY-MM-DD HH:mm", true).isValid()
-          }
-        ),
-    })
     .test(
-      "is-after-start",
-      "End date must be after the start date",
-      function (value) {
-        const { start, frequency } = this.parent
-        if (!start || !value) return true // Skip if one of the values is missing
-        const format =
-          frequency === "weekly" ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
-        return dayjs(value, format).isAfter(dayjs(start, format))
+      "is-valid-date",
+      "Start date must be a valid date in format YYYY-MM-DD",
+      (value) => {
+        return dayjs(value, "YYYY-MM-DD", true).isValid()
       }
     ),
-  // start_time: yup
-  //   .string()
-  //   .nullable()
-  //   .when('frequency', {
-  //     is: (frequency: string) =>
-  //       frequency === 'hourly' || frequency === 'daily',
-  //     then: (schema) =>
-  //       schema
-  //         .required('Start time is required')
-  //         .matches(
-  //           /^([01]\d|2[0-3]):([0-5]\d)$/,
-  //           'Start time must be in HH:mm format'
-  //         ),
-  //     otherwise: (schema) => schema.nullable(),
-  //   }),
-  // end_time: yup
-  //   .string()
-  //   .nullable()
-  //   .when('frequency', {
-  //     is: (frequency: string) =>
-  //       frequency === 'hourly' || frequency === 'daily',
-  //     then: (schema) =>
-  //       schema
-  //         .required('End time is required')
-  //         .matches(
-  //           /^([01]\d|2[0-3]):([0-5]\d)$/,
-  //           'End time must be in HH:mm format'
-  //         ),
-  //     otherwise: (schema) => schema.nullable(),
-  //   }),
+  end_date: yup
+    .string()
+    .required("End date is required")
+    .test(
+      "is-valid-date",
+      "End date must be a valid date in format YYYY-MM-DD",
+      (value) => {
+        return dayjs(value, "YYYY-MM-DD", true).isValid()
+      }
+    )
+    .test(
+      "is-after-start",
+      "Tanggal akhir tidak boleh kurang dari tanggal mulai",
+      function (value) {
+        const { start_date } = this.parent
+        if (!start_date || !value) return true
+        return !dayjs(value, "YYYY-MM-DD").isBefore(
+          dayjs(start_date, "YYYY-MM-DD")
+        )
+      }
+    ),
+  start_time: yup
+    .string()
+    .nullable()
+    .optional()
+    .when("frequency", {
+      is: (frequency: string) =>
+        frequency === "hourly" || frequency === "daily",
+      then: (schema) =>
+        schema
+          .required("Start time is required")
+          .matches(
+            /^([01]\d|2[0-3]):([0-5]\d)$/,
+            "Start time must be in HH:mm format"
+          ),
+      otherwise: (schema) => schema.nullable(),
+    }),
+  end_time: yup
+    .string()
+    .nullable()
+    .optional()
+    .when("frequency", {
+      is: (frequency: string) =>
+        frequency === "hourly" || frequency === "daily",
+      then: (schema) =>
+        schema
+          .required("End time is required")
+          .matches(
+            /^([01]\d|2[0-3]):([0-5]\d)$/,
+            "End time must be in HH:mm format"
+          ),
+      otherwise: (schema) => schema.nullable(),
+    }),
   end_type: yup
     .string()
     .required("End type is required")
@@ -246,6 +265,7 @@ export const validationEventSchema = yup.object().shape({
         event_id: yup
           .number()
           .nullable()
+          .optional()
           .typeError("Event ID must be a number"),
       })
     )
@@ -260,11 +280,18 @@ export const validationEventSchema = yup.object().shape({
   type: yup
     .string()
     .nullable()
+    .optional()
     .oneOf(["update", "delete", null], "Invalid type value"),
   event_type: yup
     .string()
-    .required("Event type is required")
-    .oneOf(["package", "other", "class"], "Invalid event type value"),
+    .nullable()
+    .optional()
+    .oneOf(
+      ["package", "other", "class", "pt_program", null],
+      "Invalid event type value"
+    ),
+  status_string: yup.string().nullable().optional(),
+  is_publish: yup.number().nullable().optional(),
 })
 
 export type CreateEventSchemaType = yup.InferType<typeof validationEventSchema>
@@ -292,31 +319,18 @@ export const resetFormByFrequency = (
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
     form_props.setValue(
-      "start",
-      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+      "start_date",
+      watch_data.start_date
+        ? dayjs(watch_data.start_date).format("YYYY-MM-DD")
+        : ""
     )
     form_props.setValue(
-      "end",
-      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+      "end_date",
+      watch_data.end_date ? dayjs(watch_data.end_date).format("YYYY-MM-DD") : ""
     )
-    // form_props.setValue(
-    //   'start_time',
-    //   watch_data.start_time
-    //     ? watch_data.start_time
-    //     : watch_data.start
-    //       ? dayjs(watch_data.start).format('HH:mm')
-    //       : undefined
-    // )
-    // form_props.setValue(
-    //   'end_time',
-    //   watch_data.end_time
-    //     ? watch_data.end_time
-    //     : watch_data.end
-    //       ? dayjs(watch_data.end).format('HH:mm')
-    //       : undefined
-    // )
+    form_props.setValue("start_time", watch_data.start_time)
+    form_props.setValue("end_time", watch_data.end_time)
     form_props.setValue("end_type", watch_data.end_type)
-    // form_props.setValue('interval', watch_data.interval)
     form_props.setValue("repeat", 0)
     form_props.setValue("week_number", undefined)
     form_props.setValue("selected_months", undefined)
@@ -330,15 +344,17 @@ export const resetFormByFrequency = (
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
     form_props.setValue(
-      "start",
-      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD") : ""
+      "start_date",
+      watch_data.start_date
+        ? dayjs(watch_data.start_date).format("YYYY-MM-DD")
+        : ""
     )
     form_props.setValue(
-      "end",
-      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD") : ""
+      "end_date",
+      watch_data.end_date ? dayjs(watch_data.end_date).format("YYYY-MM-DD") : ""
     )
-    // form_props.setValue('start_time', undefined)
-    // form_props.setValue('end_time', undefined)
+    form_props.setValue("start_time", undefined)
+    form_props.setValue("end_time", undefined)
     form_props.setValue("end_type", watch_data.end_type)
     form_props.setValue("repeat", 0)
     form_props.setValue("week_number", undefined)
@@ -358,15 +374,17 @@ export const resetFormByFrequency = (
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
     form_props.setValue(
-      "start",
-      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+      "start_date",
+      watch_data.start_date
+        ? dayjs(watch_data.start_date).format("YYYY-MM-DD")
+        : ""
     )
     form_props.setValue(
-      "end",
-      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+      "end_date",
+      watch_data.end_date ? dayjs(watch_data.end_date).format("YYYY-MM-DD") : ""
     )
-    // form_props.setValue('start_time', undefined)
-    // form_props.setValue('end_time', undefined)
+    form_props.setValue("start_time", watch_data.start_time)
+    form_props.setValue("end_time", watch_data.end_time)
     form_props.setValue("end_type", watch_data.end_type)
     form_props.setValue("repeat", 0)
     form_props.setValue("week_number", watch_data.week_number)
@@ -386,15 +404,17 @@ export const resetFormByFrequency = (
     form_props.setValue("background_color", watch_data.background_color)
     form_props.setValue("color", watch_data.color)
     form_props.setValue(
-      "start",
-      watch_data.start ? dayjs(watch_data.start).format("YYYY-MM-DD HH:mm") : ""
+      "start_date",
+      watch_data.start_date
+        ? dayjs(watch_data.start_date).format("YYYY-MM-DD")
+        : ""
     )
     form_props.setValue(
-      "end",
-      watch_data.end ? dayjs(watch_data.end).format("YYYY-MM-DD HH:mm") : ""
+      "end_date",
+      watch_data.end_date ? dayjs(watch_data.end_date).format("YYYY-MM-DD") : ""
     )
-    // form_props.setValue('start_time', undefined)
-    // form_props.setValue('end_time', undefined)
+    form_props.setValue("start_time", watch_data.start_time)
+    form_props.setValue("end_time", watch_data.end_time)
     form_props.setValue("end_type", watch_data.end_type)
     form_props.setValue("repeat", 0)
     form_props.setValue("week_number", undefined)

@@ -154,19 +154,26 @@ export function TimePicker({
   const [minute, setMinute] = useState(value.getMinutes())
   const [second, setSecond] = useState(value.getSeconds())
 
+  const prevValueRef = useRef<string>("")
+
   useEffect(() => {
-    onChange(
-      buildTime({
-        use12HourFormat,
-        value,
-        formatStr,
-        hour,
-        minute,
-        second,
-        ampm,
-      })
-    )
-  }, [hour, minute, second, ampm, formatStr, use12HourFormat, onChange])
+    const newTime = buildTime({
+      use12HourFormat,
+      value,
+      formatStr,
+      hour,
+      minute,
+      second,
+      ampm,
+    })
+
+    const newTimeStr = newTime.toISOString()
+
+    if (prevValueRef.current !== newTimeStr) {
+      prevValueRef.current = newTimeStr
+      onChange(newTime)
+    }
+  }, [hour, minute, second, ampm])
 
   const _hourIn24h = useMemo(() => {
     return use12HourFormat ? (hour % 12) + ampm * 12 : hour

@@ -5,12 +5,6 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -21,7 +15,7 @@ export interface ColorPair {
   color: string
 }
 
-const DEFAULT_PAIRS: ColorPair[] = [
+export const DEFAULT_PAIRS: ColorPair[] = [
   { background: "rgba(234, 179, 8, 0.2)", color: "#CA8A04" }, // Yellow
   { background: "rgba(239, 68, 68, 0.2)", color: "#DC2626" }, // Red
   { background: "rgba(249, 115, 22, 0.2)", color: "#EA580C" }, // Orange
@@ -86,139 +80,120 @@ export function ColorPalettePicker({
         disabled && "pointer-events-none opacity-50"
       )}
     >
-      <TooltipProvider>
-        {pairs.map((pair, index) => {
-          const isSelected =
-            value?.background.toLowerCase() === pair.background.toLowerCase() &&
-            value?.color.toLowerCase() === pair.color.toLowerCase()
+      {pairs.map((pair, index) => {
+        const isSelected =
+          value?.background.toLowerCase() === pair.background.toLowerCase() &&
+          value?.color.toLowerCase() === pair.color.toLowerCase()
 
-          return (
-            <Tooltip key={`${pair.background}-${index}`}>
-              <TooltipTrigger asChild>
-                <div
-                  className={cn(
-                    "group relative flex size-10 cursor-pointer items-center justify-center rounded-md transition-all hover:scale-105"
-                  )}
-                  onClick={() => !disabled && onChange(pair)}
-                  style={{ backgroundColor: pair.background }}
-                >
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: pair.color }}
-                  >
-                    Aa
-                  </span>
-                  {isSelected && (
-                    <motion.div
-                      layoutId="color-palette-selection"
-                      className="ring-primary absolute inset-0 rounded-md ring-2 ring-offset-2"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.6,
-                      }}
-                    >
-                      <div className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full shadow-sm">
-                        <Check className="size-3" />
-                      </div>
-                    </motion.div>
-                  )}
+        return (
+          <div
+            key={`${pair.background}-${index}`}
+            className={cn(
+              "group relative flex size-10 cursor-pointer items-center justify-center rounded-md transition-all hover:scale-105"
+            )}
+            onClick={() => !disabled && onChange(pair)}
+            style={{ backgroundColor: pair.background }}
+          >
+            <span className="text-xs font-bold" style={{ color: pair.color }}>
+              Aa
+            </span>
+            {isSelected && (
+              <motion.div
+                layoutId="color-palette-selection"
+                className="ring-primary absolute inset-0 rounded-md ring-2 ring-offset-2"
+                transition={{
+                  type: "spring",
+                  bounce: 0.2,
+                  duration: 0.6,
+                }}
+              >
+                <div className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full shadow-sm">
+                  <Check className="size-3" />
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Bg: {pair.background}</p>
-                <p>Text: {pair.color}</p>
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
+              </motion.div>
+            )}
+          </div>
+        )
+      })}
 
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <div
-                  className={cn(
-                    "bg-muted hover:bg-muted/80 text-muted-foreground relative flex size-10 cursor-pointer items-center justify-center rounded-md border transition-all"
-                  )}
-                >
-                  <Plus className="size-5" />
-                  <span className="sr-only">Pick custom color</span>
-                  {isCustomSelected && (
-                    <motion.div
-                      layoutId="color-palette-selection"
-                      className="ring-primary absolute inset-0 rounded-md ring-2 ring-offset-2"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.6,
-                      }}
-                    >
-                      <div className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full shadow-sm">
-                        <Check className="size-3" />
-                      </div>
-                    </motion.div>
-                  )}
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <div
+            className={cn(
+              "bg-muted hover:bg-muted/80 text-muted-foreground relative flex size-10 cursor-pointer items-center justify-center rounded-md border transition-all"
+            )}
+          >
+            <Plus className="size-5" />
+            <span className="sr-only">Pick custom color</span>
+            {isCustomSelected && (
+              <motion.div
+                layoutId="color-palette-selection"
+                className="ring-primary absolute inset-0 rounded-md ring-2 ring-offset-2"
+                transition={{
+                  type: "spring",
+                  bounce: 0.2,
+                  duration: 0.6,
+                }}
+              >
+                <div className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full shadow-sm">
+                  <Check className="size-3" />
                 </div>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Custom Color</p>
-            </TooltipContent>
-          </Tooltip>
+              </motion.div>
+            )}
+          </div>
+        </PopoverTrigger>
 
-          <PopoverContent className="w-64 p-3">
-            <div className="space-y-3">
-              <h4 className="leading-none font-medium">Custom Color</h4>
-              <div className="grid gap-2">
-                <div className="grid grid-cols-3 items-center gap-2">
-                  <Label htmlFor="bg-color">Bg</Label>
-                  <div className="col-span-2 flex items-center gap-2">
-                    <div
-                      className="size-6 rounded border shadow-sm"
-                      style={{ backgroundColor: customBg }}
-                    />
-                    <Input
-                      id="bg-color"
-                      type="color"
-                      className="h-8 w-full p-1"
-                      value={customBg}
-                      onChange={(e) =>
-                        handleCustomChange(e.target.value, customColor)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 items-center gap-2">
-                  <Label htmlFor="text-color">Text</Label>
-                  <div className="col-span-2 flex items-center gap-2">
-                    <div
-                      className="size-6 rounded border shadow-sm"
-                      style={{ backgroundColor: customColor }}
-                    />
-                    <Input
-                      id="text-color"
-                      type="color"
-                      className="h-8 w-full p-1"
-                      value={customColor}
-                      onChange={(e) =>
-                        handleCustomChange(customBg, e.target.value)
-                      }
-                    />
-                  </div>
+        <PopoverContent className="w-64 p-3">
+          <div className="space-y-3">
+            <h4 className="leading-none font-medium">Custom Color</h4>
+            <div className="grid gap-2">
+              <div className="grid grid-cols-3 items-center gap-2">
+                <Label htmlFor="bg-color">Bg</Label>
+                <div className="col-span-2 flex items-center gap-2">
+                  <div
+                    className="size-6 rounded border shadow-sm"
+                    style={{ backgroundColor: customBg }}
+                  />
+                  <Input
+                    id="bg-color"
+                    type="color"
+                    className="h-8 w-full p-1"
+                    value={customBg}
+                    onChange={(e) =>
+                      handleCustomChange(e.target.value, customColor)
+                    }
+                  />
                 </div>
               </div>
-
-              <div
-                className="mt-2 rounded-md border p-2 text-center text-sm font-medium shadow-sm"
-                style={{ backgroundColor: customBg, color: customColor }}
-              >
-                Preview Text
+              <div className="grid grid-cols-3 items-center gap-2">
+                <Label htmlFor="text-color">Text</Label>
+                <div className="col-span-2 flex items-center gap-2">
+                  <div
+                    className="size-6 rounded border shadow-sm"
+                    style={{ backgroundColor: customColor }}
+                  />
+                  <Input
+                    id="text-color"
+                    type="color"
+                    className="h-8 w-full p-1"
+                    value={customColor}
+                    onChange={(e) =>
+                      handleCustomChange(customBg, e.target.value)
+                    }
+                  />
+                </div>
               </div>
             </div>
-          </PopoverContent>
-        </Popover>
-      </TooltipProvider>
+
+            <div
+              className="mt-2 rounded-md border p-2 text-center text-sm font-medium shadow-sm"
+              style={{ backgroundColor: customBg, color: customColor }}
+            >
+              Preview Text
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

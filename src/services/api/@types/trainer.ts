@@ -1,7 +1,8 @@
 import { ApiTypes, MetaApi } from "./api"
 
 export interface TrainerPackage {
-  id: number
+  package_id: number
+  member_package_id: number
   package_name: string
   start_date: string
   end_date: string

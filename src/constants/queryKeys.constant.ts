@@ -4,6 +4,7 @@ export const QUERY_KEY = {
   clubDetail: "clubDetail",
   clubs: "clubs",
   events: "events",
+  originalEvents: "originalEvents",
   members: "members",
   memberDetail: "memberDetail",
   memberPackages: "memberPackages",

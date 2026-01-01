@@ -90,6 +90,13 @@ export type DateTimePickerProps = {
    * @default false
    */
   error?: boolean
+  /**
+   * Custom display format for the selected date/time.
+   * Uses date-fns format tokens.
+   * Examples: "d MMMM yyyy" for "1 January 2026", "d MMMM yyyy HH:mm" for "1 January 2026 10:00"
+   * @default undefined (uses default format based on hideTime and use12HourFormat)
+   */
+  displayFormat?: string
 }
 
 export type DateTimeRenderTriggerProps = {
@@ -116,6 +123,7 @@ export function DateTimePicker({
   timePicker,
   modal = false,
   error = false,
+  displayFormat = "d MMMM yyyy, HH:mm",
   ...props
 }: DateTimePickerProps & CalendarProps) {
   const [open, setOpen] = useState(false)
@@ -171,11 +179,29 @@ export function DateTimePicker({
 
   const dislayFormat = useMemo(() => {
     if (!displayValue) return "Pick a date"
+
+    // Use custom format if provided
+    if (displayFormat) {
+      let finalFormat = displayFormat
+
+      // If hideTime is true, strip time-related tokens from the format
+      if (hideTime) {
+        // Remove common time patterns: HH:mm:ss, hh:mm:ss, HH:mm, hh:mm, h:mm a, etc.
+        finalFormat = finalFormat
+          .replace(/[\s,]*[Hh]{1,2}:[m]{1,2}(:[s]{1,2})?[\s]*[aA]?/g, "")
+          .trim()
+          .replace(/,\s*$/, "") // Remove trailing comma if any
+      }
+
+      return format(displayValue, finalFormat)
+    }
+
+    // Default format
     return format(
       displayValue,
       `${!hideTime ? "MMM" : "MMMM"} d, yyyy${!hideTime ? (use12HourFormat ? " hh:mm:ss a" : " HH:mm:ss") : ""}`
     )
-  }, [displayValue, hideTime, use12HourFormat])
+  }, [displayValue, hideTime, use12HourFormat, displayFormat])
 
   return (
     <Popover

@@ -476,9 +476,9 @@ const TrainerDetailSheet = ({
                                         </div>
                                       </div>
                                       <div className="space-y-1.5">
-                                        {member.packages?.map((pkg) => (
+                                        {member.packages?.map((pkg, index) => (
                                           <div
-                                            key={pkg.id}
+                                            key={index}
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               setSelectedMember(member)

@@ -1,19 +1,24 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { useInfiniteQuery } from "@tanstack/react-query"
+import { Filter } from "@/services/api/@types/api"
 import {
   TrainerDetail,
   TrainerMember,
   TrainerPackage,
 } from "@/services/api/@types/trainer"
-import { Profile2User, Calendar2, Clock, TaskSquare } from "iconsax-reactjs"
-import { User, BookOpen, ArrowRightLeft } from "lucide-react"
+import { apiGetEventListOriginal } from "@/services/api/EventService"
+import { Calendar2, Clock } from "iconsax-reactjs"
+import { User, BookOpen, ArrowRightLeft, Plus, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
+import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tabs,
   TabsList,
@@ -29,6 +34,14 @@ import {
   SheetDescription,
   SheetFooter,
 } from "@/components/animate-ui/components/radix/sheet"
+import { dayOfWeekOptions } from "@/components/form/event/events"
+import DialogCreatePTSchedule, {
+  DialogCreatePTScheduleProps,
+} from "./CreatePTSchedule"
+import {
+  initTrainerEventValue,
+  useEventTrainerValidation,
+} from "./CreatePTSchedule/validation"
 import TransferMemberDialog from "./TransferMemberDialog"
 
 interface MemberDetailSheetProps {
@@ -48,8 +61,100 @@ const MemberDetailSheet = ({
 }: MemberDetailSheetProps) => {
   const [activeTab, setActiveTab] = useState("package")
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
+  const [openDialogSchedule, setOpenDialogSchedule] = useState(false)
+  const [scheduleType, setScheduleType] =
+    useState<DialogCreatePTScheduleProps["type"]>("create")
+  const formEventTrainer = useEventTrainerValidation()
 
-  if (!member) return null
+  const { data, isFetchingNextPage, isLoading, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: [
+        QUERY_KEY.originalEvents,
+        member?.id,
+        pkg?.package_id,
+        pkg?.member_package_id,
+        member,
+      ],
+      enabled: !!member && open,
+      initialPageParam: 1,
+      queryFn: async ({ pageParam }) => {
+        if (!member) return null
+        const res = await apiGetEventListOriginal({
+          page: pageParam,
+          per_page: 10,
+          sort_column: "id",
+          sort_type: "desc",
+          search: [
+            {
+              search_column: "member_id",
+              search_condition: "=",
+              search_text: member.id.toString(),
+            },
+            ...(pkg?.package_id
+              ? [
+                  {
+                    search_operator: "and",
+                    search_column: "package_id",
+                    search_condition: "=",
+                    search_text: pkg.package_id.toString(),
+                  },
+                ]
+              : []),
+            ...(pkg?.member_package_id
+              ? [
+                  {
+                    search_operator: "and",
+                    search_column: "member_package_id",
+                    search_condition: "=",
+                    search_text: pkg.member_package_id.toString(),
+                  },
+                ]
+              : []),
+          ] as Filter[],
+        })
+        return res
+      },
+      getNextPageParam: (lastPage) => {
+        const meta = lastPage?.data?.meta
+        if (!meta) return undefined
+        return meta.page !== meta.total_page ? meta.page + 1 : undefined
+      },
+    })
+
+  const listData = useMemo(
+    () => (data ? data.pages.flatMap((page) => page?.data.data || []) : []),
+    [data]
+  )
+
+  const handleCreateSchedule = (type: DialogCreatePTScheduleProps["type"]) => {
+    formEventTrainer.setValue("events", [
+      {
+        ...initTrainerEventValue,
+        frequency: type === "create_daily" ? "daily" : "weekly",
+        title: pkg?.package_name || "",
+        start_date: dayjs(pkg?.start_date).format("YYYY-MM-DD"),
+        end_date: dayjs(pkg?.end_date).format("YYYY-MM-DD"),
+        start_time: dayjs().format("HH:mm"),
+        end_time: dayjs().add(1, "hour").format("HH:mm"),
+        selected_weekdays: [
+          ...(type === "create"
+            ? [
+                {
+                  day_of_week: dayjs()
+                    .locale("en")
+                    .format("dddd")
+                    .toLowerCase(),
+                  start_time: dayjs().format("HH:mm"),
+                  end_time: dayjs().add(1, "hour").format("HH:mm"),
+                },
+              ]
+            : []),
+        ],
+      },
+    ])
+    setOpenDialogSchedule(true)
+    setScheduleType(type)
+  }
 
   return (
     <>
@@ -115,7 +220,7 @@ const MemberDetailSheet = ({
                   >
                     <div className="relative">
                       <Avatar className="h-16 w-16 border shadow-md">
-                        <AvatarImage src={member.photo || ""} />
+                        <AvatarImage src={member?.photo || ""} />
                         <AvatarFallback className="bg-muted text-muted-foreground">
                           <User className="h-8 w-8" />
                         </AvatarFallback>
@@ -123,23 +228,101 @@ const MemberDetailSheet = ({
                       <Badge
                         className={cn(
                           "border-background absolute -bottom-1 left-1/2 z-30 h-3.5 -translate-x-1/2 border-2 px-1.5 text-[9px] font-semibold whitespace-nowrap shadow-sm transition-all",
-                          statusColor[member.membership_status]
+                          statusColor[
+                            member?.membership_status as keyof typeof statusColor
+                          ]
                         )}
                       >
-                        {member.membership_status}
+                        {member?.membership_status}
                       </Badge>
                     </div>
 
                     <div className="mt-2 flex flex-col items-center text-center">
                       <h2 className="text-base font-semibold tracking-tight">
-                        {member.name}
+                        {member?.name}
                       </h2>
                       <div className="text-muted-foreground text-xs">
-                        {member.code}
+                        {member?.code}
                       </div>
                     </div>
                   </div>
                 </div>
+                <Card className="bg-card relative mt-4 overflow-hidden border-none p-0 shadow-none">
+                  <CardContent className="border-none p-0">
+                    <div className="mb-3 flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="bg-primary/10 text-primary rounded-lg p-2">
+                          <BookOpen className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs font-medium">
+                            Nama Paket
+                          </span>
+                          <span className="text-xs font-bold">
+                            {pkg?.package_name}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="border-primary/20 bg-primary/5 text-primary h-5 px-1.5 text-[10px] uppercase"
+                      >
+                        {pkg?.package_type?.replace("_", " ")}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid grid-cols-2 gap-2">
+                      <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
+                        <p className="text-muted-foreground mb-1 text-xs">
+                          Total Sesi
+                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-bold">
+                            {pkg?.total_available_session}
+                          </span>
+                          <span className="text-muted-foreground text-xs font-semibold">
+                            Sesi
+                          </span>
+                        </div>
+                      </div>
+                      <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
+                        <p className="text-muted-foreground mb-1 text-xs">
+                          Durasi
+                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-bold">
+                            {pkg?.duration}
+                          </span>
+                          <span className="text-muted-foreground text-xs font-semibold capitalize">
+                            {pkg?.duration_type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-muted/30 flex items-center justify-between rounded-lg border border-dashed p-2 text-xs">
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-muted-foreground text-xs">Mulai</p>
+                        <div className="flex items-center gap-1 font-semibold">
+                          <Calendar2 className="text-primary h-4 w-4" />
+                          {dayjs(pkg?.start_date).format("DD MMM YYYY")}
+                        </div>
+                      </div>
+                      <div className="bg-border h-8 w-px" />
+                      <div className="flex flex-col gap-0.5 text-right">
+                        <p className="text-muted-foreground text-xs">
+                          Berakhir
+                        </p>
+                        <div className="flex items-center justify-end gap-1 font-semibold">
+                          <span className="text-red-500">
+                            {dayjs(pkg?.end_date).format("DD MMM YYYY")}
+                          </span>
+                          <Calendar2 className="h-4 w-4 text-red-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Tabs Section - Simplified Styling */}
                 <Tabs
@@ -149,8 +332,8 @@ const MemberDetailSheet = ({
                 >
                   <TabsList className="h-auto w-full justify-start gap-1">
                     <TabsTrigger value="package">
-                      <TaskSquare className="h-3 w-3" variant="Bulk" />
-                      Detail Paket
+                      <Calendar2 className="h-3 w-3" variant="Bulk" />
+                      Jadwal Sesi
                     </TabsTrigger>
                     <TabsTrigger value="history">
                       <Clock className="h-3 w-3" variant="Bulk" />
@@ -160,97 +343,209 @@ const MemberDetailSheet = ({
 
                   <TabsContents>
                     <TabsContent value="package" className="space-y-2 pt-1">
-                      {pkg ? (
-                        <Card className="bg-card relative overflow-hidden border p-0 shadow-none">
-                          <CardContent className="p-3">
-                            <div className="mb-3 flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2.5">
-                                <div className="bg-primary/10 text-primary rounded-lg p-2">
-                                  <BookOpen className="h-4 w-4" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
-                                    Nama Paket
-                                  </span>
-                                  <span className="text-sm leading-tight font-bold">
-                                    {pkg.package_name}
-                                  </span>
-                                </div>
-                              </div>
-                              <Badge
-                                variant="outline"
-                                className="border-primary/20 bg-primary/5 text-primary h-5 px-1.5 text-[10px] uppercase"
-                              >
-                                {pkg.package_type?.replace("_", " ")}
-                              </Badge>
-                            </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-bold tracking-tight">
+                            {/* Jadwal Latihan */}
+                          </h3>
 
-                            <div className="mb-3 grid grid-cols-2 gap-2">
-                              <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
-                                <p className="text-muted-foreground mb-1 text-[10px]">
-                                  Total Sesi
-                                </p>
-                                <div className="flex items-baseline gap-1">
-                                  <span className="text-lg font-bold">
-                                    {pkg.total_available_session}
-                                  </span>
-                                  <span className="text-muted-foreground text-[10px] font-semibold">
-                                    Sesi
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="bg-muted/50 flex flex-col items-center justify-center rounded-lg border p-2 text-center">
-                                <p className="text-muted-foreground mb-1 text-[10px]">
-                                  Durasi
-                                </p>
-                                <div className="flex items-baseline gap-1">
-                                  <span className="text-lg font-bold">
-                                    {pkg.duration}
-                                  </span>
-                                  <span className="text-muted-foreground text-[10px] font-semibold uppercase">
-                                    {pkg.duration_type}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="bg-muted/30 flex items-center justify-between rounded-lg border border-dashed p-2 text-xs">
-                              <div className="flex flex-col gap-0.5">
-                                <p className="text-muted-foreground text-[10px]">
-                                  Mulai
-                                </p>
-                                <div className="flex items-center gap-1 font-semibold">
-                                  <Calendar2 className="text-primary h-3 w-3" />
-                                  {dayjs(pkg.start_date).format("DD MMM YYYY")}
-                                </div>
-                              </div>
-                              <div className="bg-border h-8 w-px" />
-                              <div className="flex flex-col gap-0.5 text-right">
-                                <p className="text-muted-foreground text-[10px]">
-                                  Berakhir
-                                </p>
-                                <div className="flex items-center justify-end gap-1 font-semibold">
-                                  <span className="text-red-500">
-                                    {dayjs(pkg.end_date).format("DD MMM YYYY")}
-                                  </span>
-                                  <Calendar2 className="h-3 w-3 text-red-500" />
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ) : (
-                        <div className="bg-muted/30 flex flex-col items-center justify-center rounded-xl border border-dashed py-10 opacity-50">
-                          <Profile2User
-                            size={32}
-                            variant="Bulk"
-                            className="text-muted-foreground"
-                          />
-                          <p className="text-muted-foreground mt-2 text-xs font-semibold">
-                            Tidak ada paket yang dipilih
-                          </p>
+                          {listData.length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-dashed"
+                              onClick={() => {
+                                handleCreateSchedule("create_daily")
+                              }}
+                            >
+                              <Plus className="mr-1 h-4 w-4" />
+                              Tambah Hari
+                            </Button>
+                          )}
                         </div>
-                      )}
+
+                        {isLoading ? (
+                          <div className="space-y-2">
+                            {[1, 2].map((i) => (
+                              <Card key={i} className="p-3">
+                                <div className="flex flex-col gap-2">
+                                  <Skeleton className="h-4 w-3/4" />
+                                  <Skeleton className="h-3 w-1/2" />
+                                  <div className="flex gap-1">
+                                    <Skeleton className="h-5 w-12 rounded-md" />
+                                    <Skeleton className="h-5 w-12 rounded-md" />
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : listData.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                            <div className="bg-primary/10 text-primary rounded-full p-3">
+                              <Calendar2 className="h-6 w-6" variant="Bulk" />
+                            </div>
+                            <h3 className="mt-3 text-sm font-semibold">
+                              Jadwal Latihan Belum Diatur
+                            </h3>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                              Belum ada jadwal latihan yang dibuat untuk paket
+                              ini. Tambahkan jadwal untuk memulai.
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mt-4"
+                              onClick={() => {
+                                handleCreateSchedule("create")
+                              }}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Tambah Jadwal
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {listData.map((item) => (
+                              <Card
+                                key={item.id}
+                                className="overflow-hidden border p-0 shadow-none"
+                              >
+                                <CardContent className="p-3">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex flex-col gap-0.5">
+                                      <h4 className="text-sm leading-tight font-bold">
+                                        {item.title}
+                                      </h4>
+                                      <p className="text-muted-foreground line-clamp-1 text-xs">
+                                        {item.description ||
+                                          "Tidak ada deskripsi"}
+                                      </p>
+                                      <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-xs font-medium">
+                                        {item.frequency === "daily" ? (
+                                          <span className="flex items-center gap-1">
+                                            <div className="h-1 w-1 rounded-full bg-orange-400" />
+                                            Jadwal Harian
+                                          </span>
+                                        ) : (
+                                          <span className="flex items-center gap-1">
+                                            <div className="h-1 w-1 rounded-full bg-blue-400" />
+                                            Diulang setiap minggu s/d{" "}
+                                            {dayjs(item.end_date).format(
+                                              "DD MMM YYYY"
+                                            )}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      variant="secondary"
+                                      size="icon"
+                                      className="text-primary hover:text-primary/80 h-8 w-8"
+                                      onClick={() => {
+                                        formEventTrainer.setValue("events", [
+                                          {
+                                            ...item,
+                                            selected_weekdays:
+                                              item.selected_weekdays,
+                                            is_specific_time:
+                                              item.frequency === "daily"
+                                                ? false
+                                                : true,
+                                          },
+                                        ])
+                                        setScheduleType(
+                                          item.frequency === "daily"
+                                            ? "update_daily"
+                                            : "update_weekly"
+                                        )
+                                        setOpenDialogSchedule(true)
+
+                                        console.log({
+                                          ...item,
+                                          selected_weekdays:
+                                            item.selected_weekdays,
+                                          is_specific_time:
+                                            item.frequency === "daily"
+                                              ? false
+                                              : true,
+                                        })
+                                      }}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+
+                                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                    {item.frequency === "daily" ? (
+                                      <Badge
+                                        variant="outline"
+                                        className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1"
+                                        style={{
+                                          backgroundColor:
+                                            item.background_color || "",
+                                          color: item.color || "",
+                                          borderColor:
+                                            item.color || "transparent",
+                                        }}
+                                      >
+                                        <span className="text-xs font-bold capitalize">
+                                          {dayjs(item.start_date).format(
+                                            "DD MMM YYYY"
+                                          )}
+                                        </span>
+                                        <span className="text-xs">
+                                          {item.start_time} - {item.end_time}
+                                        </span>
+                                      </Badge>
+                                    ) : (
+                                      item.selected_weekdays?.map((sw, idx) => (
+                                        <Badge
+                                          key={idx}
+                                          variant="outline"
+                                          className="flex flex-col items-start gap-0.5 rounded-md px-2 py-1"
+                                          style={{
+                                            backgroundColor:
+                                              item.background_color || "",
+                                            color: item.color || "",
+                                            borderColor:
+                                              item.color || "transparent",
+                                          }}
+                                        >
+                                          <span className="text-xs font-bold capitalize">
+                                            {
+                                              dayOfWeekOptions.find(
+                                                (opt) =>
+                                                  opt.value === sw.day_of_week
+                                              )?.label
+                                            }
+                                          </span>
+                                          <span className="text-xs">
+                                            {sw.start_time} - {sw.end_time}
+                                          </span>
+                                        </Badge>
+                                      ))
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+
+                            {hasNextPage && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full text-xs"
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                              >
+                                {isFetchingNextPage
+                                  ? "Loading..."
+                                  : "Muat Lebih Banyak"}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="history" className="space-y-0 pt-3">
@@ -325,12 +620,19 @@ const MemberDetailSheet = ({
       <TransferMemberDialog
         open={isTransferDialogOpen}
         onOpenChange={setIsTransferDialogOpen}
-        member={{
-          ...member,
-          packages: pkg ? [pkg] : member.packages,
-        }}
+        member={member}
         trainer={trainer}
         onSuccess={() => onOpenChange(false)}
+      />
+
+      <DialogCreatePTSchedule
+        formInstance={formEventTrainer}
+        open={openDialogSchedule}
+        type={scheduleType}
+        onOpenChange={setOpenDialogSchedule}
+        member={member}
+        trainer={trainer}
+        pkg={pkg}
       />
     </>
   )

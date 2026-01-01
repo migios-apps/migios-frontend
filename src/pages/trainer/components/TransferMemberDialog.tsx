@@ -42,7 +42,7 @@ import { WeekdayOptions } from "@/components/form/class/validation"
 interface TransferMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  member: TrainerMember
+  member: TrainerMember | null
   trainer: TrainerDetail | null
   onSuccess?: () => void
 }
@@ -102,9 +102,11 @@ const TransferMemberDialog = ({
   }, [open, reset])
 
   const onSubmit = (data: TransferFormValues) => {
+    if (!member) return
+
     console.log("Transferring package", {
       memberId: member.id,
-      packageId: member.packages[0]?.id,
+      packageId: member.packages?.[0]?.package_id,
       fromTrainerId: trainer?.id,
       targetTrainerId: (data.target_trainer as any).id,
       backgroundColor: data.background_color,
@@ -164,7 +166,9 @@ const TransferMemberDialog = ({
     [trainer]
   )
 
-  const pkg = member.packages[0] as TrainerPackage | undefined
+  if (!member) return null
+
+  const pkg = member.packages?.[0] as TrainerPackage | undefined
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
