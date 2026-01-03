@@ -15,6 +15,7 @@ export type TypesActionDatePicker =
   | "yesterday"
   | "thisWeek"
   | "sevenDaysAgo"
+  | "sevenDaysAhead"
   | "thirtyDaysAgo"
   | "thisMonth"
   | "lastMonth"
@@ -28,6 +29,7 @@ export const NamesActionDatePicker = {
   yesterday: "Kemarin",
   thisWeek: "Minggu ini",
   sevenDaysAgo: "7 hari yang lalu",
+  sevenDaysAhead: "7 hari ke depan",
   thirtyDaysAgo: "30 hari yang lalu",
   thisMonth: "Bulan ini",
   lastMonth: "Bulan lalu",
@@ -84,9 +86,22 @@ export const menusShortcutDatePicker: MenuDatePicker[] = [
       defaultStartDate: dayjs().subtract(7, "day").toString(),
       defaultEndDate: dayjs().toString(),
       minStartDate: dayjs().subtract(7, "day").toString(),
-      maxStartDate: dayjs().subtract(7, "day").toString(),
-      minEndDate: dayjs().toString(),
+      maxStartDate: dayjs().toString(),
+      minEndDate: dayjs().subtract(7, "day").toString(),
       maxEndDate: dayjs().toString(),
+      readOnlyCalendar: true,
+    },
+  },
+  {
+    name: NamesActionDatePicker.sevenDaysAhead,
+    type: "sevenDaysAhead",
+    options: {
+      defaultStartDate: dayjs().toString(),
+      defaultEndDate: dayjs().add(7, "day").toString(),
+      minStartDate: dayjs().toString(),
+      maxStartDate: dayjs().add(7, "day").toString(),
+      minEndDate: dayjs().toString(),
+      maxEndDate: dayjs().add(7, "day").toString(),
       readOnlyCalendar: true,
     },
   },
@@ -97,8 +112,8 @@ export const menusShortcutDatePicker: MenuDatePicker[] = [
       defaultStartDate: dayjs().subtract(30, "day").toString(),
       defaultEndDate: dayjs().toString(),
       minStartDate: dayjs().subtract(30, "day").toString(),
-      maxStartDate: dayjs().subtract(30, "day").toString(),
-      minEndDate: dayjs().toString(),
+      maxStartDate: dayjs().toString(),
+      minEndDate: dayjs().subtract(30, "day").toString(),
       maxEndDate: dayjs().toString(),
       readOnlyCalendar: true,
     },
@@ -164,9 +179,9 @@ export const menusShortcutDatePicker: MenuDatePicker[] = [
     options: {
       defaultStartDate: dayjs("2015-01-01").toString(),
       defaultEndDate: dayjs().toString(),
-      maxStartDate: dayjs("2015-01-01").toString(),
       minStartDate: dayjs("2015-01-01").toString(),
-      minEndDate: dayjs().toString(),
+      maxStartDate: dayjs().toString(),
+      minEndDate: dayjs("2015-01-01").toString(),
       maxEndDate: dayjs().toString(),
       readOnlyCalendar: true,
     },

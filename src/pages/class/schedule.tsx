@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import { EventsData } from "@/services/api/@types/event"
 import { apiGetEventList } from "@/services/api/EventService"
 import { dayjs } from "@/utils/dayjs"
-import { getStartAndEndOfWeek } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
 import { useIsMobile } from "@/hooks/use-mobile"
 import CalendarView from "@/components/ui/calendar-view"
 import Loading from "@/components/ui/loading"
@@ -11,17 +11,36 @@ import LayoutClasses from "./Layout"
 
 const ScheduleIndex = () => {
   const isMobile = useIsMobile()
-  const dateRange = getStartAndEndOfWeek()
+  const defaultMenu = getMenuShortcutDatePickerByType("sevenDaysAhead").menu
 
   const { data: events, isLoading: loadingEvents } = useQuery({
-    queryKey: [QUERY_KEY.events, dateRange],
-    enabled: !!dateRange.startDate && !!dateRange.endDate,
+    queryKey: [QUERY_KEY.events, defaultMenu],
+    enabled:
+      !!defaultMenu.options.defaultStartDate &&
+      !!defaultMenu.options.defaultEndDate,
     queryFn: async () => {
       const res = await apiGetEventList({
-        start_date: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
-        end_date: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
-        show_all: true,
-        only_class: true,
+        search: [
+          {
+            search_column: "start_date",
+            search_condition: ">=",
+            search_text: dayjs(defaultMenu.options.defaultStartDate).format(
+              "YYYY-MM-DD"
+            ),
+          },
+          {
+            search_column: "end_date",
+            search_condition: "<=",
+            search_text: dayjs(defaultMenu.options.defaultEndDate).format(
+              "YYYY-MM-DD"
+            ),
+          },
+          {
+            search_column: "class_id",
+            search_condition: "is not",
+            search_text: "null",
+          },
+        ],
       })
       return res
     },

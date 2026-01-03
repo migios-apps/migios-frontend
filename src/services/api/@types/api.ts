@@ -4,10 +4,22 @@ export interface ApiTypes {
   status: number
 }
 
+type ConditionTypes =
+  | "like"
+  | "not like"
+  | "is"
+  | "is not"
+  | "!="
+  | ">="
+  | "<="
+  | "<"
+  | ">"
+  | "="
+
 export interface Filter {
   search_column?: string
   search_text?: string
-  search_condition?: "=" | "!=" | ">" | "<" | "<=" | ">=" | "like"
+  search_condition?: ConditionTypes
   search_operator?: "AND" | "OR" | "and" | "or"
   [key: string]: any
 }
