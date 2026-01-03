@@ -205,7 +205,10 @@ const MemberDetailSheet = ({
           ...(type === "create"
             ? [
                 {
-                  day_of_week: dayjs().format("dddd").toLowerCase(),
+                  day_of_week: dayjs()
+                    .locale("en")
+                    .format("dddd")
+                    .toLowerCase(),
                   start_time: dayjs().format("HH:mm"),
                   end_time: dayjs().add(1, "hour").format("HH:mm"),
                 },
@@ -758,6 +761,7 @@ const MemberDetailSheet = ({
                 variant="default"
                 size="sm"
                 className="w-full"
+                disabled={isLoading}
                 onClick={() => setIsTransferDialogOpen(true)}
               >
                 <ArrowRightLeft className="h-4 w-4" />
@@ -771,9 +775,14 @@ const MemberDetailSheet = ({
       <TransferMemberDialog
         open={isTransferDialogOpen}
         onOpenChange={setIsTransferDialogOpen}
+        onSuccess={() => {
+          setIsTransferDialogOpen(false)
+          onOpenChange(false)
+        }}
         member={member}
         trainer={trainer}
-        onSuccess={() => onOpenChange(false)}
+        pkg={pkg}
+        hasEvent={listData.length > 0}
       />
 
       <DialogCreatePTSchedule

@@ -48,4 +48,5 @@ export const QUERY_KEY = {
   commissionPackage: "commissionPackage",
   commissionProduct: "commissionProduct",
   specializations: "specializations",
+  trainerActiveMembers: "trainerActiveMembers",
 }

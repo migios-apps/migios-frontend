@@ -30,13 +30,13 @@ export const endTypeOptions = [
 ]
 
 export const dayOfWeekOptions = [
-  { label: "Minggu", value: "sunday", key: 0 },
-  { label: "Senin", value: "monday", key: 1 },
-  { label: "Selasa", value: "tuesday", key: 2 },
-  { label: "Rabu", value: "wednesday", key: 3 },
-  { label: "Kamis", value: "thursday", key: 4 },
-  { label: "Jumat", value: "friday", key: 5 },
-  { label: "Sabtu", value: "saturday", key: 6 },
+  { label: "Minggu", id_value: "minggu", value: "sunday", key: 0 },
+  { label: "Senin", id_value: "senin", value: "monday", key: 1 },
+  { label: "Selasa", id_value: "selasa", value: "tuesday", key: 2 },
+  { label: "Rabu", id_value: "rabu", value: "wednesday", key: 3 },
+  { label: "Kamis", id_value: "kamis", value: "thursday", key: 4 },
+  { label: "Jumat", id_value: "jumat", value: "friday", key: 5 },
+  { label: "Sabtu", id_value: "sabtu", value: "saturday", key: 6 },
 ]
 
 export const initialEventValues = {

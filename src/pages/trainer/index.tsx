@@ -24,6 +24,7 @@ import {
 } from "iconsax-reactjs"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { cn } from "@/lib/utils"
+import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -135,7 +136,7 @@ const TrainerColumn = ({
 }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["trainer-members", trainer.id],
+      queryKey: [QUERY_KEY.trainerActiveMembers, trainer.id],
       queryFn: ({ pageParam = 2 }) =>
         apiGetTrainerActiveMembers(trainer.id, {
           page: pageParam as number,
@@ -354,7 +355,7 @@ const TrainerPage = () => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["trainers-kanban", searchQuery, sortValue, selectedMember],
+      queryKey: [QUERY_KEY.trainers, searchQuery, sortValue, selectedMember],
       queryFn: ({ pageParam = 1 }) => {
         const [column, type] = sortValue.split("-")
         const sort_column =

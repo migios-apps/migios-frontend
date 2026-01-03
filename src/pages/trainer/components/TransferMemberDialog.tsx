@@ -1,12 +1,17 @@
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, ChangeEvent } from "react"
 import { useForm } from "react-hook-form"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useSessionUser } from "@/auth"
 import { EmployeeDetail } from "@/services/api/@types/employee"
+import { CreateEventRequest } from "@/services/api/@types/event"
 import {
   TrainerDetail,
   TrainerMember,
   TrainerPackage,
 } from "@/services/api/@types/trainer"
+import { TransferMemberRequest } from "@/services/api/@types/trainer"
 import { apiGetEmployeeList } from "@/services/api/EmployeeService"
+import { apiTransferMember } from "@/services/api/TrainerService"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -18,17 +23,28 @@ import {
 } from "iconsax-reactjs"
 import { ArrowRight, UserPlus, Info } from "lucide-react"
 import { OptionsOrGroups, GroupBase } from "react-select"
+import { toast } from "sonner"
 import * as yup from "yup"
-import { cn } from "@/lib/utils"
+import { dayjs } from "@/utils/dayjs"
+import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ColorPalettePicker } from "@/components/ui/color-palette-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ReturnAsyncSelect } from "@/components/ui/react-select"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -37,44 +53,69 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/animate-ui/components/radix/dialog"
-import { WeekdayOptions } from "@/components/form/class/validation"
+import DailySchedule from "./CreatePTSchedule/DailySchedule"
+import WeeklySchedule from "./CreatePTSchedule/WeeklySchedule"
+import {
+  extendEventSchema,
+  initTrainerEventValue,
+  ReturnEventTrainerSchemaType,
+} from "./CreatePTSchedule/validation"
 
 interface TransferMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess: () => void
   member: TrainerMember | null
   trainer: TrainerDetail | null
-  onSuccess?: () => void
+  pkg: TrainerPackage | null
+  hasEvent?: boolean
 }
 
-const validationSchema = yup.object().shape({
-  target_trainer: yup.object().required("Pilih trainer tujuan"),
-  background_color: yup.string().required("Pilih warna agenda"),
-  color: yup.string().required("Pilih warna teks"),
-  weekdays_available: yup
-    .array()
-    .of(
-      yup.object().shape({
-        day: yup.number().required(),
+const getValidationSchema = (hasEvent?: boolean) =>
+  yup.object().shape({
+    target_trainer: yup
+      .object({
+        id: yup.number().required(),
       })
-    )
-    .min(1, "Minimal pilih satu hari tersedia")
-    .required("Hari tersedia wajib diisi"),
-})
+      .required("Pilih trainer tujuan"),
+    is_create_event: yup.boolean().default(false),
+    events: hasEvent
+      ? yup
+          .array()
+          .of(extendEventSchema)
+          .min(1, "Minimal satu jadwal harus ada")
+          .required("Jadwal wajib diisi")
+      : yup
+          .array()
+          .of(extendEventSchema)
+          .when("is_create_event", {
+            is: true,
+            then: (schema) =>
+              schema.min(1, "Minimal satu jadwal harus ada").required(),
+            otherwise: (schema) => schema.optional().default([]),
+          }),
+  })
 
-type TransferFormValues = yup.InferType<typeof validationSchema>
+type TransferFormValues = yup.InferType<ReturnType<typeof getValidationSchema>>
 
 const TransferMemberDialog = ({
   open,
   onOpenChange,
+  onSuccess,
   member,
   trainer,
-  onSuccess,
+  pkg,
+  hasEvent,
 }: TransferMemberDialogProps) => {
+  const schema = getValidationSchema(hasEvent)
+  const queryClient = useQueryClient()
+
   const form = useForm<TransferFormValues>({
-    resolver: yupResolver(validationSchema) as any,
+    resolver: yupResolver(schema) as any,
     defaultValues: {
-      weekdays_available: [],
+      target_trainer: null as any,
+      is_create_event: false,
+      events: [],
     },
   })
 
@@ -82,39 +123,174 @@ const TransferMemberDialog = ({
     control,
     handleSubmit,
     watch,
-    reset,
     formState: { errors },
   } = form
+
+  // console.log("errors:", { watch: watch(), errors })
+
+  const club = useSessionUser((state) => state.club)
 
   const watchTargetTrainer = watch("target_trainer") as
     | EmployeeDetail
     | undefined
-  const watchBgColor = watch("background_color")
-  const watchTextColor = watch("color")
+  const watchIsCreateEvent = watch("is_create_event")
+
+  const handleClose = useCallback(() => {
+    form.reset()
+    onOpenChange(false)
+  }, [form, onOpenChange])
+
+  const handleTitleChange = (value: string) => {
+    const events = form.getValues("events") || []
+    events.forEach((_, index) => {
+      form.setValue(`events.${index}.title`, value, {
+        shouldValidate: false,
+      })
+    })
+  }
+
+  const handleDescriptionChange = (value: string) => {
+    const events = form.getValues("events") || []
+    events.forEach((_, index) => {
+      form.setValue(`events.${index}.description`, value, {
+        shouldValidate: false,
+      })
+    })
+  }
+
+  const handleFrequencyChange = (value: string) => {
+    const currentFirstEvent = form.getValues("events.0")
+    const title = currentFirstEvent?.title || ""
+    const description = currentFirstEvent?.description || ""
+
+    form.setValue("events", [
+      {
+        ...initTrainerEventValue,
+        title,
+        description,
+        frequency: value,
+        start_date: dayjs(pkg?.start_date).format("YYYY-MM-DD"),
+        end_date: dayjs(pkg?.end_date).format("YYYY-MM-DD"),
+        start_time: dayjs().format("HH:mm"),
+        end_time: dayjs().add(1, "hour").format("HH:mm"),
+        selected_weekdays: [
+          ...(value === "weekly"
+            ? [
+                {
+                  day_of_week: dayjs()
+                    .locale("en")
+                    .format("dddd")
+                    .toLowerCase(),
+                  start_time: dayjs().format("HH:mm"),
+                  end_time: dayjs().add(1, "hour").format("HH:mm"),
+                },
+              ]
+            : []),
+        ],
+      },
+    ])
+    form.clearErrors()
+  }
 
   // Reset form when dialog opens
+
   useEffect(() => {
-    if (open) {
-      reset({
-        weekdays_available: [],
-      })
+    if (open && hasEvent) {
+      form.setValue("is_create_event", true)
+      form.setValue("events", [
+        {
+          ...initTrainerEventValue,
+          title: pkg?.package_name || "",
+          start_date: dayjs(pkg?.start_date).format("YYYY-MM-DD"),
+          end_date: dayjs(pkg?.end_date).format("YYYY-MM-DD"),
+          start_time: dayjs().format("HH:mm"),
+          end_time: dayjs().add(1, "hour").format("HH:mm"),
+          selected_weekdays: [
+            {
+              day_of_week: dayjs().locale("en").format("dddd").toLowerCase(),
+              start_time: dayjs().format("HH:mm"),
+              end_time: dayjs().add(1, "hour").format("HH:mm"),
+            },
+          ],
+        },
+      ])
+    } else if (open && !hasEvent) {
+      form.setValue("events", [])
+      form.setValue("is_create_event", false)
     }
-  }, [open, reset])
+  }, [open, pkg, form, hasEvent])
+
+  const refetchQuery = () => {
+    ;[
+      QUERY_KEY.trainers,
+      QUERY_KEY.trainerActiveMembers,
+      QUERY_KEY.generateEvents,
+      QUERY_KEY.originalEvents,
+      QUERY_KEY.cuttingSessions,
+    ].forEach((key) => {
+      queryClient.resetQueries({ queryKey: [key] })
+    })
+  }
+
+  const transferMemberMutation = useMutation({
+    mutationFn: (data: TransferMemberRequest) => apiTransferMember(data),
+    onSuccess: () => {
+      toast.success("Member berhasil ditransfer")
+      refetchQuery()
+      onSuccess()
+      handleClose()
+    },
+  })
 
   const onSubmit = (data: TransferFormValues) => {
-    if (!member) return
+    if (!member || !pkg) return
 
-    console.log("Transferring package", {
-      memberId: member.id,
-      packageId: member.packages?.[0]?.package_id,
-      fromTrainerId: trainer?.id,
-      targetTrainerId: (data.target_trainer as any).id,
-      backgroundColor: data.background_color,
-      color: data.color,
-      weekdays: data.weekdays_available,
-    })
-    onSuccess?.()
-    onOpenChange(false)
+    const firstEvent = data.events?.[0]
+
+    if (firstEvent?.frequency === "weekly") {
+      const hasEmptyDays = data.events?.some(
+        (evt) => !evt.selected_weekdays || evt.selected_weekdays.length === 0
+      )
+      if (hasEmptyDays) {
+        toast.error("Silakan pilih minimal satu hari untuk jadwal mingguan")
+        return
+      }
+    }
+
+    const payload: TransferMemberRequest = {
+      member_package_id: pkg.member_package_id,
+      trainer_id: data.target_trainer.id,
+      events: data.is_create_event
+        ? (data.events || []).map(
+            (evt) =>
+              ({
+                ...evt,
+                club_id: club?.id as number,
+                employee_id: data.target_trainer.id,
+                member_id: member?.id,
+                package_id: pkg?.package_id,
+                member_package_id: pkg?.member_package_id,
+                title: firstEvent?.title,
+                description: firstEvent?.description,
+                background_color: firstEvent?.background_color,
+                color: firstEvent?.color,
+                frequency: firstEvent?.frequency,
+                repeat: 0,
+                end_type: "on",
+                event_type: "pt_program",
+                is_publish: 1,
+                selected_months: [],
+                week_number: [],
+                selected_weekdays:
+                  firstEvent?.frequency === "weekly"
+                    ? evt.selected_weekdays
+                    : [],
+              }) as CreateEventRequest
+          )
+        : [],
+    }
+
+    transferMemberMutation.mutate(payload)
   }
 
   const getTrainerList = useCallback(
@@ -168,10 +344,8 @@ const TransferMemberDialog = ({
 
   if (!member) return null
 
-  const pkg = member.packages?.[0] as TrainerPackage | undefined
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         scrollBody
         // showCloseButton={false}
@@ -181,398 +355,445 @@ const TransferMemberDialog = ({
         className="pb-0 max-sm:fixed max-sm:inset-0 max-sm:z-50 max-sm:flex max-sm:h-screen max-sm:max-w-none max-sm:flex-col max-sm:rounded-none max-sm:border-0 sm:max-w-2xl"
       >
         <DialogHeader>
-          <DialogTitle>Ganti Trainer Membe</DialogTitle>
+          <DialogTitle>Ganti Trainer Member</DialogTitle>
           <DialogDescription>
             Pindahkan paket member ke trainer lain dan atur jadwal barunya.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative flex h-full flex-col gap-4">
-          {/* Header Actions */}
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="absolute top-2 right-2 z-20 h-10 w-10 border-none p-0 sm:top-4 sm:right-4"
-          >
-            <XIcon className="size-5" />
-            <span className="sr-only">Close</span>
-          </Button> */}
+        <div className="relative flex h-full flex-col">
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-2">
+              {/* Animated Transfer Illustration */}
+              <div className="bg-muted/30 relative flex items-center justify-between rounded-lg border border-dashed p-4">
+                <div className="flex flex-col items-center gap-2 sm:gap-3">
+                  <div className="relative">
+                    <Avatar className="size-12 border-2 bg-white shadow-lg sm:size-16 sm:shadow-xl">
+                      <AvatarImage src={trainer?.photo || ""} />
+                      <AvatarFallback className="text-muted-foreground text-[10px] font-bold sm:text-xs">
+                        {trainer?.name?.charAt(0) || "T"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="bg-destructive absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full text-[10px] text-white shadow-sm ring-2 ring-white sm:size-6 sm:text-xs sm:ring-4">
+                      -
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="max-w-[60px] truncate text-[10px] font-bold sm:max-w-20 sm:text-xs">
+                      {trainer?.name || "Trainer"}
+                    </p>
+                    <span className="text-muted-foreground text-[9px] uppercase sm:text-xs">
+                      Sumber
+                    </span>
+                  </div>
+                </div>
 
-          <div className="flex h-full flex-col">
-            {/* Title Section */}
-            {/* <div className="flex flex-col items-center pt-10 pb-4 text-center sm:pt-14 sm:pb-6">
-              <div className="bg-primary/10 mb-3 flex h-10 w-10 items-center justify-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl">
-                <ConvertCard
-                  size={24}
-                  variant="Bulk"
-                  className="text-primary sm:size-7"
-                />
-              </div>
-              <h2 className="mb-1 text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl">
-                Ganti Trainer Member
-              </h2>
-              <p className="text-muted-foreground max-w-[280px] text-xs sm:max-w-md sm:text-sm">
-                Pindahkan paket member ke trainer lain dan atur jadwal barunya.
-              </p>
-            </div> */}
+                <div className="relative flex flex-1 items-center justify-center px-4 sm:px-10">
+                  <div className="border-muted-foreground/20 w-full border-t-2 border-dashed" />
 
-            <ScrollArea className="h-full max-h-[calc(100vh-200px)] flex-1">
-              <Form {...form}>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Animated Transfer Illustration */}
-                  <div className="bg-muted/30 relative flex items-center justify-between rounded-2xl border border-dashed p-4 sm:rounded-3xl sm:p-6">
-                    <div className="flex flex-col items-center gap-2 sm:gap-3">
-                      <div className="relative">
-                        <Avatar className="size-12 border-2 bg-white shadow-lg sm:size-16 sm:shadow-xl">
-                          <AvatarImage src={trainer?.photo || ""} />
-                          <AvatarFallback className="text-muted-foreground text-[10px] font-bold sm:text-xs">
-                            {trainer?.name?.charAt(0) || "T"}
+                  <motion.div
+                    className="absolute"
+                    initial={{ x: -30 }}
+                    animate={{ x: 30 }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <div className="relative">
+                      <Avatar className="size-10 border-2 bg-white shadow-lg sm:size-12 sm:shadow-xl">
+                        <AvatarImage src={member.photo || ""} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold sm:text-xs">
+                          {member.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  </motion.div>
+                </div>
+
+                <div className="flex flex-col items-center gap-2 sm:gap-3">
+                  <AnimatePresence mode="wait">
+                    {watchTargetTrainer ? (
+                      <motion.div
+                        key="target-active"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="relative"
+                      >
+                        <Avatar className="border-primary/50 size-12 border-2 bg-white shadow-lg sm:size-16 sm:shadow-xl">
+                          <AvatarImage src={watchTargetTrainer.photo || ""} />
+                          <AvatarFallback className="text-primary text-[10px] font-bold sm:text-xs">
+                            {watchTargetTrainer.name?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="bg-destructive absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full text-[10px] text-white shadow-sm ring-2 ring-white sm:size-6 sm:text-xs sm:ring-4">
-                          -
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <p className="max-w-[60px] truncate text-[10px] font-bold sm:max-w-20 sm:text-xs">
-                          {trainer?.name || "Trainer"}
-                        </p>
-                        <span className="text-muted-foreground text-[9px] font-bold uppercase sm:text-xs">
-                          Sumber
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="relative flex flex-1 items-center justify-center px-4 sm:px-10">
-                      <div className="border-muted-foreground/20 w-full border-t-2 border-dashed" />
-
-                      <motion.div
-                        className="absolute"
-                        initial={{ x: -30 }}
-                        animate={{ x: 30 }}
-                        transition={{
-                          duration: 2.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        <div className="relative">
-                          <Avatar className="size-10 border-2 bg-white shadow-lg sm:size-12 sm:shadow-xl">
-                            <AvatarImage src={member.photo || ""} />
-                            <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold sm:text-xs">
-                              {member.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="bg-primary absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full text-[8px] text-white shadow-sm ring-2 ring-white sm:-right-1 sm:-bottom-1 sm:size-5 sm:text-xs">
-                            <TickCircle
-                              size={8}
-                              variant="Bold"
-                              className="sm:size-2.5"
-                            />
-                          </div>
+                        <div className="bg-primary absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full text-[10px] text-white shadow-sm ring-2 ring-white sm:size-6 sm:text-xs sm:ring-4">
+                          +
                         </div>
                       </motion.div>
-                    </div>
+                    ) : (
+                      <motion.div
+                        key="target-empty"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="relative"
+                      >
+                        <div className="border-muted-foreground/20 bg-muted/50 flex size-12 items-center justify-center rounded-full border-2 border-dashed shadow-inner sm:size-16">
+                          <UserPlus
+                            size={20}
+                            className="text-muted-foreground/40 sm:size-6"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="text-center">
+                    <p className="max-w-[60px] truncate text-[10px] font-bold sm:max-w-20 sm:text-xs">
+                      {watchTargetTrainer?.name || "??"}
+                    </p>
+                    <span className="text-primary text-[9px] uppercase sm:text-xs">
+                      Penerima
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-                    <div className="flex flex-col items-center gap-2 sm:gap-3">
-                      <AnimatePresence mode="wait">
-                        {watchTargetTrainer ? (
-                          <motion.div
-                            key="target-active"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            className="relative"
-                          >
-                            <Avatar className="border-primary/50 size-12 border-2 bg-white shadow-lg sm:size-16 sm:shadow-xl">
-                              <AvatarImage
-                                src={watchTargetTrainer.photo || ""}
-                              />
-                              <AvatarFallback className="text-primary text-[10px] font-bold sm:text-xs">
-                                {watchTargetTrainer.name?.charAt(0)}
+              {/* Package Details Info */}
+              {pkg && (
+                <div className="bg-primary/5 relative overflow-hidden rounded-2xl border border-dashed p-4 sm:p-5">
+                  <div className="absolute -top-4 -right-4 size-16 opacity-5 sm:-top-6 sm:-right-6 sm:size-24 sm:opacity-10">
+                    <DirectInbox
+                      size={64}
+                      variant="Bulk"
+                      className="text-primary sm:size-24"
+                    />
+                  </div>
+                  <div className="relative flex items-start gap-3 sm:gap-4">
+                    <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg shadow-md">
+                      <Calendar
+                        size={16}
+                        variant="Bulk"
+                        className="sm:size-5"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <h4 className="truncate text-sm font-semibold">
+                          {pkg.package_name}
+                        </h4>
+                        <Badge
+                          variant="outline"
+                          className="bg-background w-fit py-0 text-[10px] uppercase sm:text-xs"
+                        >
+                          {pkg.package_type?.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <div className="flex items-center gap-1.5">
+                          <Clock
+                            size={12}
+                            className="text-muted-foreground sm:size-3.5"
+                          />
+                          <span className="text-muted-foreground text-[10px] sm:text-xs">
+                            Sisa {pkg.total_available_session} Sesi
+                          </span>
+                        </div>
+                        <div className="bg-muted-foreground/20 hidden h-3 w-px sm:block" />
+                        <div className="flex items-center gap-1.5">
+                          <Calendar
+                            size={12}
+                            className="text-muted-foreground sm:size-3.5"
+                          />
+                          <span className="text-muted-foreground text-[10px] sm:text-xs">
+                            {dayjs(pkg.start_date).format("DD MMM YYYY")} -{" "}
+                            {dayjs(pkg.end_date).format("DD MMM YYYY")}
+                          </span>
+                        </div>
+                        <div className="bg-muted-foreground/20 hidden h-3 w-px sm:block" />
+                        <div className="flex items-center gap-1.5">
+                          <Calendar
+                            size={12}
+                            className="text-muted-foreground sm:size-3.5"
+                          />
+                          <span className="text-muted-foreground text-[10px] sm:text-xs">
+                            {pkg.duration} {pkg.duration_type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 gap-6">
+                {/* Target Trainer Selector */}
+                <div className="space-y-2 px-1">
+                  <FormFieldItem
+                    control={control}
+                    name="target_trainer"
+                    label={
+                      <FormLabel>
+                        <Profile2User
+                          size={16}
+                          variant="Bulk"
+                          className="text-primary"
+                        />
+                        Trainer Tujuan{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                    }
+                    invalid={Boolean(errors.target_trainer)}
+                    errorMessage={errors.target_trainer?.message as string}
+                    render={({ field, fieldState }) => (
+                      <SelectAsyncPaginate
+                        isClearable
+                        loadOptions={getTrainerList as any}
+                        additional={{ page: 1 }}
+                        placeholder="Cari trainer penerima..."
+                        value={field.value}
+                        error={!!fieldState.error}
+                        getOptionLabel={(option: any) => option.name!}
+                        getOptionValue={(option: any) => option.id.toString()}
+                        cacheUniqs={[open.toString()]}
+                        debounceTimeout={500}
+                        formatOptionLabel={({ name, photo }: any) => (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="size-6">
+                              <AvatarImage src={photo || ""} />
+                              <AvatarFallback className="text-[10px] font-bold">
+                                {name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="bg-primary absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full text-[10px] text-white shadow-sm ring-2 ring-white sm:size-6 sm:text-xs sm:ring-4">
-                              +
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="target-empty"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            className="relative"
-                          >
-                            <div className="border-muted-foreground/20 bg-muted/50 flex size-12 items-center justify-center rounded-full border-2 border-dashed shadow-inner sm:size-16">
-                              <UserPlus
-                                size={20}
-                                className="text-muted-foreground/40 sm:size-6"
-                              />
-                            </div>
-                          </motion.div>
+                            <span className="text-xs font-medium sm:text-sm">
+                              {name}
+                            </span>
+                          </div>
                         )}
-                      </AnimatePresence>
-                      <div className="text-center">
-                        <p className="max-w-[60px] truncate text-[10px] font-bold sm:max-w-20 sm:text-xs">
-                          {watchTargetTrainer?.name || "Pilih Trainer"}
-                        </p>
-                        <span className="text-primary text-[9px] font-bold uppercase sm:text-xs">
-                          Penerima
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                        menuPosition="fixed"
+                        styles={{
+                          menuPortal: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                        }}
+                        menuPlacement="auto"
+                        onChange={(option) => field.onChange(option)}
+                      />
+                    )}
+                  />
+                </div>
 
-                  {/* Package Details Info */}
-                  {pkg && (
-                    <div className="bg-primary/5 relative overflow-hidden rounded-2xl border border-dashed p-4 sm:rounded-3xl sm:p-5">
-                      <div className="absolute -top-4 -right-4 size-16 opacity-5 sm:-top-6 sm:-right-6 sm:size-24 sm:opacity-10">
-                        <DirectInbox
-                          size={64}
-                          variant="Bulk"
-                          className="text-primary sm:size-24"
+                <div className="bg-border h-px w-full" />
+
+                {!hasEvent && (
+                  <div className="flex items-center justify-between px-1">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm font-semibold">
+                        Tambah Jadwal Baru
+                      </FormLabel>
+                      <p className="text-muted-foreground text-[10px] sm:text-xs">
+                        Aktifkan jika ingin membuat jadwal latihan baru dengan
+                        trainer tujuan.
+                      </p>
+                    </div>
+                    <FormFieldItem
+                      control={control}
+                      name="is_create_event"
+                      render={({ field }) => (
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked)
+                            if (checked) {
+                              handleFrequencyChange("daily")
+                            } else {
+                              form.setValue("events", [])
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
+                )}
+
+                {(hasEvent || watchIsCreateEvent) && (
+                  <div className="space-y-4 px-1">
+                    {hasEvent && (
+                      <Alert className="border-warning/50 bg-primary/5 text-primary border border-dashed">
+                        <Info className="size-4" />
+                        <AlertDescription className="text-primary text-xs">
+                          Seluruh jadwal member dengan paket saat ini akan
+                          dihapus secara otomatis. Silakan buat jadwal baru
+                          dengan trainer baru.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                      <div className="flex-1">
+                        <FormFieldItem
+                          control={control}
+                          name="events.0.title"
+                          label={
+                            <FormLabel>
+                              Judul <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.events?.[0]?.title)}
+                          errorMessage={errors.events?.[0]?.title?.message}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              value={field.value || ""}
+                              className="w-full"
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                field.onChange(e)
+                                handleTitleChange(e.target.value)
+                              }}
+                            />
+                          )}
                         />
                       </div>
-                      <div className="relative flex items-start gap-3 sm:gap-4">
-                        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg shadow-md sm:size-10 sm:rounded-xl sm:shadow-lg">
-                          <Calendar
-                            size={16}
-                            variant="Bulk"
-                            className="sm:size-5"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <h4 className="truncate text-sm font-bold tracking-tight sm:text-base">
-                              {pkg.package_name}
-                            </h4>
-                            <Badge
-                              variant="outline"
-                              className="bg-background w-fit py-0 text-[10px] uppercase sm:text-xs"
+                      <div className="w-full md:w-32">
+                        <FormFieldItem
+                          control={control}
+                          name="events.0.frequency"
+                          label={
+                            <FormLabel>
+                              Frekuensi{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                          }
+                          invalid={Boolean(errors.events?.[0]?.frequency)}
+                          errorMessage={errors.events?.[0]?.frequency?.message}
+                          render={({ field }) => (
+                            <Select
+                              value={field.value || ""}
+                              onValueChange={(value: string) => {
+                                field.onChange(value)
+                                handleFrequencyChange(value)
+                              }}
                             >
-                              {pkg.package_type?.replace("_", " ")}
-                            </Badge>
-                          </div>
-                          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                            <div className="flex items-center gap-1.5">
-                              <Clock
-                                size={12}
-                                className="text-muted-foreground sm:size-3.5"
-                              />
-                              <span className="text-muted-foreground text-[10px] font-medium sm:text-xs">
-                                Sisa {pkg.total_available_session} Sesi
-                              </span>
-                            </div>
-                            <div className="bg-muted-foreground/20 hidden h-3 w-px sm:block" />
-                            <div className="flex items-center gap-1.5">
-                              <Calendar
-                                size={12}
-                                className="text-muted-foreground sm:size-3.5"
-                              />
-                              <span className="text-muted-foreground text-[10px] font-medium sm:text-xs">
-                                {pkg.duration} {pkg.duration_type}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="daily">Harian</SelectItem>
+                                <SelectItem value="weekly">Mingguan</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                     </div>
-                  )}
 
-                  {/* Form Fields */}
-                  <div className="grid grid-cols-1 gap-6">
-                    {/* Target Trainer Selector */}
-                    <div className="space-y-2 px-1">
-                      <FormFieldItem
-                        control={control}
-                        name="target_trainer"
-                        label={
-                          <FormLabel className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase sm:text-sm">
-                            <Profile2User
-                              size={16}
-                              variant="Bulk"
-                              className="text-primary"
-                            />
-                            Trainer Tujuan{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                        }
-                        invalid={Boolean(errors.target_trainer)}
-                        errorMessage={errors.target_trainer?.message as string}
-                        render={({ field, fieldState }) => (
-                          <SelectAsyncPaginate
-                            isClearable
-                            loadOptions={getTrainerList as any}
-                            additional={{ page: 1 }}
-                            placeholder="Cari trainer penerima..."
-                            value={field.value}
-                            error={!!fieldState.error}
-                            getOptionLabel={(option: any) => option.name!}
-                            getOptionValue={(option: any) =>
-                              option.id.toString()
-                            }
-                            debounceTimeout={500}
-                            formatOptionLabel={({ name, photo }: any) => (
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-6">
-                                  <AvatarImage src={photo || ""} />
-                                  <AvatarFallback className="text-[10px] font-bold">
-                                    {name.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-xs font-medium sm:text-sm">
-                                  {name}
-                                </span>
-                              </div>
-                            )}
-                            onChange={(option) => field.onChange(option)}
+                    <FormFieldItem
+                      control={control}
+                      name="events.0.description"
+                      label={<FormLabel>Deskripsi</FormLabel>}
+                      invalid={Boolean(errors.events?.[0]?.description)}
+                      errorMessage={errors.events?.[0]?.description?.message}
+                      render={({ field }) => (
+                        <Textarea
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                            field.onChange(e)
+                            handleDescriptionChange(e.target.value)
+                          }}
+                        />
+                      )}
+                    />
+
+                    <FormFieldItem
+                      control={control}
+                      name="events.0.background_color"
+                      label={
+                        <FormLabel>
+                          <TickCircle
+                            size={16}
+                            variant="Bulk"
+                            className="text-primary"
                           />
-                        )}
-                      />
-                    </div>
-
-                    {/* Color Palette Picker */}
-                    <div className="space-y-2 px-1">
-                      <FormFieldItem
-                        control={control}
-                        name="background_color"
-                        label={
-                          <FormLabel className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase sm:text-sm">
-                            <TickCircle
-                              size={16}
-                              variant="Bulk"
-                              className="text-primary"
-                            />
-                            Warna Agenda{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                        }
-                        invalid={Boolean(errors.background_color)}
-                        errorMessage={errors.background_color?.message}
-                        render={({ field: bgField }) => (
-                          <FormFieldItem
-                            control={control}
-                            name="color"
-                            render={({ field: colorField }) => (
-                              <ColorPalettePicker
-                                value={
-                                  bgField.value && colorField.value
-                                    ? {
-                                        background: bgField.value,
-                                        color: colorField.value,
-                                      }
-                                    : undefined
-                                }
-                                onChange={(val) => {
-                                  bgField.onChange(val.background)
-                                  colorField.onChange(val.color)
-                                }}
-                              />
-                            )}
-                          />
-                        )}
-                      />
-                    </div>
-
-                    {/* Weekday Selection */}
-                    <div className="space-y-2 px-1">
-                      <FormFieldItem
-                        control={control}
-                        name="weekdays_available"
-                        label={
-                          <FormLabel className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase sm:text-sm">
-                            <Calendar
-                              size={16}
-                              variant="Bulk"
-                              className="text-primary"
-                            />
-                            Hari Tersedia{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                        }
-                        invalid={Boolean(errors.weekdays_available)}
-                        errorMessage={errors.weekdays_available?.message}
-                        render={({ field }) => (
-                          <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                            {WeekdayOptions.map((option) => {
-                              const isSelected = field.value?.some(
-                                (w) => w.day === option.value
-                              )
-                              return (
-                                <button
-                                  key={option.value}
-                                  type="button"
-                                  onClick={() => {
-                                    const current = field.value ?? []
-                                    if (isSelected) {
-                                      field.onChange(
-                                        current.filter(
-                                          (w) => w.day !== option.value
-                                        )
-                                      )
-                                    } else {
-                                      field.onChange([
-                                        ...current,
-                                        { day: option.value },
-                                      ])
+                          Warna Agenda{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
+                      }
+                      invalid={Boolean(errors.events?.[0]?.background_color)}
+                      errorMessage={
+                        errors.events?.[0]?.background_color?.message
+                      }
+                      render={({ field: bgField }) => (
+                        <FormFieldItem
+                          control={control}
+                          name="events.0.color"
+                          render={({ field: colorField }) => (
+                            <ColorPalettePicker
+                              value={
+                                bgField.value && colorField.value
+                                  ? {
+                                      background: bgField.value,
+                                      color: colorField.value,
                                     }
-                                  }}
-                                  className={cn(
-                                    "flex h-12 flex-col items-center justify-center rounded-xl border-2 transition-all sm:h-14",
-                                    isSelected
-                                      ? !watchBgColor &&
-                                          "border-primary bg-primary/10 text-primary shadow-sm"
-                                      : "border-muted bg-background hover:border-primary/30 hover:bg-muted/30"
-                                  )}
-                                  style={
-                                    isSelected && watchBgColor
-                                      ? {
-                                          backgroundColor: watchBgColor,
-                                          borderColor: watchBgColor,
-                                          color: watchTextColor || "white",
-                                        }
-                                      : {}
-                                  }
-                                >
-                                  <span
-                                    className={cn(
-                                      "text-[8px] font-bold tracking-widest uppercase opacity-60 sm:text-[10px]",
-                                      isSelected && watchBgColor && "opacity-80"
-                                    )}
-                                  >
-                                    {option.label.slice(0, 3)}
-                                  </span>
-                                  <span className="text-xs font-bold sm:text-sm">
-                                    {option.label}
-                                  </span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
+                                  : undefined
+                              }
+                              onChange={(val) => {
+                                bgField.onChange(val.background)
+                                colorField.onChange(val.color)
+                              }}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+
+                    {form.watch("events.0.frequency") === "daily" && (
+                      <DailySchedule
+                        form={form as unknown as ReturnEventTrainerSchemaType}
+                        pkg={pkg || null}
+                        showAddDateButton={true}
                       />
-                    </div>
+                    )}
+
+                    {form.watch("events.0.frequency") === "weekly" && (
+                      <WeeklySchedule
+                        form={form as unknown as ReturnEventTrainerSchemaType}
+                        pkg={pkg || null}
+                        isSpecificTime={
+                          form.watch("events.0.is_specific_time") ?? false
+                        }
+                        watchedBgColor={
+                          form.watch("events.0.background_color") ?? undefined
+                        }
+                        watchedTextColor={
+                          form.watch("events.0.color") ?? undefined
+                        }
+                      />
+                    )}
                   </div>
-                </form>
-              </Form>
-            </ScrollArea>
-          </div>
+                )}
+              </div>
+            </form>
+          </Form>
 
           <DialogFooter className="w-full py-4">
             <div className="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-              <Alert className="bg-primary/5 text-primary border-primary/10 w-full p-2! sm:max-w-md">
-                <Info className="size-4" />
-                <AlertDescription className="text-primary/80 text-[10px] font-medium sm:text-xs">
-                  Sistem akan mencatat riwayat perpindahan ini secara permanen.
-                </AlertDescription>
-              </Alert>
+              <div></div>
               <Button
                 onClick={handleSubmit(onSubmit)}
                 className="w-full sm:w-auto"
+                disabled={transferMemberMutation.isPending}
               >
-                Ganti Trainer
+                {transferMemberMutation.isPending
+                  ? "Memproses..."
+                  : "Ganti Trainer"}
                 <ArrowRight className="ml-2 size-4" />
               </Button>
             </div>

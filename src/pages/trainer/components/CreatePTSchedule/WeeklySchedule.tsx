@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useFieldArray, Controller } from "react-hook-form"
 import { TrainerPackage } from "@/services/api/@types/trainer"
 import { Calendar } from "iconsax-reactjs"
@@ -42,6 +43,23 @@ const WeeklySchedule = ({
 
   // Watch selected weekdays to trigger re-render when values change
   const watchedWeekdays = form.watch("events.0.selected_weekdays")
+  const watchGlobalStartTime = form.watch("events.0.start_time")
+  const watchGlobalEndTime = form.watch("events.0.end_time")
+
+  // Sync times when global time changes and not in specific time mode
+  useEffect(() => {
+    if (!isSpecificTime) {
+      const currentWeekdays = form.getValues("events.0.selected_weekdays") || []
+      if (currentWeekdays.length > 0) {
+        const updated = currentWeekdays.map((w: any) => ({
+          ...w,
+          start_time: watchGlobalStartTime,
+          end_time: watchGlobalEndTime,
+        }))
+        form.setValue("events.0.selected_weekdays", updated)
+      }
+    }
+  }, [watchGlobalStartTime, watchGlobalEndTime, isSpecificTime, form])
 
   const addNewDay = () => {
     const currentWeekdays = form.getValues("events.0.selected_weekdays") || []
@@ -253,9 +271,10 @@ const WeeklySchedule = ({
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 {WeekdayOptions.map((option, index) => {
                   const dayValue = getWeekdayValue(option.label)
-                  const isSelected = field.value?.some(
+                  const selectedDay = (field.value || []).find(
                     (w: any) => w.day_of_week === dayValue
                   )
+                  const isSelected = !!selectedDay
                   return (
                     <button
                       key={index}
@@ -269,18 +288,23 @@ const WeeklySchedule = ({
                             )
                           )
                         } else {
+                          const globalStartTime = form.getValues(
+                            "events.0.start_time"
+                          )
+                          const globalEndTime =
+                            form.getValues("events.0.end_time")
                           field.onChange([
                             ...current,
                             {
                               day_of_week: dayValue,
-                              start_time: "10:00",
-                              end_time: "11:00",
+                              start_time: globalStartTime || "10:00",
+                              end_time: globalEndTime || "11:00",
                             },
                           ])
                         }
                       }}
                       className={cn(
-                        "flex h-12 flex-col items-center justify-center rounded-lg border-2 transition-all sm:h-14",
+                        "flex h-16 flex-col items-center justify-center rounded-lg border-2 transition-all sm:h-20",
                         isSelected
                           ? !watchedBgColor &&
                               "border-primary bg-primary/10 text-primary shadow-sm"
@@ -304,7 +328,14 @@ const WeeklySchedule = ({
                       >
                         {option.label.slice(0, 3)}
                       </span>
-                      <span className="text-xs sm:text-sm">{option.label}</span>
+                      <span className="text-xs font-semibold sm:text-sm">
+                        {option.label}
+                      </span>
+                      {isSelected && (
+                        <span className="mt-1 text-[9px] font-medium opacity-80 sm:text-[10px]">
+                          {selectedDay.start_time} - {selectedDay.end_time}
+                        </span>
+                      )}
                     </button>
                   )
                 })}

@@ -1,4 +1,5 @@
 import { ApiTypes, MetaApi } from "./api"
+import { CreateEventRequest } from "./event"
 
 export interface TrainerPackage {
   package_id: number
@@ -56,4 +57,16 @@ export type TrainerListResponse = Omit<ApiTypes, "data"> & {
 
 export type TrainerActiveMembersResponse = Omit<ApiTypes, "data"> & {
   data: { data: TrainerMember[]; meta: MetaApi }
+}
+
+export interface TransferMemberRequest {
+  member_package_id: number
+  trainer_id: number
+  events: CreateEventRequest[]
+}
+
+export type TransferMemberResponse = ApiTypes & {
+  data: {
+    message: string
+  }
 }

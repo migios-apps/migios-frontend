@@ -4,7 +4,7 @@ import * as yup from "yup"
 import { DEFAULT_PAIRS } from "@/components/ui/color-palette-picker"
 import { validationEventSchema } from "@/components/form/event/events"
 
-const extendEventSchema = validationEventSchema.shape({
+export const extendEventSchema = validationEventSchema.shape({
   is_specific_time: yup.boolean().default(false),
   selected_weekdays: yup.array().of(
     yup.object().shape({

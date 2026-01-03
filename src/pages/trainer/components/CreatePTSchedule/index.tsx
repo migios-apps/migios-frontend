@@ -94,7 +94,7 @@ const DialogCreatePTSchedule = ({
   //           ...(type === "create"
   //             ? [
   //                 {
-  //                   day_of_week: dayjs()
+  //                   day_of_week: dayjs().locale("en")
   //                     .format("dddd")
   //                     .toLowerCase(),
   //                   start_time: dayjs().format("HH:mm"),
@@ -159,7 +159,10 @@ const DialogCreatePTSchedule = ({
           ...(watchedFrequency === "daily"
             ? [
                 {
-                  day_of_week: dayjs().format("dddd").toLowerCase(),
+                  day_of_week: dayjs()
+                    .locale("en")
+                    .format("dddd")
+                    .toLowerCase(),
                   start_time: dayjs().format("HH:mm"),
                   end_time: dayjs().add(1, "hour").format("HH:mm"),
                 },
@@ -183,12 +186,24 @@ const DialogCreatePTSchedule = ({
 
   const queryClient = useQueryClient()
 
+  const refetchQuery = () => {
+    ;[
+      QUERY_KEY.generateEvents,
+      QUERY_KEY.originalEvents,
+      QUERY_KEY.cuttingSessions,
+      QUERY_KEY.trainerActiveMembers,
+      QUERY_KEY.trainers,
+    ].forEach((key) => {
+      queryClient.resetQueries({ queryKey: [key] })
+    })
+  }
+
   // Mutation untuk delete original event
   const deleteOriginalMutation = useMutation({
     mutationFn: (eventId: number) => apiDeleteOriginalEvent(eventId),
     onSuccess: () => {
       toast.success("Jadwal berhasil dihapus")
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
+      refetchQuery()
       setDeleteConfirmOpen(false)
       onCloseDialog()
     },
@@ -198,7 +213,7 @@ const DialogCreatePTSchedule = ({
     mutationFn: (data: UpdateEventRequest) => apiUpdateOriginalEvent(data),
     onSuccess: () => {
       toast.success("Jadwal berhasil diperbarui")
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
+      refetchQuery()
       onCloseDialog()
     },
   })
@@ -206,7 +221,7 @@ const DialogCreatePTSchedule = ({
   const bulkCreate = useMutation({
     mutationFn: (data: CreateEventRequest[]) => apiBulkCreateEvent(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.originalEvents] })
+      refetchQuery()
       toast.success("Jadwal Berhasil Disimpan")
       onCloseDialog()
     },

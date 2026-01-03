@@ -3,6 +3,8 @@ import { ParamsFilter } from "./@types/api"
 import {
   TrainerActiveMembersResponse,
   TrainerListResponse,
+  TransferMemberRequest,
+  TransferMemberResponse,
 } from "./@types/trainer"
 
 export async function apiGetTrainerList(params?: ParamsFilter) {
@@ -21,5 +23,13 @@ export async function apiGetTrainerActiveMembers(
     url: `/trainer/active-members/${trainer_id}`,
     method: "get",
     params,
+  })
+}
+
+export async function apiTransferMember(data: TransferMemberRequest) {
+  return ApiService.fetchDataWithAxios<TransferMemberResponse>({
+    url: `/trainer/transfer-member`,
+    method: "post",
+    data: data as unknown as Record<string, unknown> & TransferMemberRequest,
   })
 }
