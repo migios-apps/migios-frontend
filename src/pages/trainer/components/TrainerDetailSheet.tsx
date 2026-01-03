@@ -7,22 +7,21 @@ import {
   TrainerPackage,
 } from "@/services/api/@types/trainer"
 import { apiGetTrainerActiveMembers } from "@/services/api/TrainerService"
-import { Calendar2, Profile2User } from "iconsax-reactjs"
+import { Profile2User } from "iconsax-reactjs"
 import {
   User,
-  Mail,
-  Phone,
+  Sms as Mail,
+  Call as Phone,
   Calendar,
-  Venus,
-  Mars,
-  Users,
-  BookOpen,
-  MapPin,
-  Clock,
-  IdCard,
-  ArrowDownUp,
-  X,
-} from "lucide-react"
+  Woman as Venus,
+  Man as Mars,
+  People as Users,
+  Book1 as BookOpen,
+  Location as MapPin,
+  Personalcard as IdCard,
+  Sort as ArrowDownUp,
+  CloseCircle as X,
+} from "iconsax-reactjs"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { statusColor } from "@/constants/utils"
@@ -34,13 +33,6 @@ import { DataTableFacetedFilter } from "@/components/ui/data-table/data-table-fa
 import InputDebounce from "@/components/ui/input-debounce"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContents,
-  TabsContent,
-} from "@/components/animate-ui/components/animate/tabs"
 import {
   Sheet,
   SheetContent,
@@ -170,7 +162,7 @@ const TrainerDetailSheet = ({
 
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="flex flex-col gap-4 px-4">
+              <div className="flex flex-col gap-6 px-4">
                 {/* Profile Overview Card */}
                 <Card
                   className="group from-background to-accent/10 hover:bg-accent/20 cursor-pointer bg-linear-to-br py-0 shadow-none transition-colors"
@@ -195,17 +187,17 @@ const TrainerDetailSheet = ({
 
                       <div className="flex items-center gap-3 pt-1">
                         <span className="flex items-center gap-1.5 text-xs font-semibold">
-                          <IdCard className="h-3.5 w-3.5" />
+                          <IdCard className="h-4 w-4" variant="Bulk" />
                           {trainer.code}
                         </span>
                         <span className="bg-border h-3 w-px" />
                         <span className="flex items-center gap-1.5 text-xs font-semibold">
-                          <Users className="h-3.5 w-3.5" />
+                          <Users className="h-4 w-4" variant="Bulk" />
                           {trainer.total_active_members} Member
                         </span>
                         <span className="bg-border h-3 w-px" />
                         <span className="flex items-center gap-1.5 text-xs font-semibold">
-                          <BookOpen className="h-3.5 w-3.5" />
+                          <BookOpen className="h-4 w-4" variant="Broken" />
                           {trainer.total_active_package} Paket
                         </span>
                       </div>
@@ -347,237 +339,215 @@ const TrainerDetailSheet = ({
                 </div>
 
                 {/* Tabs Section */}
-                <Tabs defaultValue="members" className="w-full">
-                  <TabsList className="h-auto w-full justify-start gap-1">
-                    <TabsTrigger value="members">
-                      <Users className="h-4 w-4" />
-                      Daftar Member ({trainer.total_active_members})
-                    </TabsTrigger>
-                    <TabsTrigger value="schedule">
-                      <Clock className="h-4 w-4" />
-                      Timeline Latihan
-                    </TabsTrigger>
-                  </TabsList>
+                <div className="flex flex-col gap-1">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <Users className="h-4 w-4" variant="Bulk" />
+                    Daftar Member ({trainer.total_active_members})
+                  </span>
 
-                  <TabsContents>
-                    <TabsContent value="members" className="space-y-4">
-                      <div className="flex flex-col gap-2 px-1 pt-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <InputDebounce
-                            placeholder="Cari Member (Nama, Code)..."
-                            className="h-8 w-full text-xs"
-                            handleOnchange={setSearchQuery}
-                          />
-                          <DataTableFacetedFilter
-                            title="Urutkan"
-                            isMulti={false}
-                            icon={ArrowDownUp}
-                            options={[
-                              {
-                                label: "Sisa Sesi Terbanyak",
-                                value: "total_available_sessions-desc",
-                              },
-                              {
-                                label: "Sisa Sesi Terendah",
-                                value: "total_available_sessions-asc",
-                              },
-                              { label: "Nama (A-Z)", value: "name-asc" },
-                              { label: "Nama (Z-A)", value: "name-desc" },
-                            ]}
-                            value={sortValue ? [sortValue] : []}
-                            onChange={(val) => {
-                              setSortValue(val[0] || "")
-                            }}
-                          />
-                          <DataTableFacetedFilter
-                            title="Status"
-                            isMulti={true}
-                            options={[
-                              { label: "Aktif", value: "1" },
-                              { label: "Freeze", value: "2" },
-                            ]}
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                          />
-                          {hasActiveFilters && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleResetFilters}
-                              className="h-8 px-2 text-xs"
-                            >
-                              Reset
-                              <X className="ml-1 h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 px-1 py-2">
-                        {isLoading ? (
-                          Array.from({ length: 3 }).map((_, i) => (
-                            <Skeleton
-                              key={i}
-                              className="bg-secondary-foreground/10 h-24 w-full rounded-xl"
-                            />
-                          ))
-                        ) : (
-                          <>
-                            {allMembers.length > 0 ? (
-                              <>
-                                {allMembers.map((member, idx) => (
-                                  <Card
-                                    key={`${member.id}-${idx}`}
-                                    className={cn(
-                                      "group gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
-                                      member.membership_status === "freeze"
-                                        ? cn(
-                                            "border-l-4",
-                                            statusColor[
-                                              member.membership_status
-                                            ]
-                                          )
-                                        : "border-muted-foreground/10"
-                                    )}
-                                  >
-                                    <CardContent className="bg-card p-3">
-                                      <div className="mb-2 flex items-center gap-3">
-                                        <Avatar className="h-8 w-8 border">
-                                          <AvatarImage
-                                            src={member.photo || ""}
-                                            alt={member.name}
-                                          />
-                                          <AvatarFallback>
-                                            <User className="h-4 w-4" />
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <div className="min-w-0 flex-1">
-                                          <div className="mb-1 flex items-center justify-between gap-2">
-                                            <p className="truncate text-sm leading-none font-semibold transition-all">
-                                              {member.name}
-                                            </p>
-                                            {member.membership_status && (
-                                              <Badge
-                                                className={cn(
-                                                  "h-4 px-1 text-[9px] font-medium transition-all",
-                                                  statusColor[
-                                                    member.membership_status
-                                                  ]
-                                                )}
-                                              >
-                                                <span className="capitalize">
-                                                  {member.membership_status}
-                                                </span>
-                                              </Badge>
-                                            )}
-                                          </div>
-                                          <p className="text-muted-foreground truncate text-xs tracking-wider uppercase">
-                                            {member.code}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <div className="space-y-1.5">
-                                        {member.packages?.map((pkg, index) => (
-                                          <div
-                                            key={index}
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              setSelectedMember(member)
-                                              setSelectedPackage(pkg)
-                                              setIsMemberSheetOpen(true)
-                                            }}
-                                            className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-xs transition-colors"
-                                          >
-                                            <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
-                                              <BookOpen className="h-3.5 w-3.5 shrink-0" />
-                                              <span className="truncate">
-                                                {pkg.package_name}
-                                              </span>
-                                            </div>
-                                            <div className="flex flex-wrap items-center justify-between gap-1 pl-5 text-xs">
-                                              <div className="flex items-center gap-1.5 opacity-80">
-                                                <span className="text-primary font-bold">
-                                                  {pkg.total_available_session}{" "}
-                                                  Sesi
-                                                </span>
-                                                <span className="bg-muted-foreground/30 h-1 w-1 rounded-full" />
-                                                <span className="text-muted-foreground">
-                                                  Berakhir:{" "}
-                                                  {new Date(
-                                                    pkg.end_date
-                                                  ).toLocaleDateString("id-ID")}
-                                                </span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        ))}
-                                        {member.total_active_packages > 2 && (
-                                          <p className="text-muted-foreground pt-0.5 text-center text-xs font-bold tracking-widest uppercase">
-                                            + {member.total_active_packages - 2}{" "}
-                                            Paket Lainnya
-                                          </p>
-                                        )}
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-
-                                {hasNextPage && (
-                                  <div className="mt-2">
-                                    {isFetchingNextPage ? (
-                                      <div className="space-y-3">
-                                        {Array.from({ length: 3 }).map(
-                                          (_, i) => (
-                                            <Skeleton
-                                              key={i}
-                                              className="bg-secondary-foreground/10 h-24 w-full rounded-xl"
-                                            />
-                                          )
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <button
-                                        onClick={() => fetchNextPage()}
-                                        className="group bg-primary/5 hover:bg-primary/10 border-primary/10 hover:border-primary/20 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-6 transition-all active:scale-[0.98]"
-                                      >
-                                        <span className="text-primary/70 group-hover:text-primary text-xs font-bold tracking-widest uppercase">
-                                          Muat Member Lainnya
-                                        </span>
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <div className="bg-accent/20 col-span-full flex flex-col items-center justify-center rounded-xl border border-dashed py-10 text-center">
-                                <Profile2User
-                                  size="48"
-                                  variant="Bulk"
-                                  className="text-muted-foreground/50"
-                                />
-                                <p className="text-muted-foreground mt-2 text-xs tracking-wide">
-                                  Tidak Ada Member Aktif
-                                </p>
-                              </div>
-                            )}
-                          </>
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-2 px-1 pt-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <InputDebounce
+                          placeholder="Cari Member (Nama, Code)..."
+                          className="h-8 w-full text-xs"
+                          handleOnchange={setSearchQuery}
+                        />
+                        <DataTableFacetedFilter
+                          title="Urutkan"
+                          isMulti={false}
+                          icon={ArrowDownUp}
+                          options={[
+                            {
+                              label: "Sisa Sesi Terbanyak",
+                              value: "total_available_sessions-desc",
+                            },
+                            {
+                              label: "Sisa Sesi Terendah",
+                              value: "total_available_sessions-asc",
+                            },
+                            { label: "Nama (A-Z)", value: "name-asc" },
+                            { label: "Nama (Z-A)", value: "name-desc" },
+                          ]}
+                          value={sortValue ? [sortValue] : []}
+                          onChange={(val) => {
+                            setSortValue(val[0] || "")
+                          }}
+                        />
+                        <DataTableFacetedFilter
+                          title="Status"
+                          isMulti={true}
+                          options={[
+                            { label: "Aktif", value: "1" },
+                            { label: "Freeze", value: "2" },
+                          ]}
+                          value={statusFilter}
+                          onChange={setStatusFilter}
+                        />
+                        {hasActiveFilters && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleResetFilters}
+                            className="h-8 px-2 text-xs"
+                          >
+                            Reset
+                            <X className="ml-1 h-3 w-3" />
+                          </Button>
                         )}
                       </div>
-                    </TabsContent>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 px-1 py-2">
+                      {isLoading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                          <Skeleton
+                            key={i}
+                            className="bg-secondary-foreground/10 h-24 w-full rounded-xl"
+                          />
+                        ))
+                      ) : (
+                        <>
+                          {allMembers.length > 0 ? (
+                            <>
+                              {allMembers.map((member, idx) => (
+                                <Card
+                                  key={`${member.id}-${idx}`}
+                                  className={cn(
+                                    "group gap-0 overflow-hidden p-0 shadow-sm transition-all hover:shadow-md",
+                                    member.membership_status === "freeze"
+                                      ? cn(
+                                          "border-l-4",
+                                          statusColor[member.membership_status]
+                                        )
+                                      : "border-muted-foreground/10"
+                                  )}
+                                >
+                                  <CardContent className="bg-card p-3">
+                                    <div className="mb-2 flex items-center gap-3">
+                                      <Avatar className="h-8 w-8 border">
+                                        <AvatarImage
+                                          src={member.photo || ""}
+                                          alt={member.name}
+                                        />
+                                        <AvatarFallback>
+                                          <User className="h-4 w-4" />
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="mb-1 flex items-center justify-between gap-2">
+                                          <p className="truncate text-sm leading-none font-semibold transition-all">
+                                            {member.name}
+                                          </p>
+                                          {member.membership_status && (
+                                            <Badge
+                                              className={cn(
+                                                "h-4 px-1 text-[9px] font-medium transition-all",
+                                                statusColor[
+                                                  member.membership_status
+                                                ]
+                                              )}
+                                            >
+                                              <span className="capitalize">
+                                                {member.membership_status}
+                                              </span>
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <p className="text-muted-foreground truncate text-xs tracking-wider uppercase">
+                                          {member.code}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                      {member.packages?.map((pkg, index) => (
+                                        <div
+                                          key={index}
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedMember(member)
+                                            setSelectedPackage(pkg)
+                                            setIsMemberSheetOpen(true)
+                                          }}
+                                          className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-xs transition-colors"
+                                        >
+                                          <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
+                                            <BookOpen
+                                              className="h-4 w-4"
+                                              variant="Broken"
+                                            />
+                                            <span className="truncate">
+                                              {pkg.package_name}
+                                            </span>
+                                          </div>
+                                          <div className="flex flex-wrap items-center justify-between gap-1 pl-5 text-xs">
+                                            <div className="flex items-center gap-1.5 opacity-80">
+                                              <span className="text-primary font-bold">
+                                                {pkg.total_available_session}{" "}
+                                                Sesi
+                                              </span>
+                                              <span className="bg-muted-foreground/30 h-1 w-1 rounded-full" />
+                                              <span className="text-muted-foreground">
+                                                Berakhir:{" "}
+                                                {new Date(
+                                                  pkg.end_date
+                                                ).toLocaleDateString("id-ID")}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      {member.total_active_packages > 2 && (
+                                        <p className="text-muted-foreground pt-0.5 text-center text-xs font-bold tracking-widest uppercase">
+                                          + {member.total_active_packages - 2}{" "}
+                                          Paket Lainnya
+                                        </p>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
 
-                    <TabsContent value="schedule">
-                      <div className="bg-accent/20 flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
-                        <Calendar2
-                          size="48"
-                          variant="Bulk"
-                          className="text-muted-foreground/50"
-                        />
-                        <p className="text-muted-foreground mt-2 text-xs tracking-wide">
-                          Jadwal Belum Tersedia
-                        </p>
-                      </div>
-                    </TabsContent>
-                  </TabsContents>
-                </Tabs>
+                              {hasNextPage && (
+                                <div className="mt-2">
+                                  {isFetchingNextPage ? (
+                                    <div className="space-y-3">
+                                      {Array.from({ length: 3 }).map((_, i) => (
+                                        <Skeleton
+                                          key={i}
+                                          className="bg-secondary-foreground/10 h-24 w-full rounded-xl"
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => fetchNextPage()}
+                                      className="group bg-primary/5 hover:bg-primary/10 border-primary/10 hover:border-primary/20 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-6 transition-all active:scale-[0.98]"
+                                    >
+                                      <span className="text-primary/70 group-hover:text-primary text-xs font-bold tracking-widest uppercase">
+                                        Muat Member Lainnya
+                                      </span>
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="bg-accent/20 col-span-full flex flex-col items-center justify-center rounded-xl border border-dashed py-10 text-center">
+                              <Profile2User
+                                size="48"
+                                variant="Bulk"
+                                className="text-muted-foreground/50"
+                              />
+                              <p className="text-muted-foreground mt-2 text-xs tracking-wide">
+                                Tidak Ada Member Aktif
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </ScrollArea>
           </div>

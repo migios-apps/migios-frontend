@@ -13,16 +13,15 @@ import {
   apiGetTrainerActiveMembers,
 } from "@/services/api/TrainerService"
 import { motion, AnimatePresence } from "framer-motion"
-import { People, Profile2User } from "iconsax-reactjs"
 import {
+  People as Users,
+  Profile2User,
   User,
-  BookOpen,
-  Users,
-  MoreHorizontal,
-  X,
-  ArrowDownUp,
-  ChevronsRight,
-} from "lucide-react"
+  Book1 as BookOpen,
+  CloseCircle as X,
+  Sort as ArrowDownUp,
+  ArrowRight2 as ChevronsRight,
+} from "iconsax-reactjs"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { cn } from "@/lib/utils"
 import { statusColor } from "@/constants/utils"
@@ -35,14 +34,6 @@ import InputDebounce from "@/components/ui/input-debounce"
 import { SelectAsyncPaginate } from "@/components/ui/react-select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
 import MemberDetailSheet from "./components/MemberDetailSheet"
 import TrainerDetailSheet from "./components/TrainerDetailSheet"
 
@@ -99,7 +90,7 @@ const MemberCard = ({
               className="bg-accent/50 border-accent hover:border-primary/30 hover:bg-accent cursor-pointer rounded-md border p-1.5 text-xs transition-colors"
             >
               <div className="text-accent-foreground mb-0.5 flex items-center gap-1.5 font-medium">
-                <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                <BookOpen variant="Broken" className="h-4 w-4 shrink-0" />
                 <span className="truncate">{pkg.package_name}</span>
               </div>
               <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-1 pl-5 text-xs">
@@ -183,8 +174,11 @@ const TrainerColumn = ({
       className="bg-accent border-border flex h-[calc(100vh-180px)] w-[320px] shrink-0 flex-col rounded-xl border text-sm"
     >
       <ScrollArea className="h-full">
-        <div className="bg-background/50 sticky top-0 z-1 rounded-t-xl border-b backdrop-blur-sm">
-          <div className="flex flex-col gap-2 p-4 pb-2">
+        <div className="bg-background/70 sticky top-0 z-1 rounded-t-xl border-b backdrop-blur-sm">
+          <div
+            className="group flex cursor-pointer flex-col gap-2 p-4 pb-2"
+            onClick={() => onViewDetail(trainer)}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="border-primary/20 h-10 w-10 border-2 shadow-sm">
@@ -194,10 +188,10 @@ const TrainerColumn = ({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="mb-1 max-w-[150px] truncate text-sm leading-none font-bold">
+                  <h3 className="group-hover:text-primary mb-1 max-w-[150px] truncate text-sm leading-none font-bold">
                     {trainer.name}
                   </h3>
-                  <p className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
+                  <p className="text-muted-foreground group-hover:text-primary text-xs font-medium">
                     {trainer.code}
                   </p>
                 </div>
@@ -206,7 +200,7 @@ const TrainerColumn = ({
                 variant="outline"
                 className="bg-background h-6 px-2 font-mono text-xs font-bold"
               >
-                <Users className="mr-1 h-3 w-3" />
+                <Users variant="Bulk" className="mr-1 h-4 w-4" />
                 {trainer.total_active_members}
               </Badge>
             </div>
@@ -218,25 +212,6 @@ const TrainerColumn = ({
                 Paket Aktif: {trainer.total_active_package}
               </Badge>
               <div className="flex-1" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors outline-none">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Aksi Trainer</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onViewDetail(trainer)}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Lihat Detail</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Users className="mr-2 h-4 w-4" />
-                    <span>Jadwal Trainer</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -494,7 +469,7 @@ const TrainerPage = () => {
                   <Avatar className="size-6">
                     {photo ? <AvatarImage src={photo} alt={name} /> : null}
                     <AvatarFallback>
-                      <User className="size-3" />
+                      <User variant="Bulk" className="size-3" />
                     </AvatarFallback>
                   </Avatar>
                   <span className="truncate text-xs">{name}</span>
@@ -574,7 +549,7 @@ const TrainerPage = () => {
               ) : (
                 <div className="flex h-full w-full items-center justify-center py-20">
                   <div className="text-muted-foreground flex flex-col items-center gap-3 opacity-50">
-                    <People size="100" variant="Bulk" />
+                    <Users size="100" variant="Bulk" />
                     <p className="text-lg font-medium">
                       Tidak Ada Trainer Ditemukan
                     </p>
@@ -595,7 +570,10 @@ const TrainerPage = () => {
                         <div className="relative">
                           <div className="bg-primary/10 group-hover:bg-primary absolute -inset-4 scale-75 rounded-full opacity-0 blur-2xl transition-all group-hover:scale-110 group-hover:opacity-40" />
                           <div className="bg-primary/5 group-hover:bg-primary border-primary/10 group-hover:shadow-primary/20 relative flex h-14 w-14 items-center justify-center rounded-full border shadow-sm transition-all group-hover:scale-110 group-hover:shadow-lg">
-                            <ChevronsRight className="text-primary h-7 w-7 transition-colors group-hover:text-white" />
+                            <ChevronsRight
+                              variant="Bulk"
+                              className="text-primary h-7 w-7 transition-colors group-hover:text-white"
+                            />
                           </div>
                         </div>
                         <div className="flex flex-col items-center gap-3">

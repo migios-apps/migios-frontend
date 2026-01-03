@@ -8,8 +8,15 @@ import {
 } from "@/services/api/@types/trainer"
 import { apiGetCuttingSessionLists } from "@/services/api/CuttingSessionService"
 import { apiGetEventListOriginal } from "@/services/api/EventService"
-import { Calendar2, Clock } from "iconsax-reactjs"
-import { User, BookOpen, ArrowRightLeft, Plus, Pencil } from "lucide-react"
+import {
+  Calendar2,
+  Clock,
+  User,
+  Book1 as BookOpen,
+  ArrowSwapHorizontal as ArrowRightLeft,
+  Add as Plus,
+  Edit2 as Pencil,
+} from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -307,7 +314,7 @@ const MemberDetailSheet = ({
                     <div className="mb-3 flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         <div className="bg-primary/10 text-primary rounded-lg p-2">
-                          <BookOpen className="h-4 w-4" />
+                          <BookOpen className="h-4 w-4" variant="Broken" />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-muted-foreground text-xs font-medium">
@@ -359,7 +366,10 @@ const MemberDetailSheet = ({
                       <div className="flex flex-col gap-0.5">
                         <p className="text-muted-foreground text-xs">Mulai</p>
                         <div className="flex items-center gap-1 font-semibold">
-                          <Calendar2 className="text-primary h-4 w-4" />
+                          <Calendar2
+                            variant="Bulk"
+                            className="text-primary h-4 w-4"
+                          />
                           {dayjs(pkg?.start_date).format("DD MMM YYYY")}
                         </div>
                       </div>
@@ -372,7 +382,10 @@ const MemberDetailSheet = ({
                           <span className="text-red-500">
                             {dayjs(pkg?.end_date).format("DD MMM YYYY")}
                           </span>
-                          <Calendar2 className="h-4 w-4 text-red-500" />
+                          <Calendar2
+                            variant="Bulk"
+                            className="h-4 w-4 text-red-500"
+                          />
                         </div>
                       </div>
                     </div>
@@ -636,7 +649,10 @@ const MemberDetailSheet = ({
                                 <div className="bg-muted/50 hover:bg-muted flex-1 rounded-lg p-2.5 shadow-none transition-all">
                                   <div className="mb-1.5 flex items-center justify-between">
                                     <div className="flex items-center gap-1">
-                                      <Calendar2 className="h-2.5 w-2.5" />
+                                      <Calendar2
+                                        variant="Bulk"
+                                        className="h-4 w-4"
+                                      />
                                       <p className="text-xs font-semibold tracking-wide">
                                         {dayjs(item.start_date).format(
                                           "DD MMM YYYY • HH:mm"
@@ -744,7 +760,7 @@ const MemberDetailSheet = ({
                 className="w-full"
                 onClick={() => setIsTransferDialogOpen(true)}
               >
-                <ArrowRightLeft className="h-3 w-3" />
+                <ArrowRightLeft className="h-4 w-4" />
                 Ganti Trainer
               </Button>
             </div>
