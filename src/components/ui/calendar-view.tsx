@@ -1023,13 +1023,8 @@ const CalendarView = (props: CalendarViewProps) => {
             }
             displayEventEnd={true}
             windowResizeDelay={0}
-            allDaySlot={
-              currentView === "listWeek"
-                ? true
-                : currentView === "timeGridWeek"
-                  ? showAllDay
-                  : false
-            }
+            allDaySlot={false}
+            allDayText=""
             dayCellContent={(dayInfo) => (
               <DayRender info={dayInfo} currentView={currentView} />
             )}
@@ -1054,6 +1049,8 @@ const CalendarView = (props: CalendarViewProps) => {
               timeGridWeek: {
                 dayMaxEvents: true,
                 duration: { days: 7 },
+                slotDuration: "00:15:00",
+                slotLabelInterval: "01:00:00",
               },
               timeGridDay: {
                 dayMaxEvents: true,
@@ -1076,7 +1073,9 @@ const CalendarView = (props: CalendarViewProps) => {
             slotLabelContent={(args) => (
               <SlotLabel args={args} currentView={currentView} />
             )}
-            slotDuration="01:00:00"
+            slotDuration={
+              currentView === "timeGridWeek" ? "00:15:00" : "01:00:00"
+            }
             eventTimeFormat={{
               hour: "2-digit",
               minute: "2-digit",

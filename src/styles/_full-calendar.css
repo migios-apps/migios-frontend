@@ -323,4 +323,11 @@
   .fc-timeGridDay-view .fc-timegrid-event {
     @apply min-h-5;
   }
+
+  /* Hide All Day label */
+  .fc-timegrid-all-day,
+  .fc-all-day-text,
+  .fc-timegrid-axis .fc-timegrid-axis-frame {
+    @apply hidden!;
+  }
 }

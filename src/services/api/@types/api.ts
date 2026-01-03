@@ -24,18 +24,21 @@ export interface Filter {
   [key: string]: any
 }
 
+export interface ApplySearchCondition extends Filter {
+  search?: Filter[]
+}
+
 export interface Sort {
   sort_column: string
   sort_type?: "asc" | "desc"
   [key: string]: any
 }
 
-export interface ParamsFilter extends Filter {
+export interface ParamsFilter extends ApplySearchCondition {
   page?: number | string
   per_page?: number | string
   sort_column?: string
   sort_type?: "asc" | "desc"
-  search?: Filter[]
   sort?: Sort[]
   [key: string]: any
 }
