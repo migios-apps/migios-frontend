@@ -393,6 +393,7 @@ const CuttingSessions = () => {
 
       <FormChangeStatus
         open={showChangeStatus}
+        formProps={formChangeStatusProps}
         onClose={() => {
           setShowChangeStatus(false)
         }}

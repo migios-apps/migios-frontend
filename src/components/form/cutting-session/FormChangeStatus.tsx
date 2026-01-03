@@ -5,14 +5,8 @@ import { ChangeStatusCuttingSession } from "@/services/api/@types/cutting-sessio
 import { apiChangeStatusCuttingSession } from "@/services/api/CuttingSessionService"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -24,21 +18,28 @@ import {
 import { SheetDescription } from "@/components/animate-ui/components/radix/sheet"
 import {
   ChangeStatusFormSchema,
-  useChangeStatusForm,
+  ReturnChangeStatusFormSchema,
 } from "./changeStatusValidation"
 
 type FormChangeStatusProps = {
   open: boolean
+  formProps: ReturnChangeStatusFormSchema
   onClose: () => void
 }
 
 const FormChangeStatus: React.FC<FormChangeStatusProps> = ({
   open,
+  formProps,
   onClose,
 }) => {
   const queryClient = useQueryClient()
-  const formProps = useChangeStatusForm()
-  const { control, handleSubmit, reset } = formProps
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = formProps
+  console.log("formProps", { formProps: formProps.watch(), errors })
 
   const changeStatus = useMutation({
     mutationFn: (data: ChangeStatusCuttingSession) =>
@@ -98,28 +99,22 @@ const FormChangeStatus: React.FC<FormChangeStatusProps> = ({
                     Status <span className="text-destructive">*</span>
                   </FormLabel>
                 }
-                render={({ field, fieldState }) => (
-                  <Select
-                    value={field.value?.toString()}
-                    onValueChange={(value) => field.onChange(Number(value))}
-                  >
-                    <SelectTrigger
-                      className="w-full"
-                      aria-invalid={!!fieldState.error}
-                    >
-                      <SelectValue placeholder="Select Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((option) => (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value.toString()}
-                        >
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                render={({ field }) => (
+                  <ButtonGroup className="w-full">
+                    {statusOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        variant={
+                          field.value === option.value ? "default" : "outline"
+                        }
+                        className="flex-1"
+                        onClick={() => field.onChange(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </ButtonGroup>
                 )}
               />
               <FormFieldItem
