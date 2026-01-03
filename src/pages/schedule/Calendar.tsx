@@ -35,9 +35,18 @@ const Calendar = () => {
     enabled: !!dateRange.start && !!dateRange.end,
     queryFn: async () => {
       const res = await apiGetEventList({
-        start_date: dayjs(dateRange.start).format("YYYY-MM-DD"),
-        end_date: dayjs(dateRange.end).format("YYYY-MM-DD"),
-        show_all: true,
+        search: [
+          {
+            search_column: "start_date",
+            search_condition: ">=",
+            search_text: dayjs(dateRange.start).format("YYYY-MM-DD"),
+          },
+          {
+            search_column: "end_date",
+            search_condition: "<=",
+            search_text: dayjs(dateRange.end).format("YYYY-MM-DD"),
+          },
+        ],
       })
       return res
     },

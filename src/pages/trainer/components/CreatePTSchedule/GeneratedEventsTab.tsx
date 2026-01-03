@@ -42,13 +42,10 @@ const GeneratedEventsTab = ({
     mutationFn: (recurrenceId: string) =>
       apiDeleteRecurrenceEvent(recurrenceId),
     onSuccess: () => {
-      toast.success("Jadwal berhasil dihapus")
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
+      toast.success("Jadwal berhasil dihapus")
       setDeleteConfirmOpen(false)
       setSelectedEventId(null)
-    },
-    onError: () => {
-      toast.error("Gagal menghapus event")
     },
   })
 
@@ -57,11 +54,8 @@ const GeneratedEventsTab = ({
     mutationFn: (recurrenceId: string) =>
       apiRestoreRecurrenceEvent(recurrenceId),
     onSuccess: () => {
-      toast.success("Jadwal berhasil dipulihkan")
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.generateEvents] })
-    },
-    onError: () => {
-      toast.error("Gagal memulihkan event")
+      toast.success("Jadwal berhasil dipulihkan")
     },
   })
 
@@ -81,12 +75,35 @@ const GeneratedEventsTab = ({
 
       const response = await apiGenerateEvent(
         {
-          start_date: dayjs(pkg.start_date).format("YYYY-MM-DD"),
-          end_date: dayjs(pkg.end_date).format("YYYY-MM-DD"),
+          search: [
+            {
+              search_column: "start_date",
+              search_condition: ">=",
+              search_text: dayjs(pkg.start_date).format("YYYY-MM-DD"),
+            },
+            {
+              search_operator: "and",
+              search_column: "end_date",
+              search_condition: "<=",
+              search_text: dayjs(pkg.end_date).format("YYYY-MM-DD"),
+            },
+            {
+              search_operator: "or",
+              search_column: "is_deleted",
+              search_condition: "=",
+              search_text: "false",
+            },
+            {
+              search_operator: "or",
+              search_column: "is_deleted",
+              search_condition: "=",
+              search_text: "true",
+            },
+          ],
         },
         formEvents as any
       )
-      return response.data
+      return response.data.data
     },
     enabled: open && type === "update_weekly" && !!pkg,
   })

@@ -7,12 +7,11 @@ import {
   UpdateEventRequest,
   OriginalEventsDataListResponse,
   OriginalEvenetType,
-  GenerateEventsDataListResponse,
 } from "./@types/event"
 
 export async function apiGetEventList(params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<EventsDataListResponse>({
-    url: `/events/list`,
+    url: `/events/schedules`,
     method: "get",
     params,
   })
@@ -20,7 +19,7 @@ export async function apiGetEventList(params?: ParamsFilter) {
 
 export async function apiGetEventListOriginal(params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<OriginalEventsDataListResponse>({
-    url: `/events/list-original`,
+    url: `/events/list`,
     method: "get",
     params,
   })
@@ -60,15 +59,17 @@ export async function apiUpdateOriginalEvent(data: UpdateEventRequest) {
 
 export async function apiDeleteRecurrenceEvent(recurrenceId: string) {
   return ApiService.fetchDataWithAxios<{ message: string }>({
-    url: `/events/delete-recurrence/${recurrenceId}`,
+    url: `/events/delete-recurrence`,
     method: "delete",
+    data: { recurrence_id: recurrenceId },
   })
 }
 
 export async function apiRestoreRecurrenceEvent(recurrenceId: string) {
   return ApiService.fetchDataWithAxios<{ message: string }>({
-    url: `/events/restore-recurrence/${recurrenceId}`,
+    url: `/events/restore-recurrence`,
     method: "post",
+    data: { recurrence_id: recurrenceId },
   })
 }
 
@@ -80,10 +81,10 @@ export async function apiDeleteOriginalEvent(id: number | string) {
 }
 
 export async function apiGenerateEvent(
-  params: { start_date: string; end_date: string },
-  data: OriginalEvenetType[]
+  params?: ParamsFilter,
+  data?: OriginalEvenetType[]
 ) {
-  return ApiService.fetchDataWithAxios<GenerateEventsDataListResponse>({
+  return ApiService.fetchDataWithAxios<EventsDataListResponse>({
     url: `/events/generate`,
     method: "post",
     params,

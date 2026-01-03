@@ -355,7 +355,7 @@ const TrainerDetailSheet = ({
                     </TabsTrigger>
                     <TabsTrigger value="schedule">
                       <Clock className="h-4 w-4" />
-                      Jadwal
+                      Timeline Latihan
                     </TabsTrigger>
                   </TabsList>
 

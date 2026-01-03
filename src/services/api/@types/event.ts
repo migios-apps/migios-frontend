@@ -21,67 +21,81 @@ export interface SelectWeekday {
 
 export interface EventsData {
   id: string
+  event_id: number
   history_id: string | null
-  club_id: number
-  class_id: any
-  package_id: number
-  employee_id: number
-  member_id: number
-  member_package_id: number
+  club_id: number | null
+  class_id: number | null
+  package_id: number | null
+  employee_id: number | null
+  member_id: number | null
+  member_package_id: number | null
   title: string
-  description: any
+  description: string | null
   start_date: string
   end_date: string
   background_color: string
   color: string
-  frequency: Frequency
+  frequency: string
   repeat: number
-  end_type: EndType
-  type: string
-  event_type: EventType
+  end_type: string
+  type: string | null
+  event_type: string
   selected_months: number[]
   week_number: number[]
   start_time: string
   end_time: string
   is_publish: number
-  status_string: string
+  status_string: string | null
   selected_weekdays: {
     day_of_week: string
     start_time: string
     end_time: string
     event_id: number
   }[]
-  class: {
+  employee?: {
     id: number
     name: string
-    category_id: number
-    capacity: number
-    level: number
-    burn_calories: number
-    photo: string
-    description: string
-  } | null
-  package: {
+    photo: string | null
+    code: string
+  }
+  member?: {
     id: number
     name: string
-    description: string
-    photo: string
-  } | null
-  event_id: number
+    photo: string | null
+    code: string
+  }
+  class?: {
+    id: number
+    name: string
+    category_id: number | null
+    capacity: number | null
+    level: number | null
+    burn_calories: number | null
+    photo: string | null
+    description: string | null
+  }
+  package?: {
+    id: number
+    name: string
+    description: string | null
+    photo: string | null
+  }
   fstart: string
   fend: string
   day_of_week: string
   ofrequency: string
   data_type: string
+  event: {
+    id: number
+    start_date: string
+    end_date: string
+    frequency: string
+  }
   is_deleted: boolean
 }
 
 export type EventsDataListResponse = Omit<ApiTypes, "data"> & {
   data: { data: EventsData[]; meta: MetaApi }
-}
-
-export type GenerateEventsDataListResponse = Omit<ApiTypes, "data"> & {
-  data: EventsData[]
 }
 
 export interface OriginalEvenetType {
