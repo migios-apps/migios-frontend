@@ -51,9 +51,22 @@ const UpcomingSchedule = () => {
       !!valueDateRangePicker.date?.[0] && !!valueDateRangePicker.date?.[1],
     queryFn: async () => {
       const res = await apiGetEventList({
-        start_date: dayjs(valueDateRangePicker.date?.[0]).format("YYYY-MM-DD"),
-        end_date: dayjs(valueDateRangePicker.date?.[1]).format("YYYY-MM-DD"),
-        show_all: true,
+        search: [
+          {
+            search_column: "start_date",
+            search_condition: ">=",
+            search_text: dayjs(valueDateRangePicker.date?.[0]).format(
+              "YYYY-MM-DD"
+            ),
+          },
+          {
+            search_column: "end_date",
+            search_condition: "<=",
+            search_text: dayjs(valueDateRangePicker.date?.[1]).format(
+              "YYYY-MM-DD"
+            ),
+          },
+        ],
       })
       return res
     },
