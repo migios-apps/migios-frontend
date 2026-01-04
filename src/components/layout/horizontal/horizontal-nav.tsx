@@ -23,7 +23,7 @@ export function HorizontalNav({ navGroups }: HorizontalNavProps) {
   const isMobile = useIsMobile()
 
   return (
-    <NavigationMenu viewport={isMobile} className="hidden md:flex">
+    <NavigationMenu viewport={isMobile} className="hidden lg:flex">
       <NavigationMenuList>
         {navGroups.map((group, index) => {
           const key = `${group.title}-${index}`

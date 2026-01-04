@@ -118,7 +118,7 @@ export function AuthenticatedLayout({
                   open={mobileMenuOpen}
                   onOpenChange={setMobileMenuOpen}
                 />
-                <div className="hidden md:block">
+                <div className="hidden lg:block">
                   <Logo
                     type="full"
                     className={cn(

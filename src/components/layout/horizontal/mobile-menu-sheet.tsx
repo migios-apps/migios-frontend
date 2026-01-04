@@ -37,7 +37,7 @@ export function MobileMenuSheet({ open, onOpenChange }: MobileMenuSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="size-5" />
           <span className="sr-only">Toggle menu</span>
         </Button>
