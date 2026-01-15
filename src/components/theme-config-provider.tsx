@@ -25,7 +25,7 @@ export function ThemeConfigProvider({
       return
     }
 
-    root.classList.add(themeConfig.theme)
+    root.classList.add(themeConfig.theme || "light")
   }, [themeConfig.theme])
 
   // Handle font changes
