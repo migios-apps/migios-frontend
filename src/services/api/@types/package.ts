@@ -1,6 +1,6 @@
 import { ApiTypes, MetaApi } from "./api"
 import { ClassesType } from "./class"
-import { CreateEventDto } from "./event"
+import { CreateEventRequest } from "./event"
 
 export interface PackageType {
   id: number
@@ -80,7 +80,7 @@ export interface CreatePackageDto {
     code: string
     name: string
   }[]
-  events?: CreateEventDto[]
+  events?: CreateEventRequest[]
   classes?: {
     id: number
     name: string

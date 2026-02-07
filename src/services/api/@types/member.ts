@@ -72,6 +72,7 @@ export interface MemberPackageTypes {
   duration_type: string
   session_duration: number
   extra_session: number
+  total_session: number
   extra_day: number
   trainer_id: number
   class_id: number | null
