@@ -799,6 +799,12 @@ const Package: React.FC<PackageProps> = ({ member }) => {
           queryClient.invalidateQueries({
             queryKey: [QUERY_KEY.memberPackages],
           })
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEY.memberDetail],
+          })
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEY.memberHead],
+          })
         }}
       />
     </>

@@ -6,6 +6,7 @@ import {
   LoyaltyPointBalanceResponse,
   LoyaltyPointListResponse,
   LoyaltyPointRedeemListResponse,
+  MemberDetailHeadResponse,
   MemberDetailListResponse,
   MemberDetailResponse,
   MemberPackageListTypesResponse,
@@ -124,5 +125,12 @@ export async function apiUpdateMemberPackageStatus(
     url: `/member/package/${id}/status`,
     method: "patch",
     data,
+  })
+}
+
+export async function apiGetMemberDetailHead(code: string) {
+  return ApiService.fetchDataWithAxios<MemberDetailHeadResponse>({
+    url: `/member/${code}/head`,
+    method: "get",
   })
 }

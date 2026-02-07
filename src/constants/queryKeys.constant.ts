@@ -8,6 +8,7 @@ export const QUERY_KEY = {
   generateEvents: "generateEvents",
   members: "members",
   memberDetail: "memberDetail",
+  memberHead: "memberHead",
   memberPackages: "memberPackages",
   freezeProgram: "freezeProgram",
   memberLoyaltyBalance: "memberLoyaltyBalance",

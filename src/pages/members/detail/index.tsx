@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import { apiGetMember } from "@/services/api/MembeService"
+import {
+  apiGetMember,
+  apiGetMemberDetailHead,
+} from "@/services/api/MembeService"
 import {
   Calendar2,
   CalendarTick,
@@ -70,16 +73,13 @@ const MemberDetail = () => {
     enabled: !!id,
   })
 
-  //   const {
-  //     data: memberHead,
-  //     isLoading: isLoadingmemberHead,
-  //     error: errormemberHead,
-  //   } = useQuery({
-  //     queryKey: [QUERY_KEY.memberHead, id],
-  //     queryFn: () => apiGetmemberHead(id as string, '2025-04-01', '2025-04-30'),
-  //     select: (res: { data: memberHeadType }) => res.data,
-  //     enabled: !!id,
-  //   })
+  const { data: memberHead } = useQuery({
+    queryKey: [QUERY_KEY.memberHead, QUERY_KEY.memberDetail, id],
+    queryFn: () => apiGetMemberDetailHead(id as string),
+    select: (res) => res.data,
+    enabled: !!id,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  })
 
   return (
     <Loading loading={isLoadingMember}>
@@ -363,9 +363,26 @@ const MemberDetail = () => {
             <Card className="bg-accent py-0 shadow-none">
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <div className="flex flex-1 flex-col gap-1">
-                  <div className="text-foreground text-lg font-medium">0</div>
+                  <div className="text-foreground flex items-baseline gap-0.5 leading-none font-medium">
+                    {memberHead?.total_session_usage &&
+                    memberHead.total_session_usage > 0 ? (
+                      <>
+                        <span className="text-2xl">
+                          {memberHead.total_active_session -
+                            memberHead.total_session_usage}
+                        </span>
+                        <span className="text-muted-foreground text-sm font-normal">
+                          /{memberHead.total_active_session}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-2xl">
+                        {memberHead?.total_active_session || 0}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-muted-foreground text-xs">
-                    Total sesi digunakan
+                    Sesi PT Program
                   </div>
                 </div>
                 <Separator className="sm:hidden" />
@@ -374,9 +391,11 @@ const MemberDetail = () => {
                   className="hidden h-12 sm:block"
                 />
                 <div className="flex flex-1 flex-col gap-1">
-                  <div className="text-foreground text-lg font-medium">0</div>
+                  <div className="text-foreground text-2xl leading-none font-medium">
+                    {memberHead?.total_active_package || 0}
+                  </div>
                   <div className="text-muted-foreground text-xs">
-                    Sisa sesi bulan ini
+                    Total paket aktif
                   </div>
                 </div>
                 <Separator className="sm:hidden" />
@@ -385,9 +404,24 @@ const MemberDetail = () => {
                   className="hidden h-12 sm:block"
                 />
                 <div className="flex flex-1 flex-col gap-1">
-                  <div className="text-foreground text-lg font-medium">0</div>
+                  <div className="text-foreground text-2xl leading-none font-medium">
+                    {memberHead?.total_active_class || 0}
+                  </div>
                   <div className="text-muted-foreground text-xs">
-                    Total langganan aktif
+                    Total Kelas aktif
+                  </div>
+                </div>
+                <Separator className="sm:hidden" />
+                <Separator
+                  orientation="vertical"
+                  className="hidden h-12 sm:block"
+                />
+                <div className="flex flex-1 flex-col gap-1">
+                  <div className="text-foreground text-2xl leading-none font-medium">
+                    {memberHead?.total_balance_loyalty_point || 0}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    Loyalty Point
                   </div>
                 </div>
               </CardContent>

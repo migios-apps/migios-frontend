@@ -27,9 +27,9 @@ export interface MemberDetail {
   last_freeze_id?: number | null
   freeze_start_date?: string | null
   freeze_end_date?: string | null
-  // total_active_membership: number
-  // total_active_ptprogram: number
-  // total_active_class: number
+  total_active_membership: number
+  total_active_ptprogram: number
+  total_active_class: number
 }
 
 export type OriginalMemberDetail = Omit<
@@ -228,4 +228,16 @@ export type LoyaltyPointRedeemListResponse = Omit<ApiTypes, "data"> & {
 export interface UpdatePackageStatusTypes {
   status: string
   start_date?: string
+}
+
+export interface Memberdetailhead {
+  total_active_package: number
+  total_active_class: number
+  total_active_session: number
+  total_session_usage: number
+  total_balance_loyalty_point: number
+}
+
+export type MemberDetailHeadResponse = Omit<ApiTypes, "data"> & {
+  data: Memberdetailhead
 }

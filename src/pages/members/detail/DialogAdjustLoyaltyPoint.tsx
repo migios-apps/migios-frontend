@@ -120,6 +120,12 @@ const DialogAdjustLoyaltyPoint: React.FC<DialogAdjustLoyaltyPointProps> = ({
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEY.memberLoyaltyEarned],
       })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY.memberDetail, memberCode],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY.memberHead, memberCode],
+      })
       handleClose()
     },
   })
