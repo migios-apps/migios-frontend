@@ -1,6 +1,6 @@
 import { type SVGProps } from "react"
-import { Item, Root as Radio } from "@radix-ui/react-radio-group"
 import { CircleCheck, RotateCcw } from "lucide-react"
+import { RadioGroup } from "radix-ui"
 import { IconDir } from "@/assets/custom/icon-dir"
 import { IconLayoutCompact } from "@/assets/custom/icon-layout-compact"
 import { IconLayoutDefault } from "@/assets/custom/icon-layout-default"
@@ -56,7 +56,7 @@ function RadioGroupItem({
   }
 }) {
   return (
-    <Item
+    <RadioGroup.Item
       value={item.value}
       className={cn("group outline-none", "transition duration-200 ease-in")}
       aria-label={`Select ${item.label.toLowerCase()}`}
@@ -94,7 +94,7 @@ function RadioGroupItem({
       >
         {item.label}
       </div>
-    </Item>
+    </RadioGroup.Item>
   )
 }
 
@@ -110,7 +110,7 @@ function SidebarConfig() {
         showReset={defaultLayout !== themeConfig.layout}
         onReset={() => setThemeConfig({ layout: defaultLayout })}
       />
-      <Radio
+      <RadioGroup.Root
         value={themeConfig.layout}
         onValueChange={(value) =>
           setThemeConfig({
@@ -145,7 +145,7 @@ function SidebarConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroup.Root>
       <div id="sidebar-description" className="sr-only">
         Choose between vertical sidebar layouts (inset, floating, standard) or
         horizontal top navigation
@@ -172,7 +172,7 @@ function LayoutConfig() {
           setThemeConfig({ sidebar: defaultSidebar })
         }}
       />
-      <Radio
+      <RadioGroup.Root
         value={radioState}
         onValueChange={(v) => {
           if (v === "default") {
@@ -205,7 +205,7 @@ function LayoutConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroup.Root>
       <div id="layout-description" className="sr-only">
         Choose between default expanded, compact icon-only, or full layout mode
       </div>
@@ -225,7 +225,7 @@ function DirConfig() {
         showReset={defaultDir !== themeConfig.dir}
         onReset={() => setThemeConfig({ dir: defaultDir })}
       />
-      <Radio
+      <RadioGroup.Root
         value={themeConfig.dir}
         onValueChange={(value) =>
           setThemeConfig({ dir: value as "ltr" | "rtl" })
@@ -252,7 +252,7 @@ function DirConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroup.Root>
       <div id="direction-description" className="sr-only">
         Choose between left-to-right or right-to-left site direction
       </div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -50,6 +52,11 @@
   --color-sidebar-accent-inset-foreground: var(
     --sidebar-accent-inset-foreground
   );
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 /* Default theme styles (used when no data-theme-preset is set or when 'default' is selected).
@@ -148,11 +155,11 @@ These serve as the fallback; there is no separate default.css file. */
     scrollbar-color: var(--border) transparent;
   }
   html {
-    @apply overflow-x-hidden;
+    @apply overflow-x-hidden font-sans;
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar-inset min-h-svh w-full;
+    @apply has-[div[data-variant='inset']]:bg-sidebar-inset bg-background text-foreground min-h-svh w-full;
   }
 
   /* Smooth page transitions */

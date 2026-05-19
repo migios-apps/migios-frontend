@@ -4,6 +4,7 @@ import { AuthProvider } from "./auth"
 import { NavigationProgress } from "./components/navigation-progress"
 import AllRoutes from "./components/route/AllRoutes"
 import { PageLoader } from "./components/ui/page-loader"
+import { TooltipProvider } from "./components/ui/tooltip"
 import { SearchProvider } from "./context/search-provider"
 
 function App() {
@@ -13,7 +14,9 @@ function App() {
         <AuthProvider>
           <SearchProvider>
             <NavigationProgress />
-            <AllRoutes />
+            <TooltipProvider>
+              <AllRoutes />
+            </TooltipProvider>
           </SearchProvider>
         </AuthProvider>
       </BrowserRouter>

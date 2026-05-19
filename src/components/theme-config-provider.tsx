@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { DirectionProvider as RdxDirProvider } from "@radix-ui/react-direction"
+import { Direction } from "radix-ui"
 import { useThemeConfig } from "@/stores/theme-config-store"
 
 export function ThemeConfigProvider({
@@ -47,5 +47,9 @@ export function ThemeConfigProvider({
     htmlElement.setAttribute("dir", themeConfig.dir)
   }, [themeConfig.dir])
 
-  return <RdxDirProvider dir={themeConfig.dir}>{children}</RdxDirProvider>
+  return (
+    <Direction.DirectionProvider dir={themeConfig.dir}>
+      {children}
+    </Direction.DirectionProvider>
+  )
 }

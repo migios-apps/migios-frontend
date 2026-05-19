@@ -1,8 +1,8 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
 import { type VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 import { type Transition, motion, AnimatePresence } from "motion/react"
+import { Slot } from "radix-ui"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -439,7 +439,7 @@ function SidebarGroupLabel({
   asChild = false,
   ...props
 }: React.ComponentProps<"div"> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "div"
+  const Comp = asChild ? Slot.Root : "div"
 
   return (
     <Comp
@@ -461,7 +461,7 @@ function SidebarGroupAction({
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = asChild ? Slot.Root : "button"
 
   return (
     <Comp
@@ -620,7 +620,7 @@ function SidebarMenuButton({
   isActive?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = asChild ? Slot.Root : "button"
   const { isMobile, state } = useSidebar()
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
@@ -716,7 +716,7 @@ function SidebarMenuAction({
   asChild?: boolean
   showOnHover?: boolean
 }) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = asChild ? Slot.Root : "button"
 
   return (
     <Comp
@@ -909,7 +909,7 @@ function SidebarMenuSubButton({
   isActive?: boolean
   variant?: "default" | "outline"
 } & VariantProps<typeof sidebarMenuSubButtonVariants>) {
-  const Comp = asChild ? Slot : "a"
+  const Comp = asChild ? Slot.Root : "a"
   const themeConfig = useThemeConfig((state) => state.themeConfig)
 
   const buttonRef = React.useRef<HTMLAnchorElement>(null)
