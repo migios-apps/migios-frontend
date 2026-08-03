@@ -1,0 +1,47 @@
+# Single-service deploy for Coolify (or plain `docker compose up --build`).
+#
+# Everything VITE_* is inlined into the JS bundle at BUILD time, so it is passed as a
+# build arg, not a runtime env var. Changing one needs a rebuild, not a restart.
+#
+# The three REQUIRED vars below use `${VAR:?message}` — compose refuses to start and
+# prints the message when they are missing, so nothing deploys half-configured.
+# Locally they come from `.env` (copy `.env.example`); in Coolify define them in the
+# resource's Environment Variables tab.
+#
+# Coolify: New Resource -> Docker Compose, Base Directory `/migios-shadcn`,
+# attach your domain to this service (container port = APP_PORT).
+services:
+  migios-shadcn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # ---- REQUIRED (build time) ----
+        # Backend REST API base URL, no trailing slash. e.g. https://api.migios.com
+        VITE_PUBLIC_API_URL_V1: ${VITE_PUBLIC_API_URL_V1:?required - backend API base URL, e.g. https://api.migios.com}
+        # OAuth client credentials issued by migios-be.
+        VITE_APP_CLIENT_ID: ${VITE_APP_CLIENT_ID:?required - OAuth client id from the backend}
+        VITE_APP_CLIENT_SECRET: ${VITE_APP_CLIENT_SECRET:?required - OAuth client secret from the backend}
+        # ---- OPTIONAL (build time) ----
+        # Router basename when the app is served under a sub-path (e.g. /app). Blank = root.
+        VITE_BASENAME: ${VITE_BASENAME:-}
+        # Vite mode: production | staging | development. Picks .env.<mode> and the build tag.
+        BUILD_MODE: ${BUILD_MODE:-production}
+    container_name: migios-shadcn
+    restart: unless-stopped
+    environment:
+      # ---- OPTIONAL (runtime) ---- port nginx listens on inside the container.
+      APP_PORT: ${APP_PORT:-5737}
+    ports:
+      # host:container — PORT is the host port; Coolify ignores this and maps the domain itself.
+      - "${PORT:-5737}:${APP_PORT:-5737}"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --tries=1 --spider http://localhost:${APP_PORT:-5737}/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

@@ -1,17 +1,21 @@
-node_modules
-dist
-.git
-.gitignore
+**/node_modules
+**/dist
+**/.git
+**/.turbo
+**/.DS_Store
+**/*.log
+**/coverage
+**/.vercel
+**/.netlify
+
+# Env comes from build args only, so the image build stays deterministic and no
+# development credential is silently baked into a production bundle.
 .env
-.env.local
-.env.*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
-*.log
+.env.*
+!.env.example
+
+.buildVersion.cache.json
 .vscode
 .idea
 .cursor
-coverage
-
+.claude
