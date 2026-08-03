@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   apiGetMember,
@@ -16,7 +17,7 @@ import {
 } from "iconsax-reactjs"
 import isEmpty from "lodash/isEmpty"
 import { Pencil } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -64,14 +65,14 @@ const MemberDetail = () => {
     error: errorMember,
   } = useQuery({
     queryKey: [QUERY_KEY.members, id],
-    queryFn: async () => {
-      const res = await apiGetMember(id as string)
-      setMember(res.data)
-      return res
-    },
+    queryFn: () => apiGetMember(id as string),
     select: (res) => res.data,
     enabled: !!id,
   })
+
+  useEffect(() => {
+    if (member) setMember(member)
+  }, [member, setMember])
 
   const { data: memberHead } = useQuery({
     queryKey: [QUERY_KEY.memberHead, QUERY_KEY.memberDetail, id],

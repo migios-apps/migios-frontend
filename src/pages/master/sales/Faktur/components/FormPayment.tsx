@@ -33,7 +33,7 @@ import {
   Warning2,
 } from "iconsax-reactjs"
 import { User } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { cn } from "@/lib/utils"

@@ -7,7 +7,7 @@ import {
   Printer,
   ReceiptText,
 } from "iconsax-reactjs"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusPaymentColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"

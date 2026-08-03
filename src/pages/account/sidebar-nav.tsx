@@ -1,5 +1,5 @@
 import { useState, type JSX } from "react"
-import { useLocation, useNavigate, Link } from "react-router-dom"
+import { useLocation, useNavigate, Link } from "react-router"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import {

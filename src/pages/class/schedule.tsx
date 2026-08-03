@@ -51,8 +51,8 @@ const ScheduleIndex = () => {
         title: item.title,
         start: dayjs(item.fstart).format("YYYY-MM-DDTHH:mm:ss"),
         end: dayjs(item.fend).format("YYYY-MM-DDTHH:mm:ss"),
-        backgroundColor: item.background_color,
-        textColor: item.color,
+        color: item.background_color,
+        contrastColor: item.color,
         dayOfWeek: item.day_of_week,
         originalData: item,
       }))

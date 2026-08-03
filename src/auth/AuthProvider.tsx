@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQueries } from "@tanstack/react-query"
 import { apiClientAuth } from "@/services/api/AuthService"
 import { apiGetClubDetail } from "@/services/api/ClubService"
@@ -16,51 +16,52 @@ function AuthProvider({ children }: AuthProviderProps) {
   const { setUser, setClub } = useSessionUser()
   const { setClientAccessToken, setClientRefreshToken } = useToken()
 
-  useQueries({
+  const [profileQuery, clubDetailQuery, clientAuthQuery] = useQueries({
     queries: [
       {
         queryKey: [QUERY_KEY.userProfile],
-        queryFn: async () => {
-          const res = await apiGetProfile()
-          setUser(res.data)
-          return res
-        },
+        queryFn: apiGetProfile,
         enabled: authenticated && !!club?.id,
         refetchOnMount: true,
       },
       {
         queryKey: [QUERY_KEY.clubDetail],
-        queryFn: async () => {
-          const res = await apiGetClubDetail()
-          setClub(res.data)
-          if (res.data.subscription_status === "expired") {
-            // setClub({} as UserClubListData)
-            // setGetDashboard(false)
-            setIsExpiredSubscription(true)
-          }
-          return res
-        },
+        queryFn: apiGetClubDetail,
         enabled: authenticated && !!club?.id,
         refetchOnMount: true,
       },
       {
         queryKey: [QUERY_KEY.clientAuth],
-        queryFn: async () => {
-          const resp = await apiClientAuth({
+        queryFn: () =>
+          apiClientAuth({
             id: Number(import.meta.env.VITE_APP_CLIENT_ID),
             secret: import.meta.env.VITE_APP_CLIENT_SECRET || "",
-          })
-
-          setClientAccessToken(resp.data.access_token)
-          setClientRefreshToken(resp.data.refresh_token)
-
-          return resp
-        },
+          }),
         enabled: !authenticated,
         refetchOnWindowFocus: true,
       },
     ],
   })
+
+  useEffect(() => {
+    if (profileQuery.data) setUser(profileQuery.data.data)
+  }, [profileQuery.data, setUser])
+
+  useEffect(() => {
+    if (clubDetailQuery.data) {
+      setClub(clubDetailQuery.data.data)
+      if (clubDetailQuery.data.data.subscription_status === "expired") {
+        setIsExpiredSubscription(true)
+      }
+    }
+  }, [clubDetailQuery.data, setClub])
+
+  useEffect(() => {
+    if (clientAuthQuery.data) {
+      setClientAccessToken(clientAuthQuery.data.data.access_token)
+      setClientRefreshToken(clientAuthQuery.data.data.refresh_token)
+    }
+  }, [clientAuthQuery.data, setClientAccessToken, setClientRefreshToken])
 
   return (
     <>

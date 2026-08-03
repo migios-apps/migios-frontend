@@ -359,8 +359,7 @@ const FormClass: React.FC<FormProps> = ({ open, type, formProps, onClose }) => {
                                   }}
                                   type={
                                     (watchData.discount_type as
-                                      | "percent"
-                                      | "nominal") || "percent"
+                                      "percent" | "nominal") || "percent"
                                   }
                                   onTypeChange={(type) => {
                                     formProps.setValue(

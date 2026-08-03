@@ -2,8 +2,10 @@ import { ChevronDownIcon, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { TimePicker, TimePickerProps } from "./time-picker"
 
-interface SimpleTimePickerProps
-  extends Omit<TimePickerProps, "renderTrigger" | "disabled"> {
+interface SimpleTimePickerProps extends Omit<
+  TimePickerProps,
+  "renderTrigger" | "disabled"
+> {
   disabled?: boolean
   error?: boolean
 }

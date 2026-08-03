@@ -36,14 +36,7 @@ type DateTimeInputProps = {
 
 // https://date-fns.org/v4.1.0/docs/format
 type SegmentType =
-  | "year"
-  | "month"
-  | "date"
-  | "hour"
-  | "minute"
-  | "second"
-  | "period"
-  | "space"
+  "year" | "month" | "date" | "hour" | "minute" | "second" | "period" | "space"
 
 const segmentConfigs = [
   {
@@ -227,14 +220,13 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           const length = segment.symbols.length
           const rawValue = parseInt(segment.value).toString()
           let newValue = rawValue.length < length ? rawValue + num : num
-          let parsedDate = parse(
+          const parsedDate = parse(
             newValue.padStart(length, "0"),
             segment.symbols,
             safeDate(timezone)
           )
           if (!isValid(parsedDate) && newValue.length > 1) {
             newValue = num
-            parsedDate = parse(newValue, segment.symbols, safeDate(timezone))
           }
           const updatedSegments = segments.map((s) =>
             s.index === segment.index ? { ...segment, value: newValue } : s

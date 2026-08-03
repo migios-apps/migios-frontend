@@ -20,7 +20,7 @@ import {
 } from "iconsax-reactjs"
 import isEmpty from "lodash/isEmpty"
 import { Edit2 } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

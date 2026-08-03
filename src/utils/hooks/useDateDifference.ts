@@ -35,7 +35,7 @@ const useDateDifference = (
     const daysDiff = end.diff(adjustedDate3, "day")
 
     // Tentukan output yang paling signifikan
-    let result = ""
+    let result: string
     if (yearsDiff > 0) {
       result = `${yearsDiff} Tahun+`
     } else if (monthsDiff > 0) {

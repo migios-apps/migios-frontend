@@ -19,7 +19,7 @@ import {
 } from "@/services/api/Attendance"
 import handleApiError from "@/services/handleApiError"
 import { Camera, Scan } from "iconsax-reactjs"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Alert, AlertDescription } from "@/components/ui/alert"

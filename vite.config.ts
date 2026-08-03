@@ -15,14 +15,16 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      // vite 8's native config loader does not provide `__dirname`
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
   build: {
     chunkSizeWarningLimit: 5000,
     rollupOptions: {
       output: {
-        inlineDynamicImports: true,
+        // vite 8 / rolldown: replaces the deprecated `inlineDynamicImports: true`
+        codeSplitting: false,
       },
     },
   },

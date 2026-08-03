@@ -327,8 +327,10 @@ const Overview = () => {
                         content={
                           <ChartTooltipContent
                             labelFormatter={(value) => {
-                              return dayjs(value).isValid()
-                                ? dayjs(value).format("DD MMM YYYY")
+                              // recharts 3.10 types this as ReactNode
+                              const label = value as string
+                              return dayjs(label).isValid()
+                                ? dayjs(label).format("DD MMM YYYY")
                                 : value
                             }}
                             indicator="dot"
@@ -417,8 +419,10 @@ const Overview = () => {
                         content={
                           <ChartTooltipContent
                             labelFormatter={(value) => {
-                              return dayjs(value).isValid()
-                                ? dayjs(value).format("DD MMM YYYY")
+                              // recharts 3.10 types this as ReactNode
+                              const label = value as string
+                              return dayjs(label).isValid()
+                                ? dayjs(label).format("DD MMM YYYY")
                                 : value
                             }}
                             formatter={(value) => {

@@ -9,7 +9,7 @@ import {
 } from "@/services/api/MembeService"
 import { Trash } from "iconsax-reactjs"
 import { ArrowLeft, User } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { useSessionUser } from "@/stores/auth-store"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"

@@ -131,8 +131,7 @@ const TransferMemberDialog = ({
   const club = useSessionUser((state) => state.club)
 
   const watchTargetTrainer = watch("target_trainer") as
-    | EmployeeDetail
-    | undefined
+    EmployeeDetail | undefined
   const watchIsCreateEvent = watch("is_create_event")
 
   const handleClose = useCallback(() => {

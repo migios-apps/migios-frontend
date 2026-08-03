@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { apiGetMemberList } from "@/services/api/MembeService"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

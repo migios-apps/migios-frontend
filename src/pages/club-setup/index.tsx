@@ -10,7 +10,7 @@ import {
 import { apiBulkCreateClub } from "@/services/api/ClubService"
 import handleApiError from "@/services/handleApiError"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Navigate, useNavigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router"
 import { useClubStore } from "@/stores/use-club"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"

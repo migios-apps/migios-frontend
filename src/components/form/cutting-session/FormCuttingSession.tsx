@@ -210,7 +210,7 @@ const FormCuttingSession: React.FC<FormProps> = ({
     [watchData.member?.code]
   )
 
-  useQuery<MemberPackageTypes>({
+  const { data: memberPackage } = useQuery<MemberPackageTypes>({
     queryKey: ["member_package", member_package_id, watchData.member?.code],
     queryFn: async () => {
       const response = await apiGetMemberPackages(`${watchData.member?.code}`, {
@@ -222,11 +222,14 @@ const FormCuttingSession: React.FC<FormProps> = ({
           },
         ],
       })
-      setValue("member_package", response.data.data[0])
       return response.data.data[0]
     },
     enabled: open && type === "update" && !!member_package_id,
   })
+
+  React.useEffect(() => {
+    if (memberPackage) setValue("member_package", memberPackage)
+  }, [memberPackage, setValue])
 
   const handleClose = () => {
     formProps.reset({})

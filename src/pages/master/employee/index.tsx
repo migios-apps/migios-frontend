@@ -14,8 +14,8 @@ import {
   X,
   XCircle,
 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router"
+import { Link } from "react-router"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -98,12 +98,7 @@ const EmployeeList = () => {
   }
 
   const { data, isLoading, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: [
-      QUERY_KEY.employees,
-      tableData,
-      genderFilter.length,
-      statusFilter.length,
-    ],
+    queryKey: [QUERY_KEY.employees, tableData, genderFilter, statusFilter],
     initialPageParam: 1,
     queryFn: async () => {
       const res = await apiGetEmployeeList({

@@ -268,8 +268,7 @@ const FormMembership: React.FC<FormProps> = ({
                                   }}
                                   type={
                                     (watchData.discount_type as
-                                      | "percent"
-                                      | "nominal") || "percent"
+                                      "percent" | "nominal") || "percent"
                                   }
                                   onTypeChange={(type) => {
                                     formProps.setValue(

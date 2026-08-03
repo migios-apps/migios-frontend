@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 // import { calendarData } from '@/mock/data/calendarData'
 import { EventsData } from "@/services/api/@types/event"
 import { apiGetEventList } from "@/services/api/EventService"
-import type { DatesSetArg, EventClickArg } from "@fullcalendar/core"
+import type { DatesSetInfo, EventClickInfo } from "@fullcalendar/react"
 import { dayjs } from "@/utils/dayjs"
 import { getStartAndEndOfMonth } from "@/utils/getStartAndEndDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
@@ -47,8 +47,8 @@ const Calendar = () => {
         title: item.title,
         start: dayjs(item.fstart).format("YYYY-MM-DDTHH:mm:ss"),
         end: dayjs(item.fend).format("YYYY-MM-DDTHH:mm:ss"),
-        backgroundColor: item.background_color,
-        textColor: item.color,
+        color: item.background_color,
+        contrastColor: item.color,
         dayOfWeek: item.day_of_week,
         originalData: item,
       }))
@@ -65,7 +65,7 @@ const Calendar = () => {
   //   setDialogOpen(true)
   // }
 
-  const handleEventClick = (arg: EventClickArg) => {
+  const handleEventClick = (arg: EventClickInfo) => {
     const { start, end, id, title, extendedProps } = arg.event
 
     console.log({
@@ -81,7 +81,7 @@ const Calendar = () => {
     })
   }
 
-  const handleDatesSet = useCallback((arg: DatesSetArg) => {
+  const handleDatesSet = useCallback((arg: DatesSetInfo) => {
     const { currentStart, currentEnd, type } = arg.view
     const startDate = dayjs(currentStart).format("YYYY-MM-DD")
     const endDate = dayjs(currentEnd).format("YYYY-MM-DD")

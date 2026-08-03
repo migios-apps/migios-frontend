@@ -1,6 +1,6 @@
 import React from "react"
 import { Calendar, DocumentText1, Layer } from "iconsax-reactjs"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const LayoutClasses = ({ children }: { children?: React.ReactNode }) => {

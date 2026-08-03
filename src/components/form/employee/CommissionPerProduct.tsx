@@ -270,8 +270,7 @@ const CommissionPerProduct: React.FC<CommissionPerProductProps> = ({
                         type={
                           (watchData.earnings
                             ?.default_sales_product_commission_type as
-                            | "percent"
-                            | "nominal") || "nominal"
+                            "percent" | "nominal") || "nominal"
                         }
                         onTypeChange={(type) => {
                           formProps.setValue(

@@ -131,11 +131,7 @@ const LoyaltyPointSettingsPage = () => {
         loyalty_min_total_order: settingsData.loyalty_min_total_order ?? 0,
         loyalty_expired_type_by_total_order:
           (settingsData.loyalty_expired_type_by_total_order ?? "forever") as
-            | "forever"
-            | "day"
-            | "week"
-            | "month"
-            | "year",
+            "forever" | "day" | "week" | "month" | "year",
         loyalty_expired_value_by_total_order:
           settingsData.loyalty_expired_value_by_total_order ?? 0,
         loyalty_earn_point_with_multiple:

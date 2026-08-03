@@ -77,7 +77,10 @@ const AlertConfirm: React.FC<AlertConfirmProps> = ({
           <DialogFooter className="mt-6 grid w-full grid-cols-1 gap-2 md:grid-cols-2">
             {onLeftClick && (
               <Button
-                className={cn("w-full", leftButtonClassName)}
+                className={cn(
+                  "h-auto w-full py-2 text-center whitespace-normal",
+                  leftButtonClassName
+                )}
                 variant="outline"
                 onClick={onLeftClick}
               >
@@ -86,7 +89,10 @@ const AlertConfirm: React.FC<AlertConfirmProps> = ({
             )}
             {onRightClick && (
               <Button
-                className={cn("w-full", rightButtonClassName)}
+                className={cn(
+                  "h-auto w-full py-2 text-center whitespace-normal",
+                  rightButtonClassName
+                )}
                 variant={type === "delete" ? "destructive" : "default"}
                 disabled={loading}
                 onClick={onRightClick}

@@ -5,16 +5,7 @@ export interface ApiTypes {
 }
 
 type ConditionTypes =
-  | "like"
-  | "not like"
-  | "is"
-  | "is not"
-  | "!="
-  | ">="
-  | "<="
-  | "<"
-  | ">"
-  | "="
+  "like" | "not like" | "is" | "is not" | "!=" | ">=" | "<=" | "<" | ">" | "="
 
 export interface Filter {
   search_column?: string

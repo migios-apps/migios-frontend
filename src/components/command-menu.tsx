@@ -1,6 +1,6 @@
 import React from "react"
 import { ArrowRight, ChevronRight, Moon, Sun } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { useSearch } from "@/context/search-provider"
 import { useSidebarData } from "@/hooks/use-sidebar-data"

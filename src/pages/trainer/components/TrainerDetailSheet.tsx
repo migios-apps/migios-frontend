@@ -22,7 +22,7 @@ import {
   Sort as ArrowDownUp,
   CloseCircle as X,
 } from "iconsax-reactjs"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { cn } from "@/lib/utils"
 import { statusColor } from "@/constants/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

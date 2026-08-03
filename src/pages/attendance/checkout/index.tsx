@@ -146,7 +146,7 @@ const Checkout = () => {
     isFetchingNextPage: isFetchingMemberCheckOut,
     isLoading: isLoadingMemberCheckOut,
   } = useInfiniteQuery({
-    queryKey: [QUERY_KEY.memberAttendanceLog, tableDataCheckOut],
+    queryKey: [QUERY_KEY.memberAttendanceLog, tableDataCheckOut, dateRange],
     initialPageParam: 1,
     queryFn: async () => {
       const res = await apiGetMemberAttendanceLogList({

@@ -270,8 +270,7 @@ const CommissionPerPackage: React.FC<CommissionPerPackageProps> = ({
                       type={
                         (watchData.earnings
                           ?.default_sales_package_commission_type as
-                          | "percent"
-                          | "nominal") || "nominal"
+                          "percent" | "nominal") || "nominal"
                       }
                       onTypeChange={(type) => {
                         formProps.setValue(

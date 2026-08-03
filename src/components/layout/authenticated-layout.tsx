@@ -1,6 +1,6 @@
 import { Suspense, useState } from "react"
 import { ContainerProps, RouteProps } from "@/@types/routes"
-import { Outlet } from "react-router-dom"
+import { Outlet } from "react-router"
 import { useThemeConfig } from "@/stores/theme-config-store"
 import { cn } from "@/lib/utils"
 import { SearchProvider } from "@/context/search-provider"

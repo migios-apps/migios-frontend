@@ -87,12 +87,7 @@ function DialogOverlay({
 
 type DialogSlideDirection = "top" | "bottom" | "left" | "right" | "center"
 type DialogAnimationType =
-  | "slide"
-  | "zoom"
-  | "fade"
-  | "slideBounce"
-  | "zoomBounce"
-  | "fadeBounce"
+  "slide" | "zoom" | "fade" | "slideBounce" | "zoomBounce" | "fadeBounce"
 
 type DialogContentProps = Omit<
   React.ComponentProps<typeof DialogPrimitive.Content>,
@@ -119,9 +114,7 @@ function DialogContent({
 
   // Extract base animation type
   const baseAnimation = animation.replace("Bounce", "").toLowerCase() as
-    | "slide"
-    | "zoom"
-    | "fade"
+    "slide" | "zoom" | "fade"
 
   // Set transition based on bounce
   const defaultTransition = isBounce

@@ -291,20 +291,13 @@ export function generateCartData(
       total_tax_amount = 0
 
       const taxesWithAmount: TaxItem[] = itemTaxes.map((tax) => {
-        let tax_amount = 0
         const taxRate = tax.rate || 0
 
         // Perhitungan pajak berdasarkan pengaturan pajak
         // Jika qty negatif, pajak juga akan negatif karena net_amount sudah negatif
-        if (tax_calculation === 1) {
-          // Harga Retail Termasuk Pajak
-          // Pajak = (Tarif Pajak * net_amount) / 100 (karena net_amount sudah harga tanpa pajak)
-          tax_amount = (taxRate * net_amount) / 100
-        } else {
-          // Harga Retail Tidak Termasuk Pajak (tax_calculation === 0)
-          // Pajak = Tarif Pajak * net_amount / 100
-          tax_amount = (taxRate * net_amount) / 100
-        }
+        // Rumusnya sama untuk kedua mode (tax_calculation 1 = harga retail termasuk
+        // pajak, 0 = tidak termasuk pajak) karena net_amount sudah harga tanpa pajak
+        const tax_amount = (taxRate * net_amount) / 100
 
         total_tax_amount += tax_amount
 
@@ -578,7 +571,7 @@ export function generateCartData(
   const isRefundMode = totalAmount < 0
 
   // Hitung balance_amount
-  let balance_amount = 0
+  let balance_amount: number
   if (isRefundMode) {
     // Untuk refund mode: balance_amount = total_amount - totalPayments
     // total_amount negatif, totalPayments juga negatif, hasil tetap negatif

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { People, Profile2User, Weight } from "iconsax-reactjs"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const LayoutPackages = ({ children }: { children?: React.ReactNode }) => {

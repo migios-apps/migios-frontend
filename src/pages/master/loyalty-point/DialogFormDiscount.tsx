@@ -182,8 +182,7 @@ const DialogFormDiscount: React.FC<DialogFormDiscountProps> = ({
                           }}
                           type={
                             (watchData.discount_type as
-                              | "percent"
-                              | "nominal") || "percent"
+                              "percent" | "nominal") || "percent"
                           }
                           onTypeChange={(type) => {
                             formProps.setValue("discount_type", type as any)

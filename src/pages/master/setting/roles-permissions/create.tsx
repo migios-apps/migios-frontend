@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiGetPermissionList } from "@/services/api/settings/Permission"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import Loading from "@/components/ui/loading"
 import RolePermissionsForm from "@/components/form/RolePermission/RolePermissionsForm"

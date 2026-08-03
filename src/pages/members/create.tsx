@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import FormPageMember from "@/components/form/member/FormPageMember"
 import { useMemberValidation } from "@/components/form/member/memberValidation"
 

@@ -50,7 +50,7 @@ const AxiosResponseIntrceptorErrorCallback = async (error: AxiosError) => {
 
   // 2. Extract dan tampilkan error message dari backend
   if (response) {
-    let errorMessage = "Something went wrong!"
+    let errorMessage: string
 
     // Extract error message (priority order)
     const responseData = response.data as Partial<ErrorApi>

@@ -4,7 +4,7 @@ import type {
   OnChangeFn,
   PaginationState,
 } from "@tanstack/react-table"
-import type { NavigateFunction } from "react-router-dom"
+import type { NavigateFunction } from "react-router"
 
 type SearchRecord = Record<string, unknown>
 

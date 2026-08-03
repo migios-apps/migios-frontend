@@ -62,8 +62,7 @@ function Tabs({
       !initialSet.current
     ) {
       const firstTab = triggersRef.current.keys().next().value as
-        | string
-        | undefined
+        string | undefined
       if (firstTab !== undefined) {
         setActiveValue(firstTab)
         initialSet.current = true

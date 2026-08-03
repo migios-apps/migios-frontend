@@ -79,13 +79,7 @@ export interface CreateClassPage {
   start_time: string
   duration_time: number
   duration_time_type:
-    | "minute"
-    | "hour"
-    | "day"
-    | "week"
-    | "month"
-    | "year"
-    | "forever"
+    "minute" | "hour" | "day" | "week" | "month" | "year" | "forever"
   instructors?: {
     id: number
     trainer_code: string

@@ -1,20 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import {
+import FullCalendar, {
   CalendarOptions,
-  DayCellContentArg,
-  DayHeaderContentArg,
+  DayCellInfo,
+  DayHeaderInfo,
   EventApi,
-  EventClickArg,
-  EventContentArg,
-  MoreLinkArg,
-  SlotLabelContentArg,
-} from "@fullcalendar/core"
-import idLocale from "@fullcalendar/core/locales/id"
-import dayGridPlugin from "@fullcalendar/daygrid"
-import interactionPlugin from "@fullcalendar/interaction"
-import listPlugin from "@fullcalendar/list"
-import FullCalendar from "@fullcalendar/react"
-import timeGridPlugin from "@fullcalendar/timegrid"
+  EventClickInfo,
+  EventDisplayInfo,
+  EventSegment,
+  MoreLinkHandler,
+  SlotHeaderInfo,
+} from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/react/daygrid"
+import interactionPlugin from "@fullcalendar/react/interaction"
+import listPlugin from "@fullcalendar/react/list"
+import idLocale from "@fullcalendar/react/locales/id"
+import "@fullcalendar/react/skeleton.css"
+import classicThemePlugin from "@fullcalendar/react/themes/classic"
+import "@fullcalendar/react/themes/classic/palette.css"
+import "@fullcalendar/react/themes/classic/theme.css"
+import timeGridPlugin from "@fullcalendar/react/timegrid"
 import type { Dayjs } from "dayjs"
 import "dayjs/locale/id"
 import { motion } from "framer-motion"
@@ -43,19 +47,19 @@ import {
  * ============================================================================ */
 
 type EventItemProps = {
-  info: EventContentArg
+  info: EventDisplayInfo
 }
 
 type DayHeaderProps = {
-  info: DayHeaderContentArg
+  info: DayHeaderInfo
 }
 
 type DayRenderProps = {
-  info: DayCellContentArg
+  info: DayCellInfo
 }
 
 type SlotLabelProps = {
-  args: SlotLabelContentArg
+  args: SlotHeaderInfo
 }
 
 const locales = [idLocale]
@@ -67,7 +71,7 @@ interface CalendarViewProps extends CalendarOptions {
   showAllDay?: boolean
   showAgendaTab?: boolean
   initialView?: "timeGridWeek" | "timeGridDay" | "dayGridMonth" | "listWeek"
-  onEventClick?: (arg: EventClickArg["event"]) => void
+  onEventClick?: (arg: EventClickInfo["event"]) => void
   handleCreateEvent?: () => void
 }
 
@@ -76,16 +80,14 @@ interface CalendarViewProps extends CalendarOptions {
  * ============================================================================ */
 
 /**
- * Calculate scroll position for smooth scrolling to current time
+ * Calculate the time the time-grid should scroll to (2 hours before now)
  */
-const calculateScrollPosition = (
-  hours: number,
-  minutes: number,
-  slotHeight: number
-): number => {
+const calculateScrollTime = (hours: number, minutes: number): string => {
   const totalMinutes = hours * 60 + minutes
   const offsetMinutes = Math.max(0, totalMinutes - 120) // 2 hours offset
-  return (offsetMinutes / 60) * slotHeight
+  const h = Math.floor(offsetMinutes / 60)
+  const m = offsetMinutes % 60
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`
 }
 
 /**
@@ -211,7 +213,7 @@ const countEventsInRange = (
  */
 const calculateEventDelay = (
   start: Date | null,
-  info: EventContentArg,
+  info: EventDisplayInfo,
   calendarApi: any
 ): number => {
   if (!start || !calendarApi) return 0
@@ -315,39 +317,6 @@ const useInitializeCalendar = (
 }
 
 /**
- * Move all-day row above header in week view
- */
-const useAllDayRowLayout = (
-  currentView: string,
-  currentDate: string,
-  showAllDay: boolean,
-  calendarRef: React.RefObject<any>
-) => {
-  useEffect(() => {
-    if (currentView === "timeGridWeek" && showAllDay && calendarRef.current) {
-      const timer = setTimeout(() => {
-        const calendarEl = calendarRef.current?.getApi().el
-        if (!calendarEl) return
-
-        const headerRow = calendarEl.querySelector(
-          ".fc-scrollgrid-section-header"
-        )
-        const allDayRow = Array.from(
-          calendarEl.querySelectorAll(".fc-scrollgrid-section-body")
-        ).find((el: any) => el.querySelector(".fc-daygrid-body")) as HTMLElement
-
-        if (headerRow && allDayRow && headerRow.parentElement) {
-          headerRow.parentElement.insertBefore(allDayRow, headerRow)
-          allDayRow.style.borderBottom = "1px solid var(--border)"
-        }
-      }, 100)
-
-      return () => clearTimeout(timer)
-    }
-  }, [currentView, currentDate, showAllDay, calendarRef])
-}
-
-/**
  * Sync calendar API view with state
  */
 const useCalendarViewSync = (
@@ -367,6 +336,9 @@ const useCalendarViewSync = (
 
 /**
  * Smooth scroll to current time in week/day views
+ *
+ * v7 no longer exposes the calendar element, so this uses the public
+ * `scrollToTime` API instead of scrolling the scroller element by hand.
  */
 const useSmoothScrollToCurrentTime = (
   currentView: string,
@@ -376,74 +348,16 @@ const useSmoothScrollToCurrentTime = (
   useEffect(() => {
     if (currentView === "timeGridWeek" || currentView === "timeGridDay") {
       const timer = setTimeout(() => {
-        const calendarEl = calendarRef.current?.getApi().el
-        if (!calendarEl) return
+        const api = calendarRef.current?.getApi()
+        if (!api) return
 
-        const scroller = calendarEl.querySelector(
-          ".fc-scroller-liquid-absolute"
-        )
-        if (scroller) {
-          const now = new Date()
-          const hours = now.getHours()
-          const minutes = now.getMinutes()
-
-          const timeSlot = calendarEl.querySelector(".fc-timegrid-slot")
-          if (timeSlot) {
-            const slotHeight = timeSlot.getBoundingClientRect().height
-            const scrollPosition = calculateScrollPosition(
-              hours,
-              minutes,
-              slotHeight
-            )
-
-            scroller.scrollTo({
-              top: scrollPosition,
-              behavior: "smooth",
-            })
-          }
-        }
+        const now = new Date()
+        api.scrollToTime(calculateScrollTime(now.getHours(), now.getMinutes()))
       }, 150)
 
       return () => clearTimeout(timer)
     }
   }, [currentView, currentDate, calendarRef])
-}
-
-/**
- * Restructure list view to show time above title
- */
-const useListViewRestructure = (
-  currentView: string,
-  currentDate: string,
-  events: any,
-  calendarRef: React.RefObject<any>
-) => {
-  useEffect(() => {
-    if (currentView === "listWeek") {
-      const timer = setTimeout(() => {
-        const calendarEl = calendarRef.current?.getApi().el
-        if (!calendarEl) return
-
-        const eventRows = calendarEl.querySelectorAll(".fc-list-event")
-
-        eventRows.forEach((row: Element) => {
-          const timeCell = row.querySelector(".fc-list-event-time")
-          const titleCell = row.querySelector(
-            ".fc-list-event-title"
-          ) as HTMLElement
-
-          if (timeCell && titleCell) {
-            const timeText = timeCell.textContent?.trim() || ""
-            if (timeText) {
-              titleCell.setAttribute("data-time", timeText)
-            }
-          }
-        })
-      }, 100)
-
-      return () => clearTimeout(timer)
-    }
-  }, [currentView, currentDate, events, calendarRef])
 }
 
 /* ============================================================================
@@ -615,8 +529,8 @@ const ModalEventList = ({
 }: {
   isOpen: boolean
   onClose: (open: boolean) => void
-  events: MoreLinkArg["allSegs"]
-  onEventClick: (event: EventClickArg["event"]) => void
+  events: EventSegment[]
+  onEventClick: (event: EventClickInfo["event"]) => void
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -628,8 +542,9 @@ const ModalEventList = ({
         <ScrollArea className="max-h-[calc(80vh-300px)] pr-4">
           <div className="grid gap-2">
             {events.map((args, index) => {
-              const { start, end, title, backgroundColor, textColor } =
-                args.event
+              // v7 renamed the event colors: backgroundColor -> color,
+              // textColor -> contrastColor
+              const { start, end, title, color, contrastColor } = args.event
               const { isEnd, isStart } = args
               const startTime = start ? dayjs(start).format("HH:mm") : null
               const endTime = end ? dayjs(end).format("HH:mm") : null
@@ -640,8 +555,8 @@ const ModalEventList = ({
                 <div
                   key={index}
                   style={{
-                    backgroundColor,
-                    color: textColor,
+                    backgroundColor: color,
+                    color: contrastColor,
                   }}
                   className={cn(
                     "custom-calendar-event cursor-pointer rounded-md p-2 transition-all hover:opacity-90",
@@ -653,7 +568,7 @@ const ModalEventList = ({
                       "!rtl:rounded-tl-none !rtl:rounded-bl-none rounded-tr-none! rounded-br-none!"
                   )}
                   onClick={() =>
-                    onEventClick(args.event as EventClickArg["event"])
+                    onEventClick(args.event as EventClickInfo["event"])
                   }
                 >
                   <div className="flex w-full flex-col">
@@ -681,8 +596,8 @@ const EventItem = ({
   info,
   calendarRef,
 }: EventItemProps & { calendarRef: React.RefObject<any> }) => {
-  const { start, end, title, backgroundColor, textColor } = info.event
-  const { isEnd, isStart } = info
+  const { start, end, title } = info.event
+  const { isEnd, isStart, color, contrastColor } = info
   const startTime = start ? dayjs(start).format("HH:mm") : null
   const endTime = end ? dayjs(end).format("HH:mm") : null
   const startEndTime = [startTime, endTime].filter(Boolean).join("-")
@@ -714,9 +629,9 @@ const EventItem = ({
               delay: indexDelay,
             }}
             style={{
-              backgroundColor,
-              color: textColor,
-              // border: `1px solid ${textColor}`,
+              backgroundColor: color,
+              color: contrastColor,
+              // border: `1px solid ${contrastColor}`,
               willChange: "transform, opacity",
             }}
             className={cn(
@@ -876,7 +791,9 @@ const CalendarView = (props: CalendarViewProps) => {
     wrapperClass,
     isLoading = false,
     showHeader = true,
-    showAllDay = true,
+    // v6 hid the all-day row with CSS and reordered it via DOM surgery, so it
+    // was never visible. v7 controls it with the `allDaySlot` option instead.
+    showAllDay = false,
     showAgendaTab = true,
     initialView = "dayGridMonth",
     onEventClick,
@@ -900,7 +817,7 @@ const CalendarView = (props: CalendarViewProps) => {
     end: new Date(),
   })
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const [modalEvents, setModalEvents] = useState<MoreLinkArg["allSegs"]>([])
+  const [modalEvents, setModalEvents] = useState<EventSegment[]>([])
 
   // Computed values
   const currentMonth = useMemo(() => {
@@ -933,10 +850,8 @@ const CalendarView = (props: CalendarViewProps) => {
     setCurrentDate,
     setViewRange
   )
-  useAllDayRowLayout(currentView, currentDate, showAllDay, calendarRef)
   useCalendarViewSync(currentView, calendarRef)
   useSmoothScrollToCurrentTime(currentView, currentDate, calendarRef)
-  useListViewRestructure(currentView, currentDate, rest.events, calendarRef)
 
   // Event handlers
   const handleViewChange = (newView: string) => {
@@ -969,7 +884,7 @@ const CalendarView = (props: CalendarViewProps) => {
     setCurrentDate(newDate.format("YYYY-MM-DD"))
   }
 
-  const handleEventClick = (event: EventClickArg["event"]) => {
+  const handleEventClick = (event: EventClickInfo["event"]) => {
     onEventClick?.(event)
   }
 
@@ -1013,6 +928,7 @@ const CalendarView = (props: CalendarViewProps) => {
               timeGridPlugin,
               listPlugin,
               interactionPlugin,
+              classicThemePlugin,
             ]}
             initialView={currentView}
             headerToolbar={false}
@@ -1022,10 +938,9 @@ const CalendarView = (props: CalendarViewProps) => {
                 : "800px"
             }
             displayEventEnd={true}
-            windowResizeDelay={0}
-            allDaySlot={false}
+            allDaySlot={showAllDay}
             allDayText=""
-            dayCellContent={(dayInfo) => (
+            dayCellTopContent={(dayInfo) => (
               <DayRender info={dayInfo} currentView={currentView} />
             )}
             eventContent={(eventInfo) => (
@@ -1034,14 +949,40 @@ const CalendarView = (props: CalendarViewProps) => {
             dayHeaderContent={(headerInfo) => (
               <DayHeader info={headerInfo} currentView={currentView} />
             )}
-            moreLinkClassNames="w-full flex items-center justify-center p-1! mb-1 hover:bg-accent! hover:text-accent-foreground! text-sm!"
+            /* v7 styling: options replace the old `.fc-*` CSS overrides */
+            dayHeaderClass="bg-card border-border border-b"
+            dayHeaderInnerClass="text-foreground py-3 text-sm font-medium"
+            dayCellClass={(info) =>
+              cn(info.isToday && "bg-accent/20", info.isOther && "bg-muted/30")
+            }
+            dayCellTopClass="p-1"
+            eventClass="border-0 bg-transparent shadow-none outline-none"
+            eventInnerClass="text-xs"
+            /* the event body is fully custom, so hide the theme's dot slot */
+            listItemEventBeforeClass="hidden"
+            highlightClass="bg-accent/50"
+            nowIndicatorLineClass="border-primary"
+            nowIndicatorDotClass="border-primary"
+            slotHeaderClass="border-0"
+            slotHeaderInnerClass="text-muted-foreground text-xs font-medium"
+            slotLaneClass="border-border"
+            nonBusinessHoursClass="bg-muted/50"
+            listDayHeaderClass="bg-muted/30"
+            listDayHeaderInnerClass="text-foreground"
+            listItemEventClass="text-foreground hover:bg-accent/50"
+            listItemEventTimeClass="text-muted-foreground mb-1.5 block text-xs font-medium tracking-wide uppercase"
+            listItemEventTitleClass="text-foreground block w-full text-sm font-medium"
+            moreLinkClass="w-full flex items-center justify-center p-1 mb-1 hover:bg-accent hover:text-accent-foreground text-sm"
+            /* `moreLinkClick` opens ModalEventList; the built-in popover still
+               opens underneath it, so keep it hidden like v6 did */
+            popoverClass="opacity-0 pointer-events-none"
             views={{
               dayGridMonth: {
                 dayMaxEvents: 2,
-                moreLinkClick: (info: MoreLinkArg) => {
+                moreLinkClick: ((info) => {
                   setIsModalOpen(true)
                   setModalEvents(info.allSegs)
-                },
+                }) as MoreLinkHandler,
                 moreLinkContent: (args) => {
                   return `+${args.num} lagi`
                 },
@@ -1050,10 +991,12 @@ const CalendarView = (props: CalendarViewProps) => {
                 dayMaxEvents: true,
                 duration: { days: 7 },
                 slotDuration: "00:15:00",
-                slotLabelInterval: "01:00:00",
+                slotHeaderInterval: "01:00:00",
+                slotMinHeight: 80,
               },
               timeGridDay: {
                 dayMaxEvents: true,
+                slotMinHeight: 80,
               },
               listWeek: {
                 duration: { days: 7 },
@@ -1062,15 +1005,20 @@ const CalendarView = (props: CalendarViewProps) => {
                   month: "long",
                   day: "numeric",
                 },
-                listDaySideFormat: false,
+                // v7 ignores `listDayAltFormat: false` (the refiner turns it
+                // into null, which falls back to the default format), so the
+                // secondary header (level 1) is emptied here instead.
+                listDayAltFormat: false,
+                listDayHeaderContent: (info) =>
+                  info.level === 0 ? info.text : "",
               },
             }}
-            slotLabelFormat={{
+            slotHeaderFormat={{
               hour: "2-digit",
               minute: "2-digit",
               hour12: false,
             }}
-            slotLabelContent={(args) => (
+            slotHeaderContent={(args) => (
               <SlotLabel args={args} currentView={currentView} />
             )}
             slotDuration={

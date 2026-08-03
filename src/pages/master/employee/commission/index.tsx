@@ -84,7 +84,7 @@ const EmployeeCommission = () => {
     queryKey: [
       QUERY_KEY.employeeCommission,
       tableData,
-      commissionFilter.length,
+      commissionFilter,
       dateRange,
     ],
     initialPageParam: 1,

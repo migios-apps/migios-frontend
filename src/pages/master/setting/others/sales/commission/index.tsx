@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
@@ -80,6 +80,7 @@ const LoadingCommissionSetting = () => {
 const CommissionSetting = () => {
   const [formType, setFormType] = React.useState<"create" | "update">("update")
   const formProps = useCommissionForm()
+  const { setValue } = formProps
   const queryClient = useQueryClient()
   const club = useSessionUser((state) => state.club)
   const {
@@ -90,34 +91,34 @@ const CommissionSetting = () => {
   } = formProps
   const watchData = watch()
 
-  const { isLoading } = useQuery({
+  const { data: commissionData, isLoading } = useQuery({
     queryKey: [QUERY_KEY.commissionSetting],
-    queryFn: async () => {
-      const res = await apiGetCommissionList()
-      const commissionSetting = res.data[0] as CommissionSettingType | undefined
-      if (commissionSetting) {
-        setFormType("update")
-        formProps.setValue("id", commissionSetting.id)
-        formProps.setValue("club_id", commissionSetting.club_id)
-        formProps.setValue(
-          "commission_sales_by_item_before_tax",
-          commissionSetting.commission_sales_by_item_before_tax
-        )
-        formProps.setValue(
-          "commission_sales_by_item_before_discount",
-          commissionSetting.commission_sales_by_item_before_discount
-        )
-        formProps.setValue(
-          "commission_prorate_by_total_sales",
-          commissionSetting.commission_prorate_by_total_sales
-        )
-        formProps.setValue("service", commissionSetting.service)
-        formProps.setValue("session", commissionSetting.session)
-        formProps.setValue("class", commissionSetting.class)
-      }
-      return res
-    },
+    queryFn: apiGetCommissionList,
   })
+
+  useEffect(() => {
+    const commissionSetting = commissionData?.data[0] as
+      CommissionSettingType | undefined
+    if (!commissionSetting) return
+    setFormType("update")
+    setValue("id", commissionSetting.id)
+    setValue("club_id", commissionSetting.club_id)
+    setValue(
+      "commission_sales_by_item_before_tax",
+      commissionSetting.commission_sales_by_item_before_tax
+    )
+    setValue(
+      "commission_sales_by_item_before_discount",
+      commissionSetting.commission_sales_by_item_before_discount
+    )
+    setValue(
+      "commission_prorate_by_total_sales",
+      commissionSetting.commission_prorate_by_total_sales
+    )
+    setValue("service", commissionSetting.service)
+    setValue("session", commissionSetting.session)
+    setValue("class", commissionSetting.class)
+  }, [commissionData, setValue])
 
   const handlePrefecth = () => {
     queryClient.invalidateQueries({ queryKey: [QUERY_KEY.commissionSetting] })

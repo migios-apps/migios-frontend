@@ -9,7 +9,7 @@ import {
   apiUpdateRole,
 } from "@/services/api/settings/Role"
 import { ArrowLeft, Trash2 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { cn } from "@/lib/utils"
 import AlertConfirm from "@/components/ui/alert-confirm"
 import BottomStickyBar from "@/components/ui/bottom-sticky-bar"

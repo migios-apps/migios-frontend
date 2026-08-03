@@ -11,7 +11,7 @@ import {
 import { apiGetSpecializations } from "@/services/api/GeneralService"
 import { apiGetRoleList } from "@/services/api/settings/Role"
 import { ArrowLeft, Trash2, User } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { dayjs } from "@/utils/dayjs"

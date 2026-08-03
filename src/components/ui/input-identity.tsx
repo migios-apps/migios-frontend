@@ -20,8 +20,10 @@ export const DEFAULT_IDENTITY_TYPE_OPTIONS: IdentityTypeOption[] = [
   { key: "passport", name: "Passport" },
 ]
 
-export interface InputIdentityProps
-  extends Omit<React.ComponentProps<typeof Input>, "value" | "onChange"> {
+export interface InputIdentityProps extends Omit<
+  React.ComponentProps<typeof Input>,
+  "value" | "onChange"
+> {
   /**
    * Nilai identity type yang dipilih
    */
