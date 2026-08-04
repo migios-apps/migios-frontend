@@ -20,6 +20,15 @@ export interface DiscountListType {
   discount_amount: number
   loyalty_reward_id?: number | null
   voucher_id?: number | null
+  voucher_code?: string | null
+  voucher_name?: string | null
+  loyalty_reward_name?: string | null
+  loyalty_reward_type?: string | null
+  source?: "voucher" | "loyalty_reward" | "manual"
+  label?: string
+  fdiscount?: string
+  applied_amount?: number
+  fapplied_amount?: string
 }
 
 export interface SalesItem {

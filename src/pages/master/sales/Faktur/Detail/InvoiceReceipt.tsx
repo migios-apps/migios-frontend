@@ -72,6 +72,27 @@ const InvoiceReceipt = ({ detail }: InvoiceReceiptProps) => {
               <span className="font-semibold">Subtotal</span>
               <span>{detail?.fsubtotal_net_amount}</span>
             </div>
+            {(detail?.discounts ?? [])
+              .filter((discount) => (discount.applied_amount ?? 0) !== 0)
+              .map((discount, index) => (
+                <div
+                  key={`${discount.label ?? "diskon"}-${index}`}
+                  className="mb-1 flex justify-between gap-2 text-xs"
+                >
+                  <span>
+                    {discount.label ?? "Diskon"}
+                    {discount.discount_type === "percent" &&
+                    discount.source !== "manual"
+                      ? ` (${discount.discount_amount}%)`
+                      : ""}
+                  </span>
+                  <span>
+                    {(discount.applied_amount ?? 0) > 0
+                      ? `-${discount.fapplied_amount}`
+                      : discount.fapplied_amount}
+                  </span>
+                </div>
+              ))}
             {detail?.total_discount && detail.total_discount !== 0 ? (
               <div className="mb-1 flex justify-between text-xs">
                 <span className="font-semibold">Total Diskon</span>

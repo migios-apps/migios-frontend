@@ -14,6 +14,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   const routeInvoice = "/settings/others/invoice"
   const routeLoyaltyPoint = "/settings/others/loyalty-point"
   const routeMembership = "/settings/others/membership"
+  const routeVoucher = "/settings/others/voucher"
 
   useEffect(() => {
     if (activeTabRef.current && tabListRef.current) {
@@ -37,6 +38,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
     { route: routeTax, label: "Pajak" },
     { route: routeInvoice, label: "Invoice" },
     { route: routeLoyaltyPoint, label: "Poin Loyalitas" },
+    { route: routeVoucher, label: "Voucher" },
     { route: routeMembership, label: "Keanggotaan" },
   ]
 

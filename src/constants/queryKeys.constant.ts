@@ -26,6 +26,8 @@ export const QUERY_KEY = {
   financialCategory: "financialCategory",
   financialRecord: "financialRecord",
   products: "products",
+  vouchers: "vouchers",
+  availableVouchers: "availableVouchers",
   classes: "classes",
   memberAttendance: "memberAttendance",
   memberAttendanceLog: "memberAttendanceLog",

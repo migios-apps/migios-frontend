@@ -296,6 +296,11 @@ export const validationTransactionSchema = Yup.object().shape({
           .transform((value) => (isNaN(value) ? undefined : value))
           .nullable()
           .optional(),
+        voucher_id: Yup.number()
+          .transform((value) => (isNaN(value) ? undefined : value))
+          .nullable()
+          .optional(),
+        voucher_code: Yup.string().nullable().optional(),
       })
     )
     .default([]),

@@ -229,8 +229,37 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                       {detail?.fsubtotal_net_amount}
                     </span>
                   </div>
+                  {(detail?.discounts ?? []).filter(
+                    (discount) => (discount.applied_amount ?? 0) !== 0
+                  ).length > 0 ? (
+                    <div className="space-y-1">
+                      {(detail?.discounts ?? [])
+                        .filter(
+                          (discount) => (discount.applied_amount ?? 0) !== 0
+                        )
+                        .map((discount, index) => (
+                          <div
+                            key={`${discount.label ?? "diskon"}-${index}`}
+                            className="flex justify-between gap-2 text-xs"
+                          >
+                            <span className="text-muted-foreground">
+                              {discount.label ?? "Diskon"}
+                              {discount.discount_type === "percent" &&
+                              discount.source !== "manual"
+                                ? ` (${discount.discount_amount}%)`
+                                : ""}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {(discount.applied_amount ?? 0) > 0
+                                ? `-${discount.fapplied_amount}`
+                                : discount.fapplied_amount}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  ) : null}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Diskon:</span>
+                    <span className="text-muted-foreground">Total Diskon:</span>
                     <span className="text-foreground font-medium">
                       {detail?.total_discount > 0
                         ? `-${detail?.ftotal_discount}`
@@ -281,6 +310,22 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                       <span>Point Diperoleh:</span>
                       <span className="font-medium">
                         +{detail.point_earned} Pts
+                      </span>
+                    </div>
+                  ) : null}
+                  {detail?.point_redeemed && detail.point_redeemed !== 0 ? (
+                    <div className="text-muted-foreground flex justify-between">
+                      <span>Point Digunakan:</span>
+                      <span className="font-medium">
+                        -{detail.point_redeemed} Pts
+                      </span>
+                    </div>
+                  ) : null}
+                  {detail?.point_returned && detail.point_returned !== 0 ? (
+                    <div className="text-muted-foreground flex justify-between">
+                      <span>Point Dikembalikan:</span>
+                      <span className="font-medium">
+                        +{detail.point_returned} Pts
                       </span>
                     </div>
                   ) : null}

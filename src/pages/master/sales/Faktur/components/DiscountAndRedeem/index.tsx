@@ -32,6 +32,16 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
 }) => {
   const { watch, control, setValue } = formPropsTransaction
   const watchTransaction = watch()
+
+  const voucherSubtotal = React.useMemo(
+    () =>
+      (watchTransaction.items ?? []).reduce(
+        (total: number, item: { sell_price?: number }) =>
+          total + Number(item?.sell_price ?? 0),
+        0
+      ),
+    [watchTransaction.items]
+  )
   const { append: appendTransactionItem } = useFieldArray({
     control,
     name: "items",
@@ -64,6 +74,8 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
       min_purchase?: number
       max_discount?: number
       valid_until?: string
+      discount_amount: number
+      eligible?: boolean
     }>
   >([])
 
@@ -129,6 +141,8 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
     min_purchase?: number
     max_discount?: number
     valid_until?: string
+    discount_amount: number
+    eligible?: boolean
   }) => {
     // Cek apakah voucher sudah ditambahkan (di form state atau pending)
     const isAlreadyAddedInForm = discountFields.some((_, index) => {
@@ -183,9 +197,10 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
     if (pendingVouchers.length > 0) {
       pendingVouchers.forEach((voucher) => {
         appendDiscount({
-          discount_type: voucher.discount_type,
-          discount_amount: voucher.discount_value,
+          discount_type: "nominal",
+          discount_amount: voucher.discount_amount,
           loyalty_reward_id: null,
+          voucher_id: voucher.id,
           voucher_code: voucher.code,
         } as any)
       })
@@ -310,9 +325,7 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="discount">Diskon</TabsTrigger>
                   <TabsTrigger value="loyalty">Redeem Poin</TabsTrigger>
-                  <TabsTrigger value="voucher" disabled>
-                    Voucher
-                  </TabsTrigger>
+                  <TabsTrigger value="voucher">Voucher</TabsTrigger>
                 </TabsList>
 
                 <TabsContent
@@ -344,6 +357,8 @@ const DiscountAndRedeem: React.FC<DiscountAndRedeemProps> = ({
                 <TabsContent value="voucher" className="flex-1 overflow-hidden">
                   <VoucherTabContent
                     formPropsTransaction={formPropsTransaction}
+                    subtotal={voucherSubtotal}
+                    memberId={watchTransaction.member?.id ?? undefined}
                     pendingVouchers={pendingVouchers}
                     onSelectVoucher={handleSelectVoucher}
                   />

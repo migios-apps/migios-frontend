@@ -35,6 +35,16 @@ export const othersSettingsRoute: Routes = [
     },
   },
   {
+    path: "/settings/others/voucher",
+    component: lazy(() => import("@/pages/master/setting/others/voucher")),
+    authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
+  },
+  {
     path: "/settings/others/membership",
     component: lazy(() => import("@/pages/master/setting/others/membership")),
     authority: [],

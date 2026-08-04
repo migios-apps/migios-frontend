@@ -120,6 +120,7 @@ const EditSales = () => {
               discount_type: d.discount_type,
               discount_amount: d.discount_amount,
               loyalty_reward_id: d.loyalty_reward_id || undefined,
+              voucher_id: d.voucher_id || undefined,
             }))
           : [],
         due_date: salesData.due_date

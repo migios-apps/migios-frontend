@@ -9,6 +9,7 @@ import useInfiniteScroll from "@/utils/hooks/useInfiniteScroll"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { currencyFormat } from "@/components/ui/input-currency"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -141,15 +142,23 @@ const LoyaltyTabContent: React.FC<LoyaltyTabContentProps> = ({
               key={reward.id}
               className={`p-0 shadow-none transition-colors ${
                 isAdded
-                  ? "border-primary cursor-pointer"
+                  ? "border-primary bg-primary/5 cursor-pointer"
                   : "hover:bg-accent cursor-pointer"
               }`}
               onClick={() => onSelectReward(reward)}
             >
               <CardContent className="flex flex-col gap-2 p-4">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={isAdded}
+                    className="pointer-events-none mt-1"
+                    tabIndex={-1}
+                    aria-label={
+                      isAdded ? "Reward dipakai" : "Reward tidak dipakai"
+                    }
+                  />
                   <div className="flex-1 space-y-2">
-                    <div className="m-0 flex items-center gap-2">
+                    <div className="m-0 flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold">{reward.name}</h3>
                       <Badge variant="outline">
                         {reward.type === "discount" ? (
@@ -164,6 +173,7 @@ const LoyaltyTabContent: React.FC<LoyaltyTabContentProps> = ({
                           </>
                         )}
                       </Badge>
+                      {isAdded ? <Badge>Dipakai</Badge> : null}
                     </div>
 
                     {reward.type === "discount" && (

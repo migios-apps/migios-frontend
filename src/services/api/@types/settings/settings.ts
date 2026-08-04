@@ -11,6 +11,9 @@ export interface SettingsType {
   loyalty_expired_value_by_total_order: number
   loyalty_earn_point_with_multiple: boolean
   loyalty_earn_points_when_using_points: boolean
+  voucher_enabled?: number
+  voucher_stack_with_loyalty?: boolean
+  voucher_max_per_transaction?: number
   sales_is_rounding?: number
   sales_rounding_value?: number
   sales_rounding_mode?: "up" | "down"

@@ -88,6 +88,7 @@ const validationSchema = yup.object().shape({
     ),
   loyalty_earn_point_with_multiple: yup.boolean().default(false),
   loyalty_earn_points_when_using_points: yup.boolean().default(true),
+  voucher_stack_with_loyalty: yup.boolean().default(false),
 })
 
 type LoyaltyPointSettingsFormSchema = yup.InferType<typeof validationSchema>
@@ -100,6 +101,7 @@ const INITIAL_SETTINGS: LoyaltyPointSettingsFormSchema = {
   loyalty_expired_value_by_total_order: 0,
   loyalty_earn_point_with_multiple: false,
   loyalty_earn_points_when_using_points: true,
+  voucher_stack_with_loyalty: false,
 }
 
 const LoyaltyPointSettingsPage = () => {
@@ -138,6 +140,8 @@ const LoyaltyPointSettingsPage = () => {
           settingsData.loyalty_earn_point_with_multiple ?? false,
         loyalty_earn_points_when_using_points:
           settingsData.loyalty_earn_points_when_using_points ?? true,
+        voucher_stack_with_loyalty:
+          settingsData.voucher_stack_with_loyalty ?? false,
       })
     }
   }, [settingsData, reset])
@@ -267,6 +271,29 @@ const LoyaltyPointSettingsPage = () => {
                         Jika diaktifkan, customer tetap mendapatkan poin dari
                         pembelian meskipun mereka menggunakan poin untuk redeem
                         reward.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 border-t pt-4">
+                      <div className="flex items-center justify-between">
+                        <FormLabel
+                          htmlFor="voucher_stack_with_loyalty"
+                          className="text-sm"
+                        >
+                          Voucher tetap bisa dipakai saat menukar poin
+                        </FormLabel>
+                        <Switch
+                          id="voucher_stack_with_loyalty"
+                          checked={watchData.voucher_stack_with_loyalty}
+                          onCheckedChange={(checked) =>
+                            setValue("voucher_stack_with_loyalty", checked)
+                          }
+                        />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        Jika dinonaktifkan, transaksi yang menukar poin loyalty
+                        tidak dapat memakai voucher. Pengaturan ini sama dengan
+                        yang ada di tab Voucher.
                       </p>
                     </div>
                   </CardContent>
