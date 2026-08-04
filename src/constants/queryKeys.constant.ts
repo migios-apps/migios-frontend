@@ -52,4 +52,10 @@ export const QUERY_KEY = {
   commissionProduct: "commissionProduct",
   specializations: "specializations",
   trainerActiveMembers: "trainerActiveMembers",
+  reportSales: "reportSales",
+  reportPackages: "reportPackages",
+  reportProducts: "reportProducts",
+  reportFinance: "reportFinance",
+  reportMembers: "reportMembers",
+  reportEmployee: "reportEmployee",
 }

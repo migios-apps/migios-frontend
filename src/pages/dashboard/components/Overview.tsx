@@ -1,11 +1,10 @@
-import type { ReactNode } from "react"
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import ReportKpiCard from "@/pages/master/reports/components/ReportKpiCard"
 import { apiGetOverviewChart } from "@/services/api/analytic"
 import { Moneys } from "iconsax-reactjs"
 import { UserCheck, UserPlus } from "lucide-react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
@@ -29,17 +28,6 @@ import { currencyFormat } from "@/components/ui/input-currency"
 import { Skeleton } from "@/components/ui/skeleton"
 
 type Category = "sales" | "members" | "attendance"
-
-type StatisticCardProps = {
-  title: string
-  value: number | ReactNode
-  icon: ReactNode
-  iconClass: string
-  label: Category
-  compareFrom?: string | ReactNode
-  active: boolean
-  onClick: (label: Category) => void
-}
 
 const chartConfig = {
   sales: {
@@ -67,43 +55,6 @@ const chartConfig = {
     color: "var(--primary)",
   },
 } satisfies ChartConfig
-
-const StatisticCard = (props: StatisticCardProps) => {
-  const { title, value, label, icon, iconClass, active, compareFrom, onClick } =
-    props
-
-  return (
-    <button
-      className={cn(
-        "cursor-pointer rounded-2xl p-4 transition duration-150 outline-none ltr:text-left rtl:text-right",
-        active
-          ? "bg-background ring-border shadow-md ring-1"
-          : "border-border hover:bg-accent/50 border"
-      )}
-      onClick={() => onClick(label)}
-    >
-      <div className="relative flex justify-between gap-2 md:flex-col-reverse 2xl:flex-row">
-        <div>
-          <div className="mb-2 text-sm font-semibold">{title}</div>
-          <div className="mb-1">{value}</div>
-          {compareFrom ? (
-            <div className="inline-flex flex-wrap items-center gap-1">
-              {compareFrom}
-            </div>
-          ) : null}
-        </div>
-        <div
-          className={cn(
-            "flex max-h-12 min-h-12 max-w-12 min-w-12 items-center justify-center rounded-full text-2xl",
-            iconClass
-          )}
-        >
-          {icon}
-        </div>
-      </div>
-    </button>
-  )
-}
 
 const Overview = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category>("sales")
@@ -188,7 +139,7 @@ const Overview = () => {
         ) : (
           <>
             <div className="bg-muted/50 grid grid-cols-1 gap-4 rounded-2xl p-3 md:grid-cols-3">
-              <StatisticCard
+              <ReportKpiCard
                 title="Total penjualan"
                 value={
                   <h3 className="text-2xl font-semibold">
@@ -197,18 +148,17 @@ const Overview = () => {
                 }
                 iconClass="bg-primary/10 text-primary"
                 icon={<Moneys className="h-8 w-8" variant="Bulk" />}
-                label="sales"
                 active={selectedCategory === "sales"}
-                compareFrom={
+                hint={
                   <span className="flex flex-col text-sm">
                     {dayjs(valueDateRangePicker.date[0]).format("DD MMM YYYY")}{" "}
                     -{" "}
                     {dayjs(valueDateRangePicker.date[1]).format("DD MMM YYYY")}
                   </span>
                 }
-                onClick={setSelectedCategory}
+                onClick={() => setSelectedCategory("sales")}
               />
-              <StatisticCard
+              <ReportKpiCard
                 title="Total member baru"
                 value={
                   <h3 className="text-2xl font-semibold">
@@ -219,18 +169,17 @@ const Overview = () => {
                 }
                 iconClass="bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                 icon={<UserPlus className="h-8 w-8" />}
-                label="members"
                 active={selectedCategory === "members"}
-                compareFrom={
+                hint={
                   <span className="flex flex-col text-sm">
                     {dayjs(valueDateRangePicker.date[0]).format("DD MMM YYYY")}{" "}
                     -{" "}
                     {dayjs(valueDateRangePicker.date[1]).format("DD MMM YYYY")}
                   </span>
                 }
-                onClick={setSelectedCategory}
+                onClick={() => setSelectedCategory("members")}
               />
-              <StatisticCard
+              <ReportKpiCard
                 title="Total kehadiran"
                 value={
                   <div className="flex items-center gap-4">
@@ -250,9 +199,8 @@ const Overview = () => {
                 }
                 iconClass="bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400"
                 icon={<UserCheck className="h-8 w-8" />}
-                label="attendance"
                 active={selectedCategory === "attendance"}
-                onClick={setSelectedCategory}
+                onClick={() => setSelectedCategory("attendance")}
               />
             </div>
             {overview && (

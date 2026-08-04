@@ -10,6 +10,7 @@ import { masterRoute } from "./pages/master.route"
 import { measurementRoute } from "./pages/measurement.route"
 import { memberRoute } from "./pages/member.route"
 import { packageRoute } from "./pages/package.route"
+import { reportsRoute } from "./pages/reports.route"
 import { salesRoute } from "./pages/sales.route"
 import { settingsRoute } from "./pages/settings/settings.route"
 import { trainerRoute } from "./pages/trainer.route"
@@ -22,6 +23,7 @@ const protectedRoute: Routes = [
   ...financeRoute,
   ...measurementRoute,
   ...packageRoute,
+  ...reportsRoute,
   ...salesRoute,
   ...classRoute,
   ...accountRoute,
@@ -65,11 +67,6 @@ const protectedRoute: Routes = [
     component: lazy(() => import("@/pages/master/products")),
     authority: [],
   },
-  // {
-  //   path: "/reports",
-  //   component: lazy(() => import("@/pages/master/reports")),
-  //   authority: [],
-  // },
   // {
   //   path: "/testInfinite",
   //   component: lazy(() => import("@/pages/testinfinite")),

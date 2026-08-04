@@ -7,7 +7,7 @@ import { ParamsFilter } from "./@types/api"
 
 export async function apiGetOverviewChart(params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<OverviewChartResponse>({
-    url: `/report/overview`,
+    url: `/report/dashboard/overview`,
     method: "get",
     params,
   })
@@ -15,7 +15,7 @@ export async function apiGetOverviewChart(params?: ParamsFilter) {
 
 export async function apiGetReportHead(params?: ParamsFilter) {
   return ApiService.fetchDataWithAxios<ReportHeadResponse>({
-    url: `/report/head`,
+    url: `/report/dashboard/head`,
     method: "get",
     params,
   })
