@@ -176,7 +176,54 @@ Komponen `ReportFilterBar`.
 ### 3.3 Konvensi visual
 
 Setiap tab: baris KPI card → 1-2 chart card → tabel detail (`DataTable` + `DataTableExport`).
-Warna chart pakai token `var(--chart-1..5)` lewat `ChartContainer`.
+
+### 3.4 Palet warna chart
+
+Token lama `--chart-1..5` adalah ramp **sequential** — lima tingkat gelap-terang dari satu hue
+oranye (44°, 37°, 35°, 37°, 38°). Memakainya sebagai palet kategorikal membuat seluruh chart
+tampak satu golongan warna. Laporan sekarang memakai token terpisah:
+
+| Peran | Token | Light | Dark |
+|---|---|---|---|
+| Kategorikal 1 (oranye brand) | `--chart-cat-1` | `#eb6834` | `#d95926` |
+| Kategorikal 2 (aqua) | `--chart-cat-2` | `#1baf7a` | `#199e70` |
+| Kategorikal 3 (kuning) | `--chart-cat-3` | `#eda100` | `#c98500` |
+| Kategorikal 4 (magenta) | `--chart-cat-4` | `#e87ba4` | `#d55181` |
+| Kategorikal 5 (hijau) | `--chart-cat-5` | `#008300` | `#22a06b` |
+| Kategorikal 6 (violet) | `--chart-cat-6` | `#4a3aa7` | `#9085e9` |
+| Kategorikal 7 (merah) | `--chart-cat-7` | `#e34948` | `#e66767` |
+| Kategorikal 8 (biru) | `--chart-cat-8` | `#2a78d6` | `#3987e5` |
+| Seri ke-9 dan seterusnya | `--chart-cat-other` | abu netral | abu netral |
+| Polaritas positif | `--chart-positive` | `#008300` | `#22a06b` |
+| Polaritas netral | `--chart-neutral` | `#2a78d6` | `#3987e5` |
+| Polaritas negatif | `--chart-negative` | `#e34948` | `#e66767` |
+
+**Aturan pakai:**
+- `getSeriesColor(i)` memberi slot kategorikal secara **berurutan tetap**, tidak diputar. Seri
+  ke-9 ke atas jatuh ke abu netral, bukan mengulang warna slot 1 — pengulangan membuat dua seri
+  berbeda tampak sama.
+- Pasangan polaritas (pemasukan/pengeluaran, earn/redeem, member baru/churn, disetujui/ditolak)
+  memakai `--chart-positive` / `--chart-negative`, bukan slot kategorikal. Chart polaritas selalu
+  hanya 2-3 seri dan tidak pernah dicampur dengan ramp kategorikal penuh.
+- Warna mengikuti **entitas**, bukan peringkatnya. Filter yang mengubah jumlah seri tidak boleh
+  mengecat ulang seri yang tersisa.
+- Dark mode adalah langkah yang **dipilih** untuk permukaan gelap, bukan pembalikan otomatis.
+
+**Hasil validasi** (`scripts/validate_palette.js`, permukaan `#ffffff` light / `#171717` dark):
+urutan 8 slot lolos seluruh gate keras di dua mode — CVD ΔE terburuk antar-slot bersebelahan 9.1
+light / 8.4 dark (target ≥8), normal-vision 19.6 / 19.3 (lantai ≥15).
+
+Dua catatan yang menempel pada palet ini:
+1. **Light mode memberi WARN kontras** untuk aqua (2.82:1), magenta (2.69:1), dan kuning (2.17:1)
+   di atas permukaan putih — di bawah 3:1. Aturan *relief* berlaku: chart yang memakai warna ini
+   wajib punya legend terlihat atau tabel pendamping. Sudah diaudit: seluruh 38 tab memenuhinya.
+2. **Pasangan hijau↔merah ada di warn band CVD** (ΔE 6.4-7.2, di bawah target 8). Ini legal hanya
+   dengan secondary encoding — dipenuhi lewat legend, tooltip, dan tabel di setiap chart polaritas.
+   Kalau nanti ada laporan kebingungan hijau/merah dari pengguna, ganti pasangannya ke biru↔merah
+   (pasangan diverging yang direkomendasikan) — perubahannya cukup di dua token.
+
+Token `--chart-1..5` **tidak diubah** dan masih dipakai `PenjualanHarian`, `AnalyticsTab`
+measurement, serta `chart.constant.ts`. Halaman-halaman itu sengaja tidak disentuh.
 
 ---
 
@@ -508,7 +555,7 @@ src/pages/master/reports/                                       ✅ fondasi sele
     ReportEmptyState.tsx  ReportSectionSkeleton.tsx
     ReportSectionPlaceholder.tsx   sementara, dihapus saat section aslinya jadi
   hooks/
-    useReportFilter.ts         state filter + sinkron URL + `params`
+    useReportFilter.ts         jembatan store <-> URL + `params`
     useReportSection.ts        ?view= <-> section aktif
     useReportExport.ts         exportCsv(), print()
     report-filter-context.ts   ReportFilterContext + useReportFilterParams()
@@ -540,11 +587,36 @@ export default SalesReport
 `ReportPageShell` menyalurkan `filter.params` lewat `ReportFilterContext`, sehingga komponen
 section **tidak menerima props sama sekali**.
 
-**`useReportFilter` adalah bagian terpenting.** Ia memegang state filter, di-seed dari
-`getMenuShortcutDatePickerByType("thisMonth")`, mencerminkannya ke URL (`?from&to&inv&g&cmp`) agar
-laporan bisa dibagikan, dan mengembalikan `{ value, setValue, params }`. `params` adalah objek
-serializable yang dipakai **sekaligus** sebagai `params` axios dan sebagai isi query key — itulah
-yang memuaskan aturan ESLint `@tanstack/query/exhaustive-deps` yang aktif di proyek ini.
+**State filter dipegang zustand, bukan per-halaman.** `ReportsLayout` berpindah menu lewat
+`navigate(path)` yang membuang query string, sehingga filter yang disimpan hanya di URL akan
+tereset setiap kali user ganti menu laporan. Karena itu sumber kebenarannya adalah
+[src/stores/report-filter-store.ts](src/stores/report-filter-store.ts), dan URL berperan sebagai
+cermin supaya link tetap bisa dibagikan.
+
+`useReportFilter()` menggabungkan keduanya dengan aturan:
+
+| Situasi | Yang menang | Alasan |
+|---|---|---|
+| URL membawa `from` + `to` (deep link, reload, bookmark) | **URL**, lalu store disamakan | pemilik link berhak menentukan rentangnya |
+| URL kosong (baru pindah menu laporan) | **store**, lalu URL ditulis ulang | inilah yang membuat filter ikut berpindah tab |
+
+Nilai dibaca langsung saat render (`urlValue ?? storeValue`), bukan lewat efek — jadi request
+pertama sesudah pindah menu sudah memakai filter yang benar, tidak ada request terbuang dengan
+rentang default. Efek hanya menyinkronkan arah sebaliknya, dan keduanya berhenti sendiri karena
+setelah URL terisi cabang `urlValue` selalu early-return.
+
+Parameter `r` di URL menyimpan **tipe shortcut**-nya (`thisMonth`, `lastMonth`, …), bukan hanya
+tanggal absolut. Tanpa itu, reload akan selalu menampilkan "Kustom" walaupun user memilih
+"Bulan ini".
+
+**Store sengaja tidak di-`persist` ke localStorage.** `range` menyimpan tanggal absolut; kalau
+dipersistenkan, "Bulan ini" yang dipilih Agustus akan tetap menampilkan Agustus saat dibuka
+September dengan label yang salah. Persistensi lintas reload sudah tercukupi lewat URL, yang
+selalu ditulis ulang dan mencerminkan rentang sebenarnya.
+
+`params` adalah objek serializable yang dipakai **sekaligus** sebagai `params` axios dan sebagai
+isi query key — itulah yang memuaskan aturan ESLint `@tanstack/query/exhaustive-deps` yang aktif
+di proyek ini.
 
 #### Dipakai apa adanya, jangan dibuat ulang
 
@@ -853,7 +925,8 @@ infrastruktur menumpuk alih-alih bercabang.
 2. `npx vite build --mode development` — harus sukses.
 3. Buka halaman **dashboard** — kartu statistik dan grafik overview harus tampil sama seperti sebelumnya (kartunya sekarang `ReportKpiCard`), dan di tab Network request-nya menuju `/report/dashboard/overview` + `/report/dashboard/head`.
 4. `npm run dev`, buka keenam menu dari sidebar — semua ter-render, tidak ada 404.
-5. Ganti rentang tanggal, granularitas, dan toggle — URL ikut berubah (`?from&to&inv&g&cmp&cmpm`), dan `queryKey` menyertakan semua nilai filter (aturan `exhaustive-deps`).
-6. Salin URL lengkap dengan `?view=` dan buka di tab baru — section **dan** filter yang sama terbuka.
-7. Cek dark mode dan layar sempit (kedua tab bar harus bisa scroll horizontal).
-8. Tidak ada satupun komentar di kode baru (aturan keras `CLAUDE.md`).
+5. Ganti rentang tanggal, granularitas, dan toggle — URL ikut berubah (`?from&to&r&inv&g&cmp&cmpm`), dan `queryKey` menyertakan semua nilai filter (aturan `exhaustive-deps`).
+6. Set filter di satu menu laporan, lalu pindah ke menu laporan lain lewat tab atas — filter harus **tetap sama**, dan tab Network tidak boleh menampilkan request dengan rentang default sebelum request yang benar.
+7. Salin URL lengkap dengan `?view=` dan buka di tab baru — section **dan** filter yang sama terbuka.
+8. Cek dark mode dan layar sempit (kedua tab bar harus bisa scroll horizontal).
+9. Tidak ada satupun komentar di kode baru (aturan keras `CLAUDE.md`).

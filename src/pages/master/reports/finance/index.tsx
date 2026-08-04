@@ -3,7 +3,7 @@ import useReportFilter from "../hooks/useReportFilter"
 import { financeSections } from "./sections"
 
 const FinanceReport = () => {
-  const filter = useReportFilter({ defaultRange: "thisMonth" })
+  const filter = useReportFilter()
 
   return (
     <ReportPageShell

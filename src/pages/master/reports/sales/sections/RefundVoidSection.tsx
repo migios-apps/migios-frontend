@@ -34,8 +34,8 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const trendConfig = buildChartConfig([
-  { key: "refund", label: "Refund", color: "var(--chart-4)" },
-  { key: "void_amount", label: "Void", color: "var(--chart-5)" },
+  { key: "refund", label: "Refund", color: "var(--chart-negative)" },
+  { key: "void_amount", label: "Void", color: "var(--chart-cat-6)" },
 ])
 
 const categoryConfig = buildChartConfig([
@@ -171,14 +171,14 @@ const RefundVoidSection = () => {
           <Line
             dataKey="refund"
             type="monotone"
-            stroke="var(--chart-4)"
+            stroke="var(--chart-negative)"
             dot={false}
             strokeWidth={2}
           />
           <Line
             dataKey="void_amount"
             type="monotone"
-            stroke="var(--chart-5)"
+            stroke="var(--chart-cat-6)"
             dot={false}
             strokeWidth={2}
           />

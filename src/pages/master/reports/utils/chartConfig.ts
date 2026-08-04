@@ -1,9 +1,15 @@
 import type { ChartConfig } from "@/components/ui/chart"
 
-const CHART_COLOR_COUNT = 5
+const CATEGORICAL_SLOTS = 8
+
+export const CHART_POSITIVE = "var(--chart-positive)"
+export const CHART_NEUTRAL = "var(--chart-neutral)"
+export const CHART_NEGATIVE = "var(--chart-negative)"
 
 export const getSeriesColor = (index: number) =>
-  `var(--chart-${(index % CHART_COLOR_COUNT) + 1})`
+  index < CATEGORICAL_SLOTS
+    ? `var(--chart-cat-${index + 1})`
+    : "var(--chart-cat-other)"
 
 export interface ChartSeriesEntry {
   key: string

@@ -28,7 +28,7 @@ import { toKpiCards } from "../../utils/kpiCards"
 
 const growthConfig = buildChartConfig([
   { key: "new_member", label: "Member Baru", color: "var(--primary)" },
-  { key: "cumulative", label: "Kumulatif", color: "var(--chart-3)" },
+  { key: "cumulative", label: "Kumulatif", color: "var(--chart-neutral)" },
 ])
 
 const countConfig = buildChartConfig([{ key: "count", label: "Jumlah" }])
@@ -105,7 +105,7 @@ const MemberSummarySection = () => {
           <Line
             dataKey="cumulative"
             type="monotone"
-            stroke="var(--chart-3)"
+            stroke="var(--chart-neutral)"
             dot={false}
             strokeWidth={2}
           />

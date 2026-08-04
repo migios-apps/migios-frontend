@@ -26,8 +26,8 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const trendConfig = buildChartConfig([
-  { key: "earned", label: "Poin Diperoleh", color: "var(--chart-2)" },
-  { key: "redeemed", label: "Poin Ditukar", color: "var(--chart-4)" },
+  { key: "earned", label: "Poin Diperoleh", color: "var(--chart-positive)" },
+  { key: "redeemed", label: "Poin Ditukar", color: "var(--chart-negative)" },
 ])
 
 const rewardConfig = buildChartConfig([
@@ -107,14 +107,14 @@ const LoyaltySection = () => {
             <Line
               dataKey="earned"
               type="monotone"
-              stroke="var(--chart-2)"
+              stroke="var(--chart-positive)"
               dot={false}
               strokeWidth={2}
             />
             <Line
               dataKey="redeemed"
               type="monotone"
-              stroke="var(--chart-4)"
+              stroke="var(--chart-negative)"
               dot={false}
               strokeWidth={2}
             />

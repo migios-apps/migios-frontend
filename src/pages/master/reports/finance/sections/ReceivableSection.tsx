@@ -24,11 +24,11 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const agingConfig = buildChartConfig([
-  { key: "outstanding", label: "Outstanding", color: "var(--chart-4)" },
+  { key: "outstanding", label: "Outstanding", color: "var(--chart-negative)" },
 ])
 
 const trendConfig = buildChartConfig([
-  { key: "outstanding", label: "Outstanding", color: "var(--chart-4)" },
+  { key: "outstanding", label: "Outstanding", color: "var(--chart-negative)" },
 ])
 
 const AGING_TONE: Record<string, string> = {
@@ -173,9 +173,9 @@ const ReceivableSection = () => {
             <Area
               dataKey="outstanding"
               type="monotone"
-              fill="var(--chart-4)"
+              fill="var(--chart-negative)"
               fillOpacity={0.2}
-              stroke="var(--chart-4)"
+              stroke="var(--chart-negative)"
             />
           </AreaChart>
         </ReportChartCard>

@@ -24,7 +24,7 @@ const ITEM_TYPE_LABELS: Record<string, string> = {
 const revenueConfig = buildChartConfig([{ key: "net", label: "Net Revenue" }])
 
 const quantityConfig = buildChartConfig([
-  { key: "qty_net", label: "Qty Net", color: "var(--chart-2)" },
+  { key: "qty_net", label: "Qty Net", color: "var(--chart-cat-2)" },
 ])
 
 const columns: DataTableColumnDef<SalesItemRow>[] = [

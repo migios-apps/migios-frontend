@@ -40,7 +40,11 @@ const distributionConfig = buildChartConfig([
 
 const audienceConfig = buildChartConfig([
   { key: "new_member", label: "Member Baru" },
-  { key: "repeat_member", label: "Member Berulang", color: "var(--chart-3)" },
+  {
+    key: "repeat_member",
+    label: "Member Berulang",
+    color: "var(--chart-cat-3)",
+  },
 ])
 
 const weekdayColumns: DataTableColumnDef<SalesWeekdayRow>[] = [

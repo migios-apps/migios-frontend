@@ -120,7 +120,10 @@ const LedgerSection = ({ type }: LedgerSectionProps) => {
         {
           key: "amount",
           label,
-          color: type === "income" ? "var(--chart-2)" : "var(--chart-4)",
+          color:
+            type === "income"
+              ? "var(--chart-positive)"
+              : "var(--chart-negative)",
         },
       ]),
     [label, type]
@@ -207,7 +210,11 @@ const LedgerSection = ({ type }: LedgerSectionProps) => {
             <Line
               dataKey="amount"
               type="monotone"
-              stroke={type === "income" ? "var(--chart-2)" : "var(--chart-4)"}
+              stroke={
+                type === "income"
+                  ? "var(--chart-positive)"
+                  : "var(--chart-negative)"
+              }
               dot={false}
               strokeWidth={2}
             />

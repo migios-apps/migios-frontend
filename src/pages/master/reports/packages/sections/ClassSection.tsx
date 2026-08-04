@@ -13,7 +13,11 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const occupancyConfig = buildChartConfig([
-  { key: "occupancy_percent", label: "Okupansi (%)", color: "var(--chart-2)" },
+  {
+    key: "occupancy_percent",
+    label: "Okupansi (%)",
+    color: "var(--chart-cat-2)",
+  },
 ])
 
 const memberConfig = buildChartConfig([
@@ -91,7 +95,11 @@ const ClassSection = () => {
                 />
               }
             />
-            <Bar dataKey="occupancy_percent" fill="var(--chart-2)" radius={2} />
+            <Bar
+              dataKey="occupancy_percent"
+              fill="var(--chart-cat-2)"
+              radius={2}
+            />
           </BarChart>
         </ReportChartCard>
 

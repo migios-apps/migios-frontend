@@ -3,7 +3,7 @@ import useReportFilter from "../hooks/useReportFilter"
 import { employeeSections } from "./sections"
 
 const EmployeeReport = () => {
-  const filter = useReportFilter({ defaultRange: "thisMonth" })
+  const filter = useReportFilter()
 
   return (
     <ReportPageShell

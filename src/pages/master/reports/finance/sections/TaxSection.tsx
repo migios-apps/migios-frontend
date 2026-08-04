@@ -27,7 +27,7 @@ const taxConfig = buildChartConfig([
 ])
 
 const trendConfig = buildChartConfig([
-  { key: "tax", label: "Pajak", color: "var(--chart-2)" },
+  { key: "tax", label: "Pajak", color: "var(--chart-positive)" },
 ])
 
 const columns: DataTableColumnDef<FinanceTaxRow>[] = [
@@ -139,7 +139,7 @@ const TaxSection = () => {
             <Line
               dataKey="tax"
               type="monotone"
-              stroke="var(--chart-2)"
+              stroke="var(--chart-positive)"
               dot={false}
               strokeWidth={2}
             />

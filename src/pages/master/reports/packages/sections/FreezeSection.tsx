@@ -25,7 +25,7 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const trendConfig = buildChartConfig([
-  { key: "freeze_count", label: "Freeze Baru", color: "var(--chart-3)" },
+  { key: "freeze_count", label: "Freeze Baru", color: "var(--chart-neutral)" },
 ])
 
 const statusConfig = buildChartConfig([{ key: "count", label: "Jumlah" }])
@@ -110,7 +110,7 @@ const FreezeSection = () => {
             <Line
               dataKey="freeze_count"
               type="monotone"
-              stroke="var(--chart-3)"
+              stroke="var(--chart-neutral)"
               dot={false}
               strokeWidth={2}
             />

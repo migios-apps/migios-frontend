@@ -18,19 +18,27 @@ import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const chartConfig = buildChartConfig([
-  { key: "base_salary", label: "Gaji Pokok", color: "var(--primary)" },
-  { key: "commission_sales", label: "Komisi Sales", color: "var(--chart-2)" },
+  { key: "base_salary", label: "Gaji Pokok", color: "var(--chart-cat-1)" },
+  {
+    key: "commission_sales",
+    label: "Komisi Sales",
+    color: "var(--chart-cat-2)",
+  },
   {
     key: "commission_service",
     label: "Komisi Service",
-    color: "var(--chart-3)",
+    color: "var(--chart-cat-3)",
   },
   {
     key: "commission_session",
     label: "Komisi Session",
-    color: "var(--chart-4)",
+    color: "var(--chart-cat-4)",
   },
-  { key: "commission_class", label: "Komisi Class", color: "var(--chart-5)" },
+  {
+    key: "commission_class",
+    label: "Komisi Class",
+    color: "var(--chart-cat-5)",
+  },
 ])
 
 const columns: DataTableColumnDef<EmployeePayrollRow>[] = [
@@ -115,14 +123,26 @@ const PayrollSection = () => {
             }
           />
           <ChartLegend />
-          <Bar dataKey="base_salary" stackId="p" fill="var(--primary)" />
-          <Bar dataKey="commission_sales" stackId="p" fill="var(--chart-2)" />
-          <Bar dataKey="commission_service" stackId="p" fill="var(--chart-3)" />
-          <Bar dataKey="commission_session" stackId="p" fill="var(--chart-4)" />
+          <Bar dataKey="base_salary" stackId="p" fill="var(--chart-cat-1)" />
+          <Bar
+            dataKey="commission_sales"
+            stackId="p"
+            fill="var(--chart-cat-2)"
+          />
+          <Bar
+            dataKey="commission_service"
+            stackId="p"
+            fill="var(--chart-cat-3)"
+          />
+          <Bar
+            dataKey="commission_session"
+            stackId="p"
+            fill="var(--chart-cat-4)"
+          />
           <Bar
             dataKey="commission_class"
             stackId="p"
-            fill="var(--chart-5)"
+            fill="var(--chart-cat-5)"
             radius={2}
           />
         </BarChart>

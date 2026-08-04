@@ -30,8 +30,8 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const flowConfig = buildChartConfig([
-  { key: "cash_in", label: "Pemasukan", color: "var(--chart-2)" },
-  { key: "cash_out", label: "Pengeluaran", color: "var(--chart-4)" },
+  { key: "cash_in", label: "Pemasukan", color: "var(--chart-positive)" },
+  { key: "cash_out", label: "Pengeluaran", color: "var(--chart-negative)" },
 ])
 
 const balanceConfig = buildChartConfig([
@@ -148,8 +148,8 @@ const FinanceSummarySection = () => {
             }
           />
           <ChartLegend />
-          <Bar dataKey="cash_in" fill="var(--chart-2)" radius={2} />
-          <Bar dataKey="cash_out" fill="var(--chart-4)" radius={2} />
+          <Bar dataKey="cash_in" fill="var(--chart-positive)" radius={2} />
+          <Bar dataKey="cash_out" fill="var(--chart-negative)" radius={2} />
         </BarChart>
       </ReportChartCard>
 

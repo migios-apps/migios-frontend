@@ -116,7 +116,11 @@ const CashFlowSection = () => {
             {rows.map((row) => (
               <Cell
                 key={row.bucket_key}
-                fill={row.net < 0 ? "var(--chart-4)" : "var(--chart-2)"}
+                fill={
+                  row.net < 0
+                    ? "var(--chart-negative)"
+                    : "var(--chart-positive)"
+                }
               />
             ))}
           </Bar>

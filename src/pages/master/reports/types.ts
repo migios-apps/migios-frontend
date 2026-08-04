@@ -1,20 +1,14 @@
 import type { ComponentType, LazyExoticComponent } from "react"
-import type { DatePickerAIOPropsValue } from "@/components/ui/date-picker/date-picker-aio"
+import type {
+  ReportCompareMode,
+  ReportGranularity,
+} from "@/stores/report-filter-store"
 
-export type ReportGranularity = "auto" | "day" | "week" | "month" | "year"
-
-export type ReportCompareMode = "previous_period" | "previous_year"
-
-export interface ReportFilterValue {
-  range: DatePickerAIOPropsValue
-  useInvoiceDate: boolean
-  granularity: ReportGranularity
-  compare: boolean
-  compareMode: ReportCompareMode
-  employeeId?: number | null
-  categoryId?: number | null
-  rekeningId?: number | null
-}
+export type {
+  ReportCompareMode,
+  ReportFilterValue,
+  ReportGranularity,
+} from "@/stores/report-filter-store"
 
 export interface ReportFilterParams {
   start_date: string

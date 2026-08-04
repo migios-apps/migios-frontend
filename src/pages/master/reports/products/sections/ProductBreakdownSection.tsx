@@ -14,7 +14,7 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const marginConfig = buildChartConfig([
-  { key: "margin_percent", label: "Margin (%)", color: "var(--chart-2)" },
+  { key: "margin_percent", label: "Margin (%)", color: "var(--chart-cat-2)" },
 ])
 
 const columns: DataTableColumnDef<ProductRow>[] = [

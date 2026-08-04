@@ -40,7 +40,7 @@ const cashConfig = buildChartConfig([
 ])
 
 const agingConfig = buildChartConfig([
-  { key: "outstanding", label: "Outstanding", color: "var(--chart-4)" },
+  { key: "outstanding", label: "Outstanding", color: "var(--chart-negative)" },
 ])
 
 const AGING_TONE: Record<string, string> = {

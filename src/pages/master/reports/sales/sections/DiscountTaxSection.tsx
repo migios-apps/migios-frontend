@@ -28,11 +28,19 @@ import { toKpiCards } from "../../utils/kpiCards"
 const sourceConfig = buildChartConfig([{ key: "amount", label: "Nilai" }])
 
 const ratioConfig = buildChartConfig([
-  { key: "discount_ratio", label: "Rasio Diskon (%)", color: "var(--chart-4)" },
+  {
+    key: "discount_ratio",
+    label: "Rasio Diskon (%)",
+    color: "var(--chart-negative)",
+  },
 ])
 
 const taxConfig = buildChartConfig([
-  { key: "total_tax", label: "Pajak Terkumpul", color: "var(--chart-2)" },
+  {
+    key: "total_tax",
+    label: "Pajak Terkumpul",
+    color: "var(--chart-positive)",
+  },
 ])
 
 const voucherColumns: DataTableColumnDef<SalesVoucherRow>[] = [
@@ -167,7 +175,7 @@ const DiscountTaxSection = () => {
             <Line
               dataKey="discount_ratio"
               type="monotone"
-              stroke="var(--chart-4)"
+              stroke="var(--chart-negative)"
               dot={false}
               strokeWidth={2}
             />

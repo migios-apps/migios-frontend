@@ -3,7 +3,7 @@ import useReportFilter from "../hooks/useReportFilter"
 import { membersSections } from "./sections"
 
 const MemberReport = () => {
-  const filter = useReportFilter({ defaultRange: "thisMonth" })
+  const filter = useReportFilter()
 
   return (
     <ReportPageShell

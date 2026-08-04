@@ -165,8 +165,8 @@ const VelocitySection = () => {
                 key={row.product_id}
                 fill={
                   (row.delta_percent ?? 0) < 0
-                    ? "var(--chart-4)"
-                    : "var(--chart-2)"
+                    ? "var(--chart-negative)"
+                    : "var(--chart-positive)"
                 }
               />
             ))}

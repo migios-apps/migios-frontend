@@ -22,8 +22,8 @@ import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const chartConfig = buildChartConfig([
-  { key: "new_member", label: "Member Baru", color: "var(--chart-2)" },
-  { key: "churn", label: "Churn", color: "var(--chart-4)" },
+  { key: "new_member", label: "Member Baru", color: "var(--chart-positive)" },
+  { key: "churn", label: "Churn", color: "var(--chart-negative)" },
 ])
 
 const newColumns: DataTableColumnDef<MemberRetentionRow>[] = [
@@ -139,8 +139,8 @@ const RetentionSection = () => {
           <YAxis tickLine={false} axisLine={false} width={50} />
           <ChartTooltip content={<ChartTooltipContent />} />
           <ChartLegend />
-          <Bar dataKey="new_member" fill="var(--chart-2)" radius={2} />
-          <Bar dataKey="churn" fill="var(--chart-4)" radius={2} />
+          <Bar dataKey="new_member" fill="var(--chart-positive)" radius={2} />
+          <Bar dataKey="churn" fill="var(--chart-negative)" radius={2} />
         </BarChart>
       </ReportChartCard>
 

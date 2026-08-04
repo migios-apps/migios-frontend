@@ -22,7 +22,11 @@ import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const valueConfig = buildChartConfig([
-  { key: "refund_value", label: "Nilai Refund", color: "var(--chart-4)" },
+  {
+    key: "refund_value",
+    label: "Nilai Refund",
+    color: "var(--chart-negative)",
+  },
 ])
 
 const columns: DataTableColumnDef<ProductRefundRow>[] = [
@@ -126,7 +130,7 @@ const RefundSection = () => {
             <Line
               dataKey="refund_value"
               type="monotone"
-              stroke="var(--chart-4)"
+              stroke="var(--chart-negative)"
               dot={false}
               strokeWidth={2}
             />

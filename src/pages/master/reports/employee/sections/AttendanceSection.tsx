@@ -25,7 +25,7 @@ const percentConfig = buildChartConfig([
   {
     key: "attendance_percent",
     label: "Kehadiran (%)",
-    color: "var(--chart-2)",
+    color: "var(--chart-cat-2)",
   },
 ])
 

@@ -18,9 +18,9 @@ import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
 
 const chartConfig = buildChartConfig([
-  { key: "approved", label: "Disetujui", color: "var(--chart-2)" },
-  { key: "pending", label: "Pending", color: "var(--chart-3)" },
-  { key: "rejected", label: "Ditolak", color: "var(--chart-4)" },
+  { key: "approved", label: "Disetujui", color: "var(--chart-positive)" },
+  { key: "pending", label: "Pending", color: "var(--chart-neutral)" },
+  { key: "rejected", label: "Ditolak", color: "var(--chart-negative)" },
 ])
 
 const columns: DataTableColumnDef<EmployeeTrainerRow>[] = [
@@ -86,14 +86,19 @@ const TrainerSection = () => {
           <Bar
             dataKey="approved"
             stackId="s"
-            fill="var(--chart-2)"
+            fill="var(--chart-positive)"
             radius={2}
           />
-          <Bar dataKey="pending" stackId="s" fill="var(--chart-3)" radius={2} />
+          <Bar
+            dataKey="pending"
+            stackId="s"
+            fill="var(--chart-neutral)"
+            radius={2}
+          />
           <Bar
             dataKey="rejected"
             stackId="s"
-            fill="var(--chart-4)"
+            fill="var(--chart-negative)"
             radius={2}
           />
         </BarChart>
