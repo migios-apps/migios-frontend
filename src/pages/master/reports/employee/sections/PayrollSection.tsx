@@ -16,6 +16,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const chartConfig = buildChartConfig([
   { key: "base_salary", label: "Gaji Pokok", color: "var(--chart-cat-1)" },
@@ -117,9 +118,7 @@ const PayrollSection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(chartConfig)} />
             }
           />
           <ChartLegend />

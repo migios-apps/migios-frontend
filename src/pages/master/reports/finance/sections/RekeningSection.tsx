@@ -30,8 +30,14 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import {
+  buildChartConfig,
+  getSeriesColor,
+  toPieSlices,
+} from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const balanceConfig = buildChartConfig([
   { key: "current_balance", label: "Saldo Saat Ini" },
@@ -162,6 +168,11 @@ const RekeningSection = () => {
     [rekening]
   )
 
+  const rekeningSlices = useMemo(
+    () => toPieSlices(rekening, (row) => row.total_in),
+    [rekening]
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <ReportKpiRow
@@ -191,7 +202,7 @@ const RekeningSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(balanceConfig)}
                 />
               }
             />
@@ -210,27 +221,29 @@ const RekeningSection = () => {
           title="Share Penerimaan per Rekening"
           config={shareConfig}
           loading={isLoading}
-          empty={rekening.every((row) => row.total_in === 0)}
+          empty={rekeningSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(shareConfig)}
                 />
               }
             />
             <Pie
-              data={rekening}
+              data={rekeningSlices}
               dataKey="total_in"
               nameKey="name"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {rekening.map((row, index) => (
+              {rekeningSlices.map((row) => (
                 <Cell
-                  key={`${row.rekening_id ?? index}`}
-                  fill={getSeriesColor(index)}
+                  key={`${row.rekening_id ?? row.sliceColor}`}
+                  fill={row.sliceColor}
                 />
               ))}
             </Pie>

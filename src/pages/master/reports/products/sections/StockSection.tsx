@@ -14,6 +14,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const valueConfig = buildChartConfig([
   { key: "stock_value", label: "Nilai Stok" },
@@ -143,7 +144,7 @@ const StockSection = () => {
             content={
               <ChartTooltipContent
                 nameKey="name"
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(valueConfig)}
               />
             }
           />

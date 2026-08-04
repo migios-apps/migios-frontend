@@ -14,6 +14,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const spendConfig = buildChartConfig([
   { key: "total_spend", label: "Total Belanja" },
@@ -137,7 +138,7 @@ const ValueSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(spendConfig)}
                 />
               }
             />

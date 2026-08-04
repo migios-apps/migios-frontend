@@ -20,6 +20,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const trendConfig = buildChartConfig([
   { key: "net", label: "Revenue Produk", color: "var(--primary)" },
@@ -95,9 +96,7 @@ const ProductSummarySection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
             }
           />
           <Area
@@ -136,7 +135,7 @@ const ProductSummarySection = () => {
             content={
               <ChartTooltipContent
                 nameKey="name"
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(topConfig)}
               />
             }
           />

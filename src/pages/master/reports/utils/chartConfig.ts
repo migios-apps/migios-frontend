@@ -11,6 +11,14 @@ export const getSeriesColor = (index: number) =>
     ? `var(--chart-cat-${index + 1})`
     : "var(--chart-cat-other)"
 
+export const toPieSlices = <T>(
+  rows: readonly T[],
+  getValue: (row: T) => number
+): Array<T & { sliceColor: string }> =>
+  rows
+    .map((row, index) => ({ ...row, sliceColor: getSeriesColor(index) }))
+    .filter((row) => getValue(row) > 0)
+
 export interface ChartSeriesEntry {
   key: string
   label: string

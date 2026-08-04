@@ -12,10 +12,30 @@ export interface SalesCategoryRow {
   share_percent: number
 }
 
+export interface SalesRekeningRow {
+  rekening_id: number | null
+  rekening_name: string
+  payment_count: number
+  total_in: number
+  total_out: number
+  net: number
+  share_percent: number
+}
+
+export interface SalesRecapRow {
+  item_name: string
+  total_sales: number | null
+  total_returns: number | null
+  gross_revenue: number | null
+  fgross_revenue: string | null
+}
+
 export interface SalesSummaryData {
   kpis: ReportKpi[]
   series: ReportBucketPoint[]
   categories: SalesCategoryRow[]
+  recap: SalesRecapRow[]
+  rekening: SalesRekeningRow[]
   compare_period_label: string | null
 }
 
@@ -56,16 +76,6 @@ export interface SalesEmployeeRow {
 export interface SalesEmployeeData {
   kpis: ReportKpi[]
   employees: SalesEmployeeRow[]
-}
-
-export interface SalesRekeningRow {
-  rekening_id: number | null
-  rekening_name: string
-  payment_count: number
-  total_in: number
-  total_out: number
-  net: number
-  share_percent: number
 }
 
 export interface SalesOutstandingRow {

@@ -22,6 +22,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const agingConfig = buildChartConfig([
   { key: "outstanding", label: "Outstanding", color: "var(--chart-negative)" },
@@ -139,7 +140,7 @@ const ReceivableSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="bucket"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(agingConfig)}
                 />
               }
             />
@@ -165,9 +166,7 @@ const ReceivableSection = () => {
             />
             <ChartTooltip
               content={
-                <ChartTooltipContent
-                  formatter={(value) => currencyFormat(Number(value))}
-                />
+                <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
               }
             />
             <Area

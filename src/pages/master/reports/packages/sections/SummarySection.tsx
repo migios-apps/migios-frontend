@@ -24,8 +24,10 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import { buildChartConfig, toPieSlices } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const trendConfig = buildChartConfig([
   { key: "net", label: "Revenue Paket", color: "var(--primary)" },
@@ -82,6 +84,11 @@ const PackageSummarySection = () => {
     [types]
   )
 
+  const typeSlices = useMemo(
+    () => toPieSlices(types, (row) => row.net),
+    [types]
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <ReportKpiRow
@@ -109,9 +116,7 @@ const PackageSummarySection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
             }
           />
           <Area
@@ -128,20 +133,27 @@ const PackageSummarySection = () => {
         title="Revenue per Tipe Paket"
         config={typeConfig}
         loading={isLoading}
-        empty={types.length === 0}
+        empty={typeSlices.length === 0}
       >
         <PieChart>
           <ChartTooltip
             content={
               <ChartTooltipContent
                 nameKey="label"
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(typeConfig)}
               />
             }
           />
-          <Pie data={types} dataKey="net" nameKey="label" innerRadius={50}>
-            {types.map((row, index) => (
-              <Cell key={row.package_type} fill={getSeriesColor(index)} />
+          <Pie
+            data={typeSlices}
+            dataKey="net"
+            nameKey="label"
+            innerRadius={50}
+            outerRadius={80}
+            label={pieCurrencyLabel}
+          >
+            {typeSlices.map((row) => (
+              <Cell key={row.package_type} fill={row.sliceColor} />
             ))}
           </Pie>
           <ChartLegend />

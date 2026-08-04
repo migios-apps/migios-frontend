@@ -21,7 +21,7 @@ Yang sudah ada dan bisa dijadikan preseden:
 |---|---|
 | Rekap penjualan 12 baris | [../migios-be/src/module/sales/report-sales.service.ts](../migios-be/src/module/sales/report-sales.service.ts) → `GET /api/v1/sales/report` + `/sales/report/by-rekening` |
 | Chart overview dashboard | [../migios-be/src/module/report/overview.service.ts](../migios-be/src/module/report/overview.service.ts) → `determineRangeType` + back-fill bucket |
-| Halaman laporan terdekat | [src/pages/master/sales/PenjualanHarian/index.tsx](src/pages/master/sales/PenjualanHarian/index.tsx) — 1 tabel + 2 pie chart |
+| Rekap penjualan lama | `src/pages/master/sales/PenjualanHarian/` — **sudah dihapus**, isinya pindah ke Laporan Penjualan (lihat [2.6](#26--konsolidasi-penjualan-harian)) |
 | Pola tab per menu | [src/pages/master/sales/Layout.tsx](src/pages/master/sales/Layout.tsx) |
 | KPI card + area chart | [src/pages/dashboard/components/Overview.tsx](src/pages/dashboard/components/Overview.tsx) |
 
@@ -148,6 +148,52 @@ array itu.
 > ([2.2](#22--kolom-transaction_itemstotal-tidak-ada)) **tetap terpakai** karena melayani
 > `/report/dashboard/chart-sales`.
 
+### 2.6 ✅ Konsolidasi Penjualan Harian
+
+Halaman `/sales/penjualan-harian` adalah mini-laporan penjualan yang berdiri sendiri di menu Sales:
+satu tabel rekap 12 baris + dua pie chart (revenue per kategori, pembayaran per rekening). Isinya
+tumpang tindih dengan Laporan Penjualan, jadi seluruhnya dipindahkan dan halamannya dihapus.
+
+**Ke mana isinya pindah:**
+
+| Isi lama | Sekarang |
+|---|---|
+| Tabel rekap 12 baris | Laporan Penjualan → tab **Ringkasan**, tabel "Rekap Penjualan" |
+| Pie revenue per kategori | Laporan Penjualan → tab **Ringkasan**, donut "Komposisi Revenue per Kategori" (sudah ada sejak fase 1a) |
+| Pie pembayaran per rekening | Laporan Penjualan → tab **Ringkasan**, donut "Pembayaran per Rekening" — sengaja diduplikasi di tab **Pembayaran & Piutang** sebagai "Share Penerimaan per Rekening", supaya pandangan sekilas di Ringkasan tetap utuh seperti halaman lama |
+| Filter rentang tanggal + toggle tanggal faktur | `ReportFilterBar` bersama, berlaku untuk seluruh tab |
+| Dropdown Export (tidak berfungsi) | tidak dibawa — export ada di fase 7 |
+
+**Yang dihapus:**
+- Frontend: `src/pages/master/sales/PenjualanHarian/`, route `/sales/penjualan-harian`, tab
+  "Penjualan Harian" di `SalesLayout`, `apiReportSales` + `apiReportSalesByRekening` di
+  `SalesService.ts`, dan tipe-tipe yatimnya di `@types/sales.ts`. Redirect `/sales` sekarang ke
+  `/sales/faktur`.
+- Backend: route `GET /api/v1/sales/report` dan `GET /api/v1/sales/report/by-rekening`.
+
+**Yang dipindah:** `sales/report-sales.service.ts` → `report/sales/recap.service.ts`
+(class `ReportSalesRecapService`, method `getRecap`). Query-nya **tidak diubah** supaya angkanya
+tidak bergeser diam-diam; yang berubah hanya kontrak masuknya — dari `ReportSalesQueryDto` yang
+memakai pola `@Type(() => Date)` bermasalah itu ([5.2](#52-struktur-backend-migios-be)) ke
+`ReportFilterDto` bersama, lewat `resolveReportRange()` dan `requireClubId()`.
+
+Method `getReportSalesByRekening` **tidak ikut dipindah** — donut pembayaran sekarang memakai
+`ReportSalesPaymentService.getRekening()` yang sudah ada, dipanggil juga oleh `/report/sales/summary`.
+Dua beda perilaku dibanding query lama:
+
+1. Query lama menampilkan **seluruh** rekening club termasuk yang nol; yang sekarang hanya rekening
+   yang punya pembayaran pada rentang itu. Irisan nol memang tidak menghasilkan apa-apa di pie.
+2. Query lama memplot `SUM(p.amount)` — **netto**, sudah dikurangi refund yang tersimpan negatif.
+   Yang sekarang memplot `total_in`, yaitu **hanya yang masuk**. Ini disengaja: pie chart tidak bisa
+   menggambarkan irisan negatif, jadi rekening yang refund-nya lebih besar dari penerimaannya akan
+   membuat pie lama rusak. Nilai refund tetap ada sebagai kolom terpisah (`total_out`) dan sebagai
+   KPI "Total Refund Keluar" di tab Pembayaran.
+
+> ⚠️ Dua baris rekap, **Transfer member** dan **Vouchers Redeem**, masih di-hardcode `0` di service
+> aslinya dan ikut terbawa apa adanya. Sengaja tidak diperbaiki dalam pemindahan ini supaya
+> perubahan angka tidak menyelinap ke dalam refactor. `voucher_redemptions` sudah ada datanya dan
+> sudah dipakai tab Diskon/Voucher/Pajak, jadi mengisinya tinggal satu query.
+
 ---
 
 ## 3. Kontrak bersama semua laporan
@@ -240,8 +286,10 @@ Format tiap tab: **KPI** / **Grafik** / **Tabel** / **Sumber data**.
 - **Grafik:**
   - Area tren Net Sales per bucket + garis pembanding periode sebelumnya
   - Donut komposisi revenue per kategori item (membership / pt_program / class / product / service / freeze)
+  - Donut pembayaran per rekening (warisan halaman Penjualan Harian)
   - Bar bertumpuk Gross → Diskon → Pajak → Net per bucket
-- **Tabel:** rekap kategori mengikuti bentuk `report-sales.service.ts` — Membership, PT Program, Classes, Products, Freeze, Vouchers Redeem, **Gross Total Sales**, **Net Total Sales**, Total Discount, Total Rounding, Total Outstanding; kolom `total_sales`, `total_returns`, `gross_revenue`
+- **Tabel A:** rekap per kategori — kolom qty, gross, diskon, pajak, net, kontribusi %
+- **Tabel B — Rekap Penjualan:** 12 baris warisan halaman Penjualan Harian — Membership, PT Program, Classes, Products, Freeze, Transfer member, Vouchers Redeem, **Gross Total Sales**, **Net Total Sales**, Total Discount, Total Rounding, Total Outstanding; kolom `total_sales`, `total_returns`, `gross_revenue`
 - **Sumber:** `transactions`, `transaction_items`, `packages`, `products`
 
 #### Tab 2 — Penjualan per Item
@@ -636,7 +684,7 @@ di proyek ini.
 - ✅ `StatisticCard` yang tadinya privat di [src/pages/dashboard/components/Overview.tsx](src/pages/dashboard/components/Overview.tsx) sudah jadi `ReportKpiCard`, dan `Overview.tsx` **mengimpor balik** komponen itu. Prop `label` + `onClick(label)` diganti `onClick?: () => void`, `compareFrom` jadi `hint`, plus tambahan `comparison`/`loading`.
 - ✅ Blok SVG "No Result" jadi `ReportEmptyState`.
 - ✅ Pembentuk `ChartConfig` dan template `var(--chart-N)` jadi `utils/chartConfig.ts`.
-- ⏳ `PenjualanHarian/index.tsx` **belum** dialihkan ke komponen bersama ini — masih memakai salinannya sendiri. Rapikan saat fase 1, jangan sekarang, supaya halaman yang sudah dipakai tidak ikut berubah di fase fondasi.
+- ✅ `PenjualanHarian/index.tsx` sudah dihapus seluruhnya, jadi tidak ada lagi salinan komponen chart/tabel di luar folder laporan.
 
 #### Registrasi route (4 langkah wajib per `CLAUDE.md`)
 
@@ -687,6 +735,7 @@ src/module/report/
     sales.module.ts             ReportSalesModule
     sales.controller.ts         ReportSalesController   path: 'report/sales'
     summary.service.ts          /summary
+    recap.service.ts            rekap 12 baris, dipakai /summary (eks sales/report-sales.service.ts)
     breakdown.service.ts        /by-item, /by-employee
     payment.service.ts          /payment
     adjustment.service.ts       /discount-tax, /refund-void

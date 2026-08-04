@@ -22,6 +22,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const netConfig = buildChartConfig([{ key: "net", label: "Arus Kas Bersih" }])
 
@@ -108,7 +109,7 @@ const CashFlowSection = () => {
             content={
               <ChartTooltipContent
                 nameKey="label"
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(netConfig)}
               />
             }
           />
@@ -146,7 +147,7 @@ const CashFlowSection = () => {
           <ChartTooltip
             content={
               <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(cumulativeConfig)}
               />
             }
           />

@@ -23,8 +23,13 @@ import {
 import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import {
+  buildChartConfig,
+  getSeriesColor,
+  toPieSlices,
+} from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCountLabel } from "../../utils/pieLabel"
 
 const growthConfig = buildChartConfig([
   { key: "new_member", label: "Member Baru", color: "var(--primary)" },
@@ -69,6 +74,16 @@ const MemberSummarySection = () => {
       buildChartConfig(
         genderDistribution.map((row) => ({ key: row.gender, label: row.label }))
       ),
+    [genderDistribution]
+  )
+
+  const statusSlices = useMemo(
+    () => toPieSlices(statusDistribution, (row) => row.count),
+    [statusDistribution]
+  )
+
+  const genderSlices = useMemo(
+    () => toPieSlices(genderDistribution, (row) => row.count),
     [genderDistribution]
   )
 
@@ -117,18 +132,20 @@ const MemberSummarySection = () => {
           title="Status Keanggotaan"
           config={statusConfig}
           loading={isLoading}
-          empty={statusDistribution.every((row) => row.count === 0)}
+          empty={statusSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
             <Pie
-              data={statusDistribution}
+              data={statusSlices}
               dataKey="count"
               nameKey="status"
               innerRadius={45}
+              outerRadius={80}
+              label={pieCountLabel}
             >
-              {statusDistribution.map((row, index) => (
-                <Cell key={row.status} fill={getSeriesColor(index)} />
+              {statusSlices.map((row) => (
+                <Cell key={row.status} fill={row.sliceColor} />
               ))}
             </Pie>
             <ChartLegend />
@@ -139,18 +156,20 @@ const MemberSummarySection = () => {
           title="Demografi Gender"
           config={genderConfig}
           loading={isLoading}
-          empty={genderDistribution.length === 0}
+          empty={genderSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent nameKey="label" />} />
             <Pie
-              data={genderDistribution}
+              data={genderSlices}
               dataKey="count"
               nameKey="label"
               innerRadius={45}
+              outerRadius={80}
+              label={pieCountLabel}
             >
-              {genderDistribution.map((row, index) => (
-                <Cell key={row.gender} fill={getSeriesColor(index + 2)} />
+              {genderSlices.map((row) => (
+                <Cell key={row.gender} fill={row.sliceColor} />
               ))}
             </Pie>
             <ChartLegend />

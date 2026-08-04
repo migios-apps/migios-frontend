@@ -9,7 +9,6 @@ const SalesLayout = ({ children }: { children?: React.ReactNode }) => {
   const tabListRef = useRef<HTMLDivElement>(null)
   const activeTabRef = useRef<HTMLButtonElement>(null)
 
-  const routePenjualanHarian = "/sales/penjualan-harian"
   const routeFaktur = "/sales/faktur"
   const routeFreeze = "/sales/freeze"
   const routeTransferMember = "/sales/transfer-member"
@@ -32,7 +31,6 @@ const SalesLayout = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname])
 
   const tabItems = [
-    { route: routePenjualanHarian, label: "Penjualan Harian" },
     { route: routeFaktur, label: "Faktur" },
     { route: routeFreeze, label: "Freeze" },
     { route: routeTransferMember, label: "Transfer Member" },

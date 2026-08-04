@@ -26,8 +26,14 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import {
+  buildChartConfig,
+  getSeriesColor,
+  toPieSlices,
+} from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const TYPE_LABELS: Record<string, string> = {
   sales: "Sales",
@@ -105,6 +111,11 @@ const EmployeeSummarySection = () => {
     [byType]
   )
 
+  const typeSlices = useMemo(
+    () => toPieSlices(byType, (row) => row.amount),
+    [byType]
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <ReportKpiRow
@@ -141,7 +152,7 @@ const EmployeeSummarySection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="employee_name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(rankConfig)}
                 />
               }
             />
@@ -157,7 +168,7 @@ const EmployeeSummarySection = () => {
           title="Komposisi Komisi per Tipe"
           config={typeConfig}
           loading={isLoading}
-          empty={byType.every((row) => row.amount === 0)}
+          empty={typeSlices.length === 0}
           height="h-80"
         >
           <PieChart>
@@ -165,18 +176,20 @@ const EmployeeSummarySection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="label"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(typeConfig)}
                 />
               }
             />
             <Pie
-              data={byType}
+              data={typeSlices}
               dataKey="amount"
               nameKey="label"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {byType.map((row, index) => (
-                <Cell key={row.type} fill={getSeriesColor(index)} />
+              {typeSlices.map((row) => (
+                <Cell key={row.type} fill={row.sliceColor} />
               ))}
             </Pie>
             <ChartLegend />
@@ -202,9 +215,7 @@ const EmployeeSummarySection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
             }
           />
           <Line

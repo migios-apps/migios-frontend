@@ -14,6 +14,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { percentTooltip } from "../../utils/tooltipFormatter"
 
 const deltaConfig = buildChartConfig([
   { key: "delta_percent", label: "Delta (%)" },
@@ -155,7 +156,7 @@ const VelocitySection = () => {
             content={
               <ChartTooltipContent
                 nameKey="name"
-                formatter={(value) => `${Number(value).toFixed(1)}%`}
+                formatter={percentTooltip(deltaConfig, 1)}
               />
             }
           />

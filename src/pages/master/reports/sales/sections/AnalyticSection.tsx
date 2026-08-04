@@ -30,6 +30,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const WEEKDAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
 const HOURS = Array.from({ length: 24 }, (_, index) => index)
@@ -213,7 +214,7 @@ const AnalyticSection = () => {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(audienceConfig)}
                 />
               }
             />

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import type {
   SalesRefundRow,
@@ -30,8 +31,14 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import {
+  buildChartConfig,
+  getSeriesColor,
+  toPieSlices,
+} from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const trendConfig = buildChartConfig([
   { key: "refund", label: "Refund", color: "var(--chart-negative)" },
@@ -133,7 +140,12 @@ const RefundVoidSection = () => {
   })
 
   const series = data?.series ?? []
-  const byCategory = data?.by_category ?? []
+  const byCategory = useMemo(() => data?.by_category ?? [], [data?.by_category])
+
+  const categorySlices = useMemo(
+    () => toPieSlices(byCategory, (row) => row.amount),
+    [byCategory]
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -162,9 +174,7 @@ const RefundVoidSection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
             }
           />
           <ChartLegend />
@@ -190,25 +200,27 @@ const RefundVoidSection = () => {
           title="Refund per Kategori Item"
           config={categoryConfig}
           loading={isLoading}
-          empty={byCategory.length === 0}
+          empty={categorySlices.length === 0}
         >
           <PieChart>
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   nameKey="category"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(categoryConfig)}
                 />
               }
             />
             <Pie
-              data={byCategory}
+              data={categorySlices}
               dataKey="amount"
               nameKey="category"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {byCategory.map((row, index) => (
-                <Cell key={row.category} fill={getSeriesColor(index)} />
+              {categorySlices.map((row) => (
+                <Cell key={row.category} fill={row.sliceColor} />
               ))}
             </Pie>
             <ChartLegend />

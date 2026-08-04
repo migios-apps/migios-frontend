@@ -24,6 +24,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip, percentTooltip } from "../../utils/tooltipFormatter"
 
 const sourceConfig = buildChartConfig([{ key: "amount", label: "Nilai" }])
 
@@ -137,7 +138,7 @@ const DiscountTaxSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="source"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(sourceConfig)}
                 />
               }
             />
@@ -168,7 +169,7 @@ const DiscountTaxSection = () => {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value) => `${Number(value).toFixed(2)}%`}
+                  formatter={percentTooltip(ratioConfig, 2)}
                 />
               }
             />
@@ -203,7 +204,7 @@ const DiscountTaxSection = () => {
             content={
               <ChartTooltipContent
                 nameKey="name"
-                formatter={(value) => currencyFormat(Number(value))}
+                formatter={currencyTooltip(taxConfig)}
               />
             }
           />

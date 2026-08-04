@@ -2,7 +2,7 @@ import { lazy } from "react"
 import type { Routes } from "@/@types/routes"
 
 export const salesRoute: Routes = [
-  // Redirect /sales to /sales/penjualan-harian
+  // Redirect /sales to /sales/faktur
   {
     path: "/sales",
     component: lazy(() => import("@/pages/master/sales")),
@@ -14,16 +14,6 @@ export const salesRoute: Routes = [
     },
   },
   // Sales pages with Layout (tabs)
-  {
-    path: "/sales/penjualan-harian",
-    component: lazy(() => import("@/pages/master/sales/PenjualanHarian")),
-    authority: [],
-    meta: {
-      container: {
-        className: "p-0",
-      },
-    },
-  },
   {
     path: "/sales/faktur",
     component: lazy(() => import("@/pages/master/sales/Faktur")),

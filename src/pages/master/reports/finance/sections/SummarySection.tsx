@@ -26,8 +26,10 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import { buildChartConfig, toPieSlices } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const flowConfig = buildChartConfig([
   { key: "cash_in", label: "Pemasukan", color: "var(--chart-positive)" },
@@ -114,6 +116,16 @@ const FinanceSummarySection = () => {
     [expenseCategories]
   )
 
+  const incomeSlices = useMemo(
+    () => toPieSlices(incomeCategories, (row) => row.amount),
+    [incomeCategories]
+  )
+
+  const expenseSlices = useMemo(
+    () => toPieSlices(expenseCategories, (row) => row.amount),
+    [expenseCategories]
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <ReportKpiRow
@@ -142,9 +154,7 @@ const FinanceSummarySection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(flowConfig)} />
             }
           />
           <ChartLegend />
@@ -172,9 +182,7 @@ const FinanceSummarySection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(balanceConfig)} />
             }
           />
           <Area
@@ -192,27 +200,29 @@ const FinanceSummarySection = () => {
           title="Komposisi Pemasukan"
           config={incomeConfig}
           loading={isLoading}
-          empty={incomeCategories.length === 0}
+          empty={incomeSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(incomeConfig)}
                 />
               }
             />
             <Pie
-              data={incomeCategories}
+              data={incomeSlices}
               dataKey="amount"
               nameKey="name"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {incomeCategories.map((row, index) => (
+              {incomeSlices.map((row) => (
                 <Cell
-                  key={`${row.category_id ?? "none"}`}
-                  fill={getSeriesColor(index)}
+                  key={`${row.category_id ?? row.sliceColor}`}
+                  fill={row.sliceColor}
                 />
               ))}
             </Pie>
@@ -224,27 +234,29 @@ const FinanceSummarySection = () => {
           title="Komposisi Pengeluaran"
           config={expenseConfig}
           loading={isLoading}
-          empty={expenseCategories.length === 0}
+          empty={expenseSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(expenseConfig)}
                 />
               }
             />
             <Pie
-              data={expenseCategories}
+              data={expenseSlices}
               dataKey="amount"
               nameKey="name"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {expenseCategories.map((row, index) => (
+              {expenseSlices.map((row) => (
                 <Cell
-                  key={`${row.category_id ?? "none"}`}
-                  fill={getSeriesColor(index + 2)}
+                  key={`${row.category_id ?? row.sliceColor}`}
+                  fill={row.sliceColor}
                 />
               ))}
             </Pie>

@@ -29,6 +29,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const categoryColumns: DataTableColumnDef<FinanceCategoryRow>[] = [
   { header: "Kategori", accessorKey: "name", size: 220 },
@@ -169,7 +170,7 @@ const LedgerSection = ({ type }: LedgerSectionProps) => {
               content={
                 <ChartTooltipContent
                   nameKey="name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(categoryConfig)}
                 />
               }
             />
@@ -202,9 +203,7 @@ const LedgerSection = ({ type }: LedgerSectionProps) => {
             />
             <ChartTooltip
               content={
-                <ChartTooltipContent
-                  formatter={(value) => currencyFormat(Number(value))}
-                />
+                <ChartTooltipContent formatter={currencyTooltip(trendConfig)} />
               }
             />
             <Line

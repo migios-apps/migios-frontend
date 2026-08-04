@@ -32,8 +32,14 @@ import ReportChartCard from "../../components/ReportChartCard"
 import ReportKpiRow from "../../components/ReportKpiRow"
 import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
-import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
+import {
+  buildChartConfig,
+  getSeriesColor,
+  toPieSlices,
+} from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { pieCurrencyLabel } from "../../utils/pieLabel"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const cashConfig = buildChartConfig([
   { key: "amount", label: "Penerimaan", color: "var(--primary)" },
@@ -165,6 +171,11 @@ const PaymentSection = () => {
     [rekening]
   )
 
+  const rekeningSlices = useMemo(
+    () => toPieSlices(rekening, (row) => row.total_in),
+    [rekening]
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <ReportKpiRow
@@ -193,9 +204,7 @@ const PaymentSection = () => {
           />
           <ChartTooltip
             content={
-              <ChartTooltipContent
-                formatter={(value) => currencyFormat(Number(value))}
-              />
+              <ChartTooltipContent formatter={currencyTooltip(cashConfig)} />
             }
           />
           <Area
@@ -213,27 +222,29 @@ const PaymentSection = () => {
           title="Share Penerimaan per Rekening"
           config={rekeningConfig}
           loading={isLoading}
-          empty={rekening.length === 0}
+          empty={rekeningSlices.length === 0}
         >
           <PieChart>
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   nameKey="rekening_name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(rekeningConfig)}
                 />
               }
             />
             <Pie
-              data={rekening}
+              data={rekeningSlices}
               dataKey="total_in"
               nameKey="rekening_name"
               innerRadius={50}
+              outerRadius={80}
+              label={pieCurrencyLabel}
             >
-              {rekening.map((row, index) => (
+              {rekeningSlices.map((row) => (
                 <Cell
-                  key={`${row.rekening_id ?? "none"}`}
-                  fill={getSeriesColor(index)}
+                  key={`${row.rekening_id ?? row.sliceColor}`}
+                  fill={row.sliceColor}
                 />
               ))}
             </Pie>
@@ -261,7 +272,7 @@ const PaymentSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="bucket"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(agingConfig)}
                 />
               }
             />

@@ -12,6 +12,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { percentTooltip } from "../../utils/tooltipFormatter"
 
 const marginConfig = buildChartConfig([
   { key: "margin_percent", label: "Margin (%)", color: "var(--chart-cat-2)" },
@@ -126,7 +127,7 @@ const ProductBreakdownSection = () => {
             content={
               <ChartTooltipContent
                 nameKey="name"
-                formatter={(value) => `${Number(value).toFixed(1)}%`}
+                formatter={percentTooltip(marginConfig, 1)}
               />
             }
           />

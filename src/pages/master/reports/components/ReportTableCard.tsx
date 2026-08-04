@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useMemo, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import {
   Card,
@@ -42,29 +42,41 @@ const ReportTableCard = <T,>({
   action,
   footer,
   className,
-}: ReportTableCardProps<T>) => (
-  <Card className={cn("gap-1 shadow-none", className)}>
-    <CardHeader className="flex flex-row items-start justify-between gap-2">
-      <div className="flex flex-col">
-        <CardTitle className="text-base">{title}</CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </div>
-      {action}
-    </CardHeader>
-    <CardContent>
-      <DataTable<T>
-        columns={columns}
-        data={data}
-        loading={Boolean(loading)}
-        showPagination={showPagination}
-        pagingData={pagingData}
-        onPaginationChange={onPaginationChange}
-        onSelectChange={onSelectChange}
-        onSort={onSort}
-      />
-      {footer}
-    </CardContent>
-  </Card>
-)
+}: ReportTableCardProps<T>) => {
+  const sortableColumns = useMemo(
+    () =>
+      onSort
+        ? columns
+        : columns.map((column) => ({ ...column, enableSorting: false })),
+    [columns, onSort]
+  )
+
+  return (
+    <Card className={cn("gap-1 shadow-none", className)}>
+      <CardHeader className="flex flex-row items-start justify-between gap-2">
+        <div className="flex flex-col">
+          <CardTitle className="text-base">{title}</CardTitle>
+          {description ? (
+            <CardDescription>{description}</CardDescription>
+          ) : null}
+        </div>
+        {action}
+      </CardHeader>
+      <CardContent>
+        <DataTable<T>
+          columns={sortableColumns}
+          data={data}
+          loading={Boolean(loading)}
+          showPagination={showPagination}
+          pagingData={pagingData}
+          onPaginationChange={onPaginationChange}
+          onSelectChange={onSelectChange}
+          onSort={onSort}
+        />
+        {footer}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default ReportTableCard

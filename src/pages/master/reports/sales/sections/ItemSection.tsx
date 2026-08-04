@@ -13,6 +13,7 @@ import ReportTableCard from "../../components/ReportTableCard"
 import { useReportFilterParams } from "../../hooks/report-filter-context"
 import { buildChartConfig, getSeriesColor } from "../../utils/chartConfig"
 import { toKpiCards } from "../../utils/kpiCards"
+import { currencyTooltip } from "../../utils/tooltipFormatter"
 
 const ITEM_TYPE_LABELS: Record<string, string> = {
   package: "Paket",
@@ -134,7 +135,7 @@ const ItemSection = () => {
               content={
                 <ChartTooltipContent
                   nameKey="item_name"
-                  formatter={(value) => currencyFormat(Number(value))}
+                  formatter={currencyTooltip(revenueConfig)}
                 />
               }
             />
