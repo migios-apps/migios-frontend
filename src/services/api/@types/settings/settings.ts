@@ -40,6 +40,10 @@ export interface SettingsType {
   member_code_prefix?: string
   member_code_sequence_length?: number
   member_code_include_club_id?: boolean
+  employee_code_prefix?: string
+  employee_code_sequence_length?: number
+  employee_code_include_club_id?: boolean
+  employee_apply_to_all_branch?: boolean
   taxes: {
     id: number
     type: string

@@ -117,7 +117,8 @@ const validationSchema = yup.object().shape({
     .string()
     .default("MBR")
     .trim()
-    .matches(/^[A-Z0-9]*$/, "Hanya huruf kapital dan angka")
+    .required("Prefix harus diisi")
+    .matches(/^[A-Z0-9]+$/, "Hanya huruf kapital dan angka")
     .max(6, "Maksimal 6 karakter"),
   member_code_include_club_id: yup.boolean().default(true),
   member_code_sequence_length: yup
@@ -126,7 +127,8 @@ const validationSchema = yup.object().shape({
       original === "" || original === null ? undefined : Number(original)
     )
     .default(5)
-    .min(3, "Minimal 3 digit")
+    .required("Panjang nomor urut harus diisi")
+    .min(5, "Minimal 5 digit")
     .max(10, "Maksimal 10 digit"),
 })
 

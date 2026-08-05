@@ -11,6 +11,7 @@ const EmployeeLayout = ({ children }: { children?: React.ReactNode }) => {
 
   const routeEmployee = "/employee"
   const routeCommission = "/employee/commission"
+  const routeSetting = "/employee/setting"
 
   useEffect(() => {
     if (activeTabRef.current && tabListRef.current) {
@@ -32,6 +33,7 @@ const EmployeeLayout = ({ children }: { children?: React.ReactNode }) => {
   const tabItems = [
     { route: routeEmployee, label: "Karyawan" },
     { route: routeCommission, label: "Komisi" },
+    { route: routeSetting, label: "Pengaturan" },
   ]
 
   // Determine current active tab

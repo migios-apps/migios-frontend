@@ -23,6 +23,16 @@ export const employeeRoute: Routes = [
     },
   },
   {
+    path: "/employee/setting",
+    component: lazy(() => import("@/pages/master/employee/setting")),
+    authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
+  },
+  {
     path: "/employee/detail/:id",
     component: lazy(() => import("@/pages/master/employee/detail")),
     authority: [],
