@@ -4,6 +4,7 @@ import { TableQueries } from "@/@types/common"
 import { Filter } from "@/services/api/@types/api"
 import { MemberAttendanceLogType } from "@/services/api/@types/attendance"
 import { apiGetMemberAttendanceLogList } from "@/services/api/Attendance"
+import { Setting2 } from "iconsax-reactjs"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { getMenuShortcutDatePickerByType } from "@/hooks/use-date-picker"
@@ -121,6 +122,11 @@ const History = () => {
                 <span className="text-muted-foreground text-xs leading-none">
                   {row.code}
                 </span>
+                {row.is_cross_club ? (
+                  <Badge variant="outline" className="mt-1 w-fit text-[10px]">
+                    Member {row.home_club_name ?? "cabang lain"}
+                  </Badge>
+                ) : null}
               </div>
             </div>
           )
@@ -144,14 +150,28 @@ const History = () => {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
-          return row.original.status === "checkin" ? (
-            <Badge className="rounded border-0 bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-100">
-              Check In
-            </Badge>
-          ) : (
-            <Badge className="border-0 bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100">
-              Check Out
-            </Badge>
+          return (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {row.original.status === "checkin" ? (
+                <Badge className="rounded border-0 bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-100">
+                  Check In
+                </Badge>
+              ) : (
+                <Badge className="border-0 bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100">
+                  Check Out
+                </Badge>
+              )}
+              {row.original.source === "system" ? (
+                <Badge
+                  variant="outline"
+                  className="text-muted-foreground gap-1 text-[10px]"
+                  title="Ditutup otomatis oleh sistem, bukan dicatat staff"
+                >
+                  <Setting2 size={12} variant="Bulk" />
+                  Otomatis
+                </Badge>
+              ) : null}
+            </div>
           )
         },
       },

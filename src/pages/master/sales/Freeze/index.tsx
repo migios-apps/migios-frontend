@@ -7,6 +7,7 @@ import { Add } from "iconsax-reactjs"
 import { useNavigate } from "react-router"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
+import { useSettings } from "@/hooks/use-settings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
@@ -18,6 +19,8 @@ import SalesLayout from "../Layout"
 const Freeze = () => {
   const navigate = useNavigate()
   const [open, setOpen] = React.useState(false)
+  const { settings } = useSettings()
+  const freezeEnabled = Number(settings?.freeze_enabled ?? 1) === 1
   const formProps = useTransactionFreezeForm()
   const [tableData, setTableData] = React.useState<TableQueries>({
     pageIndex: 1,
@@ -179,10 +182,12 @@ const Freeze = () => {
               })
             }}
           />
-          <Button variant="default" onClick={() => setOpen(true)}>
-            <Add color="currentColor" size={20} />
-            New Freeze
-          </Button>
+          {freezeEnabled ? (
+            <Button variant="default" onClick={() => setOpen(true)}>
+              <Add color="currentColor" size={20} />
+              New Freeze
+            </Button>
+          ) : null}
         </div>
 
         <DataTable

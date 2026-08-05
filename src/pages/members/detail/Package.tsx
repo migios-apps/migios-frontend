@@ -23,6 +23,11 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { dayjs } from "@/utils/dayjs"
+import {
+  PENDING_ACTIVATION_HINT,
+  formatPackageDate,
+  isPendingActivation,
+} from "@/utils/formatPackageDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
 import { Badge } from "@/components/ui/badge"
@@ -133,11 +138,20 @@ const PackageDetailDialog = ({
               <Badge
                 className={cn(
                   "border-none px-3 py-1 text-[10px] font-bold tracking-wider uppercase shadow-sm",
-                  statusColor[data.duration_status]
+                  isPendingActivation(data)
+                    ? statusColor.pending_activation
+                    : statusColor[data.duration_status]
                 )}
               >
-                {data.duration_status}
+                {isPendingActivation(data)
+                  ? "Belum aktif"
+                  : data.duration_status}
               </Badge>
+              {isPendingActivation(data) ? (
+                <span className="text-muted-foreground text-xs">
+                  {PENDING_ACTIVATION_HINT}
+                </span>
+              ) : null}
               <div className="bg-background flex items-center gap-2 rounded-full border p-1 pr-2">
                 <Switch
                   id="package-status"
@@ -293,7 +307,7 @@ const PackageDetailDialog = ({
                     Tanggal Mulai
                   </p>
                   <p className="text-sm font-bold sm:text-base">
-                    {dayjs(data.start_date).format("DD MMMM YYYY")}
+                    {formatPackageDate(data.start_date)}
                   </p>
                 </div>
               </div>
@@ -306,7 +320,7 @@ const PackageDetailDialog = ({
                     Berakhir Pada
                   </p>
                   <p className="text-sm font-bold sm:text-base">
-                    {dayjs(data.end_date).format("DD MMMM YYYY")}
+                    {formatPackageDate(data.end_date)}
                   </p>
                 </div>
               </div>
@@ -573,8 +587,18 @@ const Package: React.FC<PackageProps> = ({ member }) => {
           const row = props.row.original
           return (
             <div className="flex items-center">
-              <Badge className={statusColor[row.duration_status]}>
-                <span className="capitalize">{row.duration_status}</span>
+              <Badge
+                className={
+                  isPendingActivation(row)
+                    ? statusColor.pending_activation
+                    : statusColor[row.duration_status]
+                }
+              >
+                <span className="capitalize">
+                  {isPendingActivation(row)
+                    ? "Belum aktif"
+                    : row.duration_status}
+                </span>
               </Badge>
             </div>
           )
@@ -613,7 +637,7 @@ const Package: React.FC<PackageProps> = ({ member }) => {
         cell: ({ row }) => {
           return (
             <div className="capitalize">
-              {dayjs(row.original.start_date).format("YYYY-MM-DD")}
+              {formatPackageDate(row.original.start_date, "YYYY-MM-DD")}
             </div>
           )
         },
@@ -625,7 +649,7 @@ const Package: React.FC<PackageProps> = ({ member }) => {
         cell: ({ row }) => {
           return (
             <div className="capitalize">
-              {dayjs(row.original.end_date).format("YYYY-MM-DD")}
+              {formatPackageDate(row.original.end_date, "YYYY-MM-DD")}
             </div>
           )
         },

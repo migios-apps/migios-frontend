@@ -11,6 +11,7 @@ export const QUERY_KEY = {
   memberHead: "memberHead",
   memberPackages: "memberPackages",
   freezeProgram: "freezeProgram",
+  freezeQuota: "freezeQuota",
   memberLoyaltyBalance: "memberLoyaltyBalance",
   memberLoyaltyEarned: "memberLoyaltyEarned",
   memberLoyaltyRedeem: "memberLoyaltyRedeem",

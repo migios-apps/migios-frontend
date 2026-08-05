@@ -7,6 +7,7 @@ import { Add } from "iconsax-reactjs"
 import { createPortal } from "react-dom"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { statusColor } from "@/constants/utils"
+import { useSettings } from "@/hooks/use-settings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
@@ -21,6 +22,8 @@ interface FreezProgramProps {
 const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
   const { activeValue } = useTabs()
   const [open, setOpen] = React.useState(false)
+  const { settings } = useSettings()
+  const freezeEnabled = Number(settings?.freeze_enabled ?? 1) === 1
   const [tableData, setTableData] = React.useState<TableQueries>({
     pageIndex: 1,
     pageSize: 10,
@@ -152,6 +155,7 @@ const FreezProgram: React.FC<FreezProgramProps> = ({ data: member }) => {
       />
 
       {activeValue === "tab4" &&
+        freezeEnabled &&
         createPortal(
           <Button
             size="icon"

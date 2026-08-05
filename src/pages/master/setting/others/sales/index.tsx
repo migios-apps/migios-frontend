@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import {
-  apiGetSettings,
-  apiUpdateSettings,
-} from "@/services/api/settings/settings"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { apiUpdateSettings } from "@/services/api/settings/settings"
 import { ArrowUp, ArrowDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { useSettings } from "@/hooks/use-settings"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -73,11 +71,7 @@ const SalesSettings = () => {
   const [roundingMode, setRoundingMode] = useState<"up" | "down">("up")
   const [roundingValue, setRoundingValue] = useState<number>(100)
 
-  const { data: settingsData, isLoading } = useQuery({
-    queryKey: [QUERY_KEY.settings],
-    queryFn: () => apiGetSettings(),
-    select: (res) => res.data,
-  })
+  const { settings: settingsData, isLoading } = useSettings()
 
   useEffect(() => {
     if (settingsData) {

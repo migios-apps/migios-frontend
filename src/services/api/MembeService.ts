@@ -1,5 +1,6 @@
 import ApiService from "@/services/ApiService"
 import { ParamsFilter } from "./@types/api"
+import { FreezeQuotaResponse } from "./@types/freeze"
 import {
   CreateMemberTypes,
   FreezeProgramListTypesResponse,
@@ -68,6 +69,13 @@ export async function apiGetMemberFreezeList(params?: ParamsFilter) {
     url: `/member/freeze-list`,
     method: "get",
     params,
+  })
+}
+
+export async function apiGetMemberFreezeQuota(code: string) {
+  return ApiService.fetchDataWithAxios<FreezeQuotaResponse>({
+    url: `/member/freeze-quota/${code}`,
+    method: "get",
   })
 }
 

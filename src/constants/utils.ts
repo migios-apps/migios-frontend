@@ -7,6 +7,10 @@ export const statusColor: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
   expired: "bg-red-100 text-red-700 border-red-300",
   freeze: "bg-cyan-100 text-cyan-700 border-cyan-300",
+  grace:
+    "bg-amber-100 dark:bg-amber-100/30 text-amber-700 dark:text-amber-300 border-amber-300",
+  pending_activation:
+    "bg-indigo-100 dark:bg-indigo-100/30 text-indigo-700 dark:text-indigo-300 border-indigo-300",
   error: "bg-rose-100 text-rose-700 border-rose-300",
   approve: "bg-teal-100 text-teal-700 border-teal-300",
   rejected: "bg-orange-100 text-orange-700 border-orange-300",

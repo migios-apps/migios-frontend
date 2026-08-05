@@ -1,15 +1,13 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  apiGetSettings,
-  apiUpdateSettings,
-} from "@/services/api/settings/settings"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { apiUpdateSettings } from "@/services/api/settings/settings"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AlertCircle, Save } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { useSettings } from "@/hooks/use-settings"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,11 +48,7 @@ const INITIAL_SETTINGS: VoucherSettingsFormSchema = {
 const VoucherSettingsPage = () => {
   const queryClient = useQueryClient()
 
-  const { data: settingsData, isLoading: isLoadingSettings } = useQuery({
-    queryKey: [QUERY_KEY.settings],
-    queryFn: () => apiGetSettings(),
-    select: (res) => res.data,
-  })
+  const { settings: settingsData, isLoading: isLoadingSettings } = useSettings()
 
   const formProps = useForm<VoucherSettingsFormSchema>({
     resolver: yupResolver(validationSchema) as any,

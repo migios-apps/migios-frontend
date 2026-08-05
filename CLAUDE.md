@@ -68,6 +68,18 @@ Env vars (`.env`, `.env.staging`, `.env.production`): `VITE_PUBLIC_API_URL_V1`,
 
 ---
 
+## Dokumentasi
+
+Dokumen teknis dan rencana implementasi ada di **`docs/`**, mengikuti konvensi `migios-be/docs/`.
+Jangan taruh dokumen baru di root repo — root hanya untuk berkas yang memang harus di sana
+(`README.md`, `CLAUDE.md`, `DESIGN.md`, `DEPLOY.md`, konfigurasi).
+
+- [docs/MEMBERSHIP_SETTINGS_FE_PLAN.md](docs/MEMBERSHIP_SETTINGS_FE_PLAN.md) — pengaturan
+  keanggotaan, pasangan dari [migios-be/docs/MEMBERSHIP_SETTINGS_PLAN.md](../migios-be/docs/MEMBERSHIP_SETTINGS_PLAN.md)
+
+Di dalam `docs/`, path berawalan `../` merujuk root repo ini dan `../../migios-be/` merujuk
+backend.
+
 ## Architecture
 
 ```
@@ -247,6 +259,30 @@ a `TableQueries` state object. Column type is `DataTableColumnDef<T>`; use `size
   `package.json`** — it resolves only as a transitive dependency. Don't copy that import into
   new code; use `cn()` from `@/lib/utils`. If a clean install ever breaks on it, the fix is
   either declaring the dep or switching `Container` to `cn()`.
+
+## Club settings & operational screens
+
+Read the `club-settings` skill before touching `Pengaturan`, and `migios-be`'s `run-verify`
+skill before claiming a change works.
+
+- **A settings page is half a feature.** Pair every toggle with the screen that obeys it, in
+  the same piece of work. The membership page originally shipped 13 toggles (guest pass,
+  locker, towel, parking) that existed nowhere else in either repo.
+- **Read settings through `useSettings()`** from `@/hooks/use-settings` — never hand-roll
+  `useQuery([QUERY_KEY.settings])`. It was duplicated in nine files before the hook existed.
+- **Field names, defaults and validation bounds must match the backend DTO.** A default that
+  differs silently changes behaviour on first save; a bound that differs gets the user
+  rejected server-side after passing client-side.
+- **Never re-derive a backend format in a component.** Extract a shared constant and note the
+  backend source (`MEMBER_CODE_CLUB_SEGMENT_LENGTH` mirrors `generateMemberCode`).
+  Duplicated calculations must match exactly — freeze duration is `diff + 1`, inclusive.
+- **Verify the declared response type against what the API actually sends.**
+  `CheckCode.membership_status` was typed `number` while the backend always returned a string.
+- **Reset entity state on a new lookup and on failure.** The check-in scanner kept the previous
+  member on screen after a failed scan — the cashier could read one member's quota while
+  scanning another.
+- `npm run typecheck` is **not** clean repo-wide. Judge only the files you touched;
+  `camera-scanner.tsx`, `input-percent-nominal.tsx` and `otp-form.tsx` fail already.
 
 ## Before you finish
 

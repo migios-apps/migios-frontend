@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useMember } from "@/pages/members/store/useMember"
@@ -6,12 +6,13 @@ import { RekeningDetail } from "@/services/api/@types/finance"
 import { CheckoutRequest } from "@/services/api/@types/sales"
 import { apiGetRekeningList } from "@/services/api/FinancialService"
 import { apiCreateCheckout } from "@/services/api/SalesService"
-import { Save } from "lucide-react"
+import { AlertCircle, Save } from "lucide-react"
 import { useNavigate } from "react-router"
 import type { GroupBase, OptionsOrGroups } from "react-select"
 import { useSessionUser } from "@/stores/auth-store"
 import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DateTimePicker } from "@/components/ui/date-picker"
@@ -30,6 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/animate-ui/components/radix/sheet"
+import FreezeQuotaInfo, { useFreezeQuota } from "./FreezeQuotaInfo"
 import {
   ReturnTransactionFreezeFormSchema,
   ValidationTransactionFreezeSchema,
@@ -51,6 +53,45 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
   const { watch, control, handleSubmit } = formProps
 
   const watchTransaction = watch()
+  const { quota } = useFreezeQuota(member?.code)
+
+  const requestedDays = useMemo(() => {
+    const item = watchTransaction?.items?.[0]
+    if (!item?.start_date || !item?.end_date) {
+      return undefined
+    }
+    return dayjs(item.end_date).diff(dayjs(item.start_date), "day") + 1
+  }, [watchTransaction?.items])
+
+  const durationError = useMemo(() => {
+    if (!quota || !quota.enabled || typeof requestedDays !== "number") {
+      return null
+    }
+    if (requestedDays < 1) {
+      return "Tanggal selesai tidak boleh lebih awal dari tanggal mulai."
+    }
+    if (quota.min_days > 0 && requestedDays < quota.min_days) {
+      return `Durasi ${requestedDays} hari, minimal ${quota.min_days} hari.`
+    }
+    if (
+      quota.max_days_per_request > 0 &&
+      requestedDays > quota.max_days_per_request
+    ) {
+      return `Durasi ${requestedDays} hari, maksimal ${quota.max_days_per_request} hari per pengajuan.`
+    }
+    return null
+  }, [quota, requestedDays])
+
+  const blockSubmit =
+    Boolean(durationError) ||
+    quota?.enabled === false ||
+    (quota?.remaining_requests !== null &&
+      quota?.remaining_requests !== undefined &&
+      quota.remaining_requests < 1) ||
+    (quota?.remaining_days !== null &&
+      quota?.remaining_days !== undefined &&
+      typeof requestedDays === "number" &&
+      requestedDays > quota.remaining_days)
 
   const handleClose = () => {
     onClose()
@@ -193,6 +234,16 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
                       <CardTitle>Periode Freeze</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      <FreezeQuotaInfo
+                        memberCode={member?.code}
+                        requestedDays={requestedDays}
+                      />
+                      {durationError ? (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>{durationError}</AlertDescription>
+                        </Alert>
+                      ) : null}
                       <FormFieldItem
                         control={control}
                         name={`items.${0}.start_date`}
@@ -335,12 +386,18 @@ const FormFreeze: React.FC<FormProps> = ({ open, formProps, onClose }) => {
                 <Button
                   type="submit"
                   disabled={
-                    createCheckout.isPending || watch("payments").length < 1
+                    createCheckout.isPending ||
+                    watch("payments").length < 1 ||
+                    blockSubmit
                   }
                   className="min-w-[120px]"
                 >
                   <Save className="mr-2 size-4" />
-                  {createCheckout.isPending ? "Menyimpan..." : "Simpan"}
+                  {createCheckout.isPending
+                    ? "Menyimpan..."
+                    : quota?.require_approval === false
+                      ? "Freeze Sekarang"
+                      : "Simpan"}
                 </Button>
               </div>
             </SheetFooter>

@@ -39,6 +39,10 @@ export interface MemberAttendanceLogType {
   email: string
   phone: string
   photo?: string | null
+  home_club_id?: number | null
+  home_club_name?: string | null
+  is_cross_club?: boolean
+  source?: AttendanceSource
   created_at: string
   updated_at: string
   attendance_packages: {
@@ -64,7 +68,7 @@ export interface CheckCode {
   phone: string
   photo?: string | null
   total_active_package: number
-  membership_status: number
+  membership_status: MembershipStatusLabel
   member_packages: {
     id: number
     package_id: number
@@ -87,7 +91,21 @@ export interface CheckCode {
       session_duration: number
     }
   }[]
+  membership_status_code?: MembershipStatusCode
+  checkin_today?: number
+  checkin_max_per_day?: number
+  warning?: MembershipWarning
+  home_club_name?: string | null
+  is_cross_club?: boolean
 }
+
+export type MembershipStatusLabel = "active" | "grace" | "freeze" | "inactive"
+
+export type MembershipStatusCode = 0 | 1 | 2
+
+export type MembershipWarning = "package_expired"
+
+export type AttendanceSource = "manual" | "system"
 
 export type CheckMemberCodeResponse = Omit<ApiTypes, "data"> & {
   data: CheckCode

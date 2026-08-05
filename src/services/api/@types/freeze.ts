@@ -24,3 +24,25 @@ export interface FreezePayload {
   }[]
   refund_from: any[]
 }
+
+export interface FreezeQuota {
+  member_id: number
+  member_code: string
+  enabled: boolean
+  require_approval: boolean
+  extend_end_date: boolean
+  min_days: number
+  max_days_per_request: number
+  max_days_per_year: number
+  max_request_per_year: number
+  period_start: string
+  period_end: string
+  used_days: number
+  remaining_days: number | null
+  used_requests: number
+  remaining_requests: number | null
+}
+
+export type FreezeQuotaResponse = {
+  data: FreezeQuota
+}

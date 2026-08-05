@@ -7,10 +7,10 @@ import {
   apiGetDefaultTaxSaleItem,
   apiGetTaxList,
 } from "@/services/api/settings/TaxesService"
-import { apiGetSettings } from "@/services/api/settings/settings"
 import { SearchStatus1 } from "iconsax-reactjs"
 import { cn } from "@/lib/utils"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
+import { useSettings } from "@/hooks/use-settings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -98,11 +98,7 @@ const TaxSetting = () => {
 
   const standardRateFormProps = useStandardRateForm()
 
-  const { data: settingsData, isLoading: settingsLoading } = useQuery({
-    queryKey: [QUERY_KEY.settings],
-    queryFn: () => apiGetSettings(),
-    select: (res) => res.data,
-  })
+  const { settings: settingsData, isLoading: settingsLoading } = useSettings()
 
   // Sync state with fetched data
   useEffect(() => {

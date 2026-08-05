@@ -44,6 +44,7 @@ import {
   TabsTrigger,
 } from "@/components/animate-ui/components/animate/tabs"
 import DialogMultiSelectPackage from "./DialogMultiSelectPackage"
+import MemberCheckInStatus from "./MemberCheckInStatus"
 import {
   CheckInFormSchema,
   resetCheckInValidation,
@@ -225,6 +226,7 @@ const CheckIn = () => {
     onError: (error) => {
       const resError = handleApiError(error)
       setErrorMessage(resError.message as any)
+      setMember(null)
     },
     onSuccess: (data) => {
       setErrorMessage("")
@@ -255,6 +257,7 @@ const CheckIn = () => {
 
   const onSubmitCheckCode: SubmitHandler<CheckInFormSchema> = (data) => {
     setErrorMessage("")
+    setMember(null)
     if (data.code.length) {
       handleCheckMemberCode(data.code)
     }
@@ -339,6 +342,7 @@ const CheckIn = () => {
                             <AlertDescription>{errorMessage}</AlertDescription>
                           </Alert>
                         ) : null}
+                        <MemberCheckInStatus member={member} />
                         <div className="border-border bg-border mb-2 h-px" />
                         <div className="flex items-center justify-between">
                           <h6 className="text-foreground w-full">{`Members hasn't check in (${totalMemberNotCheckIn})`}</h6>

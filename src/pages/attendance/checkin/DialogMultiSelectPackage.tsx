@@ -6,7 +6,7 @@ import { CheckCode, CheckInPayload } from "@/services/api/@types/attendance"
 import { apiGetMemberPackages } from "@/services/api/MembeService"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { dayjs } from "@/utils/dayjs"
+import { formatPackageDate } from "@/utils/formatPackageDate"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -179,7 +179,8 @@ const DialogMultiSelectPackage: React.FC<DialogMultiSelectPackageProps> = ({
                       {item.package?.name}
                     </div>
                     <div className="text-muted-foreground text-sm">
-                      Experied at {dayjs(item.end_date).format("DD MMM YYYY")}
+                      Experied at{" "}
+                      {formatPackageDate(item.end_date, "DD MMM YYYY")}
                     </div>
                   </div>
                   <Checkbox
