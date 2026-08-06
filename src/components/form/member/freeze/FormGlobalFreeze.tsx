@@ -1,10 +1,8 @@
-import React, { useMemo } from "react"
+import React from "react"
 import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { RekeningDetail } from "@/services/api/@types/finance"
 import { MemberDetail } from "@/services/api/@types/member"
 import { CheckoutRequest } from "@/services/api/@types/sales"
-import { apiGetRekeningList } from "@/services/api/FinancialService"
 import { apiGetMemberList } from "@/services/api/MembeService"
 import { apiCreateCheckout } from "@/services/api/SalesService"
 import { AlertCircle, Save, X } from "lucide-react"
@@ -15,9 +13,7 @@ import { dayjs } from "@/utils/dayjs"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { DateTimePicker } from "@/components/ui/date-picker"
 import { Form, FormFieldItem, FormLabel } from "@/components/ui/form"
-import InputCurrency from "@/components/ui/input-currency"
 import {
   type ReturnAsyncSelect,
   SelectAsyncPaginate,
@@ -32,12 +28,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/animate-ui/components/radix/sheet"
-import FreezeQuotaInfo, { useFreezeQuota } from "./FreezeQuotaInfo"
+import FreezePaymentPicker from "./FreezePaymentPicker"
+import FreezePeriodPicker from "./FreezePeriodPicker"
+import FreezeQuotaInfo from "./FreezeQuotaInfo"
 import {
   ReturnTransactionFreezeFormSchema,
   ValidationTransactionFreezeSchema,
   resetTransactionFreezeForm,
 } from "./freezeValidation"
+import { useFreezeRequest } from "./useFreezeRequest"
 
 type FormProps = {
   open: boolean
@@ -54,50 +53,77 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const club = useSessionUser((state) => state.club)
-  const { watch, control, handleSubmit, setValue } = formProps
+  const { watch, control, handleSubmit, setValue, formState } = formProps
   const [selectedMember, setSelectedMember] =
     React.useState<MemberDetail | null>(null)
 
   const watchTransaction = watch()
-  const { quota } = useFreezeQuota(selectedMember?.code)
+  const startDate = watchTransaction?.items?.[0]?.start_date
+  const endDate = watchTransaction?.items?.[0]?.end_date
 
-  const requestedDays = useMemo(() => {
-    const item = watchTransaction?.items?.[0]
-    if (!item?.start_date || !item?.end_date) {
-      return undefined
-    }
-    return dayjs(item.end_date).diff(dayjs(item.start_date), "day") + 1
-  }, [watchTransaction?.items])
+  const {
+    quota,
+    requestedDays,
+    earliestStartDate,
+    periodHint,
+    packageEndDate,
+    capByPackage,
+    startKey,
+    durationError,
+    freezeFee,
+    feeExplanation,
+    blockSubmit,
+  } = useFreezeRequest({
+    memberCode: selectedMember?.code,
+    startDate,
+    endDate,
+  })
 
-  const durationError = useMemo(() => {
-    if (!quota || !quota.enabled || typeof requestedDays !== "number") {
-      return null
-    }
-    if (requestedDays < 1) {
-      return "Tanggal selesai tidak boleh lebih awal dari tanggal mulai."
-    }
-    if (quota.min_days > 0 && requestedDays < quota.min_days) {
-      return `Durasi ${requestedDays} hari, minimal ${quota.min_days} hari.`
-    }
-    if (
-      quota.max_days_per_request > 0 &&
-      requestedDays > quota.max_days_per_request
-    ) {
-      return `Durasi ${requestedDays} hari, maksimal ${quota.max_days_per_request} hari per pengajuan.`
-    }
-    return null
-  }, [quota, requestedDays])
+  const sudahDirapikan = React.useRef(false)
 
-  const blockSubmit =
-    Boolean(durationError) ||
-    quota?.enabled === false ||
-    (quota?.remaining_requests !== null &&
-      quota?.remaining_requests !== undefined &&
-      quota.remaining_requests < 1) ||
-    (quota?.remaining_days !== null &&
-      quota?.remaining_days !== undefined &&
-      typeof requestedDays === "number" &&
-      requestedDays > quota.remaining_days)
+  React.useEffect(() => {
+    if (!open) sudahDirapikan.current = false
+  }, [open])
+
+  React.useEffect(() => {
+    if (sudahDirapikan.current) return
+    if (!earliestStartDate || !startDate) return
+
+    const from = dayjs(startDate).isBefore(dayjs(earliestStartDate), "day")
+      ? dayjs(earliestStartDate)
+      : dayjs(startDate)
+
+    const cap =
+      quota?.remaining_days != null
+        ? from.add(Math.max(quota.remaining_days, 1) - 1, "day")
+        : null
+
+    let to = endDate ? dayjs(endDate) : from
+    if (to.isBefore(from, "day")) to = from
+    if (!endDate || to.isSame(from, "day")) to = cap ?? from
+    if (cap && to.isAfter(cap, "day")) to = cap
+    sudahDirapikan.current = true
+
+    if (!from.isSame(dayjs(startDate), "day")) {
+      setValue("items.0.start_date", from.toDate() as never)
+    }
+    if (!endDate || !to.isSame(dayjs(endDate), "day")) {
+      setValue("items.0.end_date", to.toDate() as never)
+    }
+  }, [earliestStartDate, startDate, endDate, quota?.remaining_days, setValue])
+
+  React.useEffect(() => {
+    setValue("balance_amount", freezeFee)
+    const payment = watchTransaction.payments?.[0]
+    if (payment) {
+      setValue("payments", [{ ...payment, amount: freezeFee }])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freezeFee, setValue])
+
+  const periodError =
+    formState.errors.items?.[0]?.start_date?.message ??
+    formState.errors.items?.[0]?.end_date?.message
 
   const handleClose = () => {
     setSelectedMember(null)
@@ -144,7 +170,7 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
         end_date: dayjs(item.end_date).format("YYYY-MM-DD"),
         notes: data.notes,
       })),
-      payments: data.payments,
+      payments: freezeFee > 0 ? data.payments : [],
       refund_from: [],
     }
 
@@ -181,62 +207,15 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
             : null,
         ],
       })
-      return new Promise<ReturnAsyncSelect>((resolve) => {
-        resolve({
-          options: response.data.data,
-          hasMore: response.data.data.length >= 1,
-          additional: {
-            page: additional!.page + 1,
-          },
-        })
-      })
-    },
-    []
-  )
+      const eligible = response.data.data.filter(
+        (member) => Number(member.membeship_status_code) === 1
+      )
+      const meta = response.data.meta
 
-  const getRekeningList = React.useCallback(
-    async (
-      inputValue: string,
-      _: OptionsOrGroups<RekeningDetail, GroupBase<RekeningDetail>>,
-      additional?: { page: number }
-    ) => {
-      const response = await apiGetRekeningList({
-        page: additional?.page,
-        per_page: 10,
-        sort_column: "id",
-        sort_type: "desc",
-        search: [
-          (inputValue || "").length > 0
-            ? ({
-                search_column: "name",
-                search_condition: "like",
-                search_text: `${inputValue}`,
-              } as any)
-            : null,
-          {
-            search_operator: "and",
-            search_column: "enabled",
-            search_condition: "=",
-            search_text: "true",
-          },
-          {
-            search_operator: "and",
-            search_column: "show_in_payment",
-            search_condition: "=",
-            search_text: 1,
-          },
-          {
-            search_operator: "or",
-            search_column: "show_in_payment",
-            search_condition: "=",
-            search_text: 2,
-          },
-        ],
-      })
       return new Promise<ReturnAsyncSelect>((resolve) => {
         resolve({
-          options: response.data.data,
-          hasMore: response.data.data.length >= 1,
+          options: eligible,
+          hasMore: meta.page < meta.total_page,
           additional: {
             page: additional!.page + 1,
           },
@@ -266,7 +245,8 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                       <div>
                         <h3 className="text-lg font-semibold">Pilih Member</h3>
                         <p className="text-muted-foreground text-sm">
-                          Cari dan pilih member untuk freeze
+                          Hanya member berpaket aktif dan belum sedang freeze
+                          yang bisa dipilih
                         </p>
                       </div>
                       <SelectAsyncPaginate<MemberDetail>
@@ -274,6 +254,9 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                         loadOptions={getMemberList as any}
                         additional={{ page: 1 }}
                         placeholder="Cari nama atau kode member..."
+                        noOptionsMessage={() =>
+                          "Tidak ada member berpaket aktif yang cocok"
+                        }
                         value={selectedMember}
                         cacheUniqs={[selectedMember]}
                         getOptionLabel={(option) =>
@@ -337,6 +320,7 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                         <FreezeQuotaInfo
                           memberCode={selectedMember?.code}
                           requestedDays={requestedDays}
+                          startDate={startKey}
                         />
                         {durationError ? (
                           <Alert variant="destructive">
@@ -347,42 +331,27 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                         <FormFieldItem
                           control={control}
                           name={`items.${0}.start_date`}
-                          label={<FormLabel>Tanggal Mulai</FormLabel>}
-                          render={({ field }) => (
-                            <DateTimePicker
-                              value={
-                                field.value
-                                  ? (field.value as unknown as Date)
-                                  : undefined
-                              }
-                              onChange={(date) => {
-                                field.onChange(
-                                  date ? dayjs(date).format("YYYY-MM-DD") : null
-                                )
+                          label={<FormLabel>Rentang Tanggal</FormLabel>}
+                          invalid={Boolean(periodError)}
+                          errorMessage={periodError}
+                          description={periodHint}
+                          render={() => (
+                            <FreezePeriodPicker
+                              start={startDate}
+                              end={endDate}
+                              earliest={earliestStartDate}
+                              remainingDays={quota?.remaining_days}
+                              packageEndDate={packageEndDate}
+                              capByPackage={capByPackage}
+                              error={Boolean(durationError || periodError)}
+                              onChange={(from, to) => {
+                                setValue("items.0.start_date", from as never, {
+                                  shouldDirty: true,
+                                })
+                                setValue("items.0.end_date", to as never, {
+                                  shouldDirty: true,
+                                })
                               }}
-                              hideTime={true}
-                              clearable
-                            />
-                          )}
-                        />
-                        <FormFieldItem
-                          control={control}
-                          name={`items.${0}.end_date`}
-                          label={<FormLabel>Tanggal Selesai</FormLabel>}
-                          render={({ field }) => (
-                            <DateTimePicker
-                              value={
-                                field.value
-                                  ? (field.value as unknown as Date)
-                                  : undefined
-                              }
-                              onChange={(date) => {
-                                field.onChange(
-                                  date ? dayjs(date).format("YYYY-MM-DD") : null
-                                )
-                              }}
-                              hideTime={true}
-                              clearable
                             />
                           )}
                         />
@@ -411,70 +380,15 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                             Tentukan jumlah dan metode pembayaran
                           </p>
                         </div>
-                        <FormFieldItem
-                          control={control}
-                          name="balance_amount"
-                          label={
-                            <FormLabel>
-                              Jumlah Pembayaran{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
+                        <FreezePaymentPicker
+                          fee={freezeFee}
+                          feeExplanation={feeExplanation}
+                          rekeningId={watchTransaction.payments?.[0]?.id}
+                          onChangeRekening={(id, name) =>
+                            setValue("payments", [
+                              { id, name, amount: freezeFee },
+                            ] as never)
                           }
-                          render={({ field }) => (
-                            <InputCurrency
-                              value={field.value}
-                              placeholder="0"
-                              className="bg-primary/10 text-primary focus:bg-primary/10 h-20 text-center text-2xl font-bold"
-                              onValueChange={(_value, _name, values) => {
-                                field.onChange(values?.float)
-                              }}
-                            />
-                          )}
-                        />
-                        <FormFieldItem
-                          control={control}
-                          name="payments"
-                          label={
-                            <FormLabel>
-                              Metode Pembayaran{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                          }
-                          render={({ field }) => (
-                            <SelectAsyncPaginate
-                              isClearable
-                              loadOptions={getRekeningList as any}
-                              additional={{ page: 1 }}
-                              placeholder="Pilih metode pembayaran"
-                              value={field.value[0]}
-                              cacheUniqs={[watchTransaction.payments[0]]}
-                              getOptionLabel={(option) => option.name!}
-                              getOptionValue={(option) => option.id?.toString()}
-                              debounceTimeout={500}
-                              onChange={(val, ctx) => {
-                                if (ctx.action === "clear") {
-                                  field.onChange([])
-                                  setValue(
-                                    "balance_amount",
-                                    watchTransaction.balance_amount
-                                  )
-                                  formProps.setError("payments", {
-                                    type: "custom",
-                                    message: "Payment method is required",
-                                  })
-                                } else {
-                                  field.onChange([
-                                    {
-                                      id: val?.id,
-                                      name: val?.name,
-                                      amount: watchTransaction.balance_amount,
-                                    },
-                                  ])
-                                  formProps.clearErrors("payments")
-                                }
-                              }}
-                            />
-                          )}
                         />
                       </div>
                     </>
@@ -492,7 +406,7 @@ const FormGlobalFreeze: React.FC<FormProps> = ({
                   disabled={
                     !selectedMember ||
                     createCheckout.isPending ||
-                    watch("payments").length < 1 ||
+                    (freezeFee > 0 && watch("payments").length < 1) ||
                     blockSubmit
                   }
                   className="min-w-[120px]"

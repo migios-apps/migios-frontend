@@ -55,6 +55,16 @@ export const othersSettingsRoute: Routes = [
     },
   },
   {
+    path: "/settings/others/freeze",
+    component: lazy(() => import("@/pages/master/setting/others/freeze")),
+    authority: [],
+    meta: {
+      container: {
+        className: "p-0",
+      },
+    },
+  },
+  {
     path: "/settings/others/membership",
     component: lazy(() => import("@/pages/master/setting/others/membership")),
     authority: [],

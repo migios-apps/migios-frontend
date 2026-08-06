@@ -16,8 +16,16 @@ import { dayjs } from "@/utils/dayjs"
 // }
 
 export const freezeItemSchema = Yup.object().shape({
-  start_date: Yup.date().required("Start date is required for packages."),
-  end_date: Yup.date().required("End date is required for packages."),
+  start_date: Yup.date()
+    .typeError("Tanggal mulai wajib dipilih.")
+    .required("Tanggal mulai wajib dipilih."),
+  end_date: Yup.date()
+    .typeError("Tanggal selesai wajib dipilih.")
+    .required("Tanggal selesai wajib dipilih.")
+    .min(
+      Yup.ref("start_date"),
+      "Tanggal selesai tidak boleh sebelum tanggal mulai."
+    ),
   notes: Yup.string().nullable(),
 })
 

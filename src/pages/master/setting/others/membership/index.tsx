@@ -5,12 +5,11 @@ import { useAuth } from "@/auth"
 import { apiGetUserClubList } from "@/services/api/ClubService"
 import { apiUpdateSettings } from "@/services/api/settings/settings"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AlertCircle, Save } from "lucide-react"
+import { Save } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { useSettings } from "@/hooks/use-settings"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,42 +59,6 @@ const validationSchema = yup.object().shape({
     .default(0)
     .min(0, "Tidak boleh negatif")
     .max(30, "Maksimal 30 hari"),
-  freeze_enabled: yup.boolean().default(true),
-  freeze_require_approval: yup.boolean().default(true),
-  freeze_extend_end_date: yup.boolean().default(true),
-  freeze_min_days: yup
-    .number()
-    .transform((_, original) =>
-      original === "" || original === null ? undefined : Number(original)
-    )
-    .default(7)
-    .min(1, "Minimal 1 hari"),
-  freeze_max_days_per_request: yup
-    .number()
-    .transform((_, original) =>
-      original === "" || original === null ? undefined : Number(original)
-    )
-    .default(30)
-    .min(1, "Minimal 1 hari")
-    .test(
-      "gte-min",
-      "Tidak boleh lebih kecil dari minimal durasi",
-      (value, ctx) => (value ?? 0) >= (ctx.parent.freeze_min_days ?? 0)
-    ),
-  freeze_max_days_per_year: yup
-    .number()
-    .transform((_, original) =>
-      original === "" || original === null ? undefined : Number(original)
-    )
-    .default(90)
-    .min(0, "Tidak boleh negatif"),
-  freeze_max_request_per_year: yup
-    .number()
-    .transform((_, original) =>
-      original === "" || original === null ? undefined : Number(original)
-    )
-    .default(2)
-    .min(0, "Tidak boleh negatif"),
   checkin_max_per_day: yup
     .number()
     .transform((_, original) =>
@@ -143,13 +106,6 @@ const INITIAL_SETTINGS: MembershipSettingsFormSchema = {
   membership_activation_mode: "on_purchase",
   membership_first_checkin_deadline_days: 7,
   membership_grace_period_days: 0,
-  freeze_enabled: true,
-  freeze_require_approval: true,
-  freeze_extend_end_date: true,
-  freeze_min_days: 7,
-  freeze_max_days_per_request: 30,
-  freeze_max_days_per_year: 90,
-  freeze_max_request_per_year: 2,
   checkin_max_per_day: 0,
   checkin_block_when_expired: true,
   checkin_auto_checkout_hours: 0,
@@ -238,24 +194,6 @@ const MembershipSetting = () => {
         membership_grace_period_days:
           settingsData.membership_grace_period_days ??
           INITIAL_SETTINGS.membership_grace_period_days,
-        freeze_enabled: Number(settingsData.freeze_enabled ?? 1) === 1,
-        freeze_require_approval:
-          settingsData.freeze_require_approval ??
-          INITIAL_SETTINGS.freeze_require_approval,
-        freeze_extend_end_date:
-          settingsData.freeze_extend_end_date ??
-          INITIAL_SETTINGS.freeze_extend_end_date,
-        freeze_min_days:
-          settingsData.freeze_min_days ?? INITIAL_SETTINGS.freeze_min_days,
-        freeze_max_days_per_request:
-          settingsData.freeze_max_days_per_request ??
-          INITIAL_SETTINGS.freeze_max_days_per_request,
-        freeze_max_days_per_year:
-          settingsData.freeze_max_days_per_year ??
-          INITIAL_SETTINGS.freeze_max_days_per_year,
-        freeze_max_request_per_year:
-          settingsData.freeze_max_request_per_year ??
-          INITIAL_SETTINGS.freeze_max_request_per_year,
         checkin_max_per_day:
           settingsData.checkin_max_per_day ??
           INITIAL_SETTINGS.checkin_max_per_day,
@@ -293,13 +231,6 @@ const MembershipSetting = () => {
         membership_first_checkin_deadline_days:
           data.membership_first_checkin_deadline_days,
         membership_grace_period_days: data.membership_grace_period_days,
-        freeze_enabled: data.freeze_enabled ? 1 : 0,
-        freeze_require_approval: data.freeze_require_approval,
-        freeze_extend_end_date: data.freeze_extend_end_date,
-        freeze_min_days: data.freeze_min_days,
-        freeze_max_days_per_request: data.freeze_max_days_per_request,
-        freeze_max_days_per_year: data.freeze_max_days_per_year,
-        freeze_max_request_per_year: data.freeze_max_request_per_year,
         checkin_max_per_day: data.checkin_max_per_day,
         checkin_block_when_expired: data.checkin_block_when_expired,
         checkin_auto_checkout_hours: data.checkin_auto_checkout_hours,
@@ -571,174 +502,6 @@ const MembershipSetting = () => {
                   />
                 )}
               />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Kebijakan Freeze</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormFieldItem
-                control={control}
-                name="freeze_enabled"
-                label={<FormLabel>Izinkan Freeze Membership</FormLabel>}
-                description="Saat nonaktif, pengajuan freeze tidak bisa dibuat dari kasir maupun detail member."
-                render={({ field }) => (
-                  <Switch
-                    checked={Boolean(field.value)}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-
-              {watchData.freeze_enabled ? (
-                <>
-                  <FormFieldItem
-                    control={control}
-                    name="freeze_require_approval"
-                    label={<FormLabel>Perlu Persetujuan Staff</FormLabel>}
-                    description="Pengajuan freeze masuk sebagai pending dan baru aktif setelah disetujui."
-                    render={({ field }) => (
-                      <Switch
-                        checked={Boolean(field.value)}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-
-                  <FormFieldItem
-                    control={control}
-                    name="freeze_extend_end_date"
-                    label={<FormLabel>Perpanjang Masa Berlaku Paket</FormLabel>}
-                    description="Durasi freeze ditambahkan ke tanggal berakhir paket member."
-                    render={({ field }) => (
-                      <Switch
-                        checked={Boolean(field.value)}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormFieldItem
-                      control={control}
-                      name="freeze_min_days"
-                      label={<FormLabel>Minimal Durasi (hari)</FormLabel>}
-                      invalid={Boolean(formState.errors.freeze_min_days)}
-                      errorMessage={formState.errors.freeze_min_days?.message}
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          placeholder="7"
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ""
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      )}
-                    />
-
-                    <FormFieldItem
-                      control={control}
-                      name="freeze_max_days_per_request"
-                      label={
-                        <FormLabel>Maksimal Durasi per Pengajuan</FormLabel>
-                      }
-                      invalid={Boolean(
-                        formState.errors.freeze_max_days_per_request
-                      )}
-                      errorMessage={
-                        formState.errors.freeze_max_days_per_request?.message
-                      }
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          placeholder="30"
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ""
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      )}
-                    />
-
-                    <FormFieldItem
-                      control={control}
-                      name="freeze_max_days_per_year"
-                      label={<FormLabel>Kuota Hari per Tahun</FormLabel>}
-                      invalid={Boolean(
-                        formState.errors.freeze_max_days_per_year
-                      )}
-                      errorMessage={
-                        formState.errors.freeze_max_days_per_year?.message
-                      }
-                      description="Isi 0 untuk tanpa batas."
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          placeholder="90"
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ""
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      )}
-                    />
-
-                    <FormFieldItem
-                      control={control}
-                      name="freeze_max_request_per_year"
-                      label={<FormLabel>Kuota Pengajuan per Tahun</FormLabel>}
-                      invalid={Boolean(
-                        formState.errors.freeze_max_request_per_year
-                      )}
-                      errorMessage={
-                        formState.errors.freeze_max_request_per_year?.message
-                      }
-                      description="Isi 0 untuk tanpa batas."
-                      render={({ field }) => (
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          placeholder="2"
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === ""
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                        />
-                      )}
-                    />
-                  </div>
-
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Biaya freeze tetap ditagihkan lewat transaksi di kasir.
-                      Pengaturan di sini hanya membatasi durasi dan kuotanya.
-                    </AlertDescription>
-                  </Alert>
-                </>
-              ) : null}
             </CardContent>
           </Card>
 

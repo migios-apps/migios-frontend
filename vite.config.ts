@@ -13,6 +13,14 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  server: {
+    port: 30250,
+    strictPort: true,
+  },
+  preview: {
+    port: 30251,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       // vite 8's native config loader does not provide `__dirname`

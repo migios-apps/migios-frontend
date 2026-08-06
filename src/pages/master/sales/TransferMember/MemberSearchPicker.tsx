@@ -17,6 +17,7 @@ type MemberSearchPickerProps = {
   excludeMemberId?: number
   emptyAction?: React.ReactNode
   inputName?: string
+  onlyActivePackage?: boolean
 }
 
 const MemberSearchPicker = ({
@@ -27,6 +28,7 @@ const MemberSearchPicker = ({
   excludeMemberId,
   emptyAction,
   inputName,
+  onlyActivePackage = false,
 }: MemberSearchPickerProps) => {
   const loadMembers = useCallback(
     async (
@@ -59,17 +61,22 @@ const MemberSearchPicker = ({
         ],
       })
 
+      const eligible = response.data.data.filter(
+        (member) =>
+          member.id !== excludeMemberId &&
+          (!onlyActivePackage || Number(member.membeship_status_code) === 1)
+      )
+      const meta = response.data.meta
+
       return new Promise<ReturnAsyncSelect>((resolve) => {
         resolve({
-          options: response.data.data.filter(
-            (member) => member.id !== excludeMemberId
-          ),
-          hasMore: response.data.data.length >= 1,
+          options: eligible,
+          hasMore: meta.page < meta.total_page,
           additional: { page: additional!.page + 1 },
         })
       })
     },
-    [excludeMemberId]
+    [excludeMemberId, onlyActivePackage]
   )
 
   if (value) {
@@ -107,10 +114,15 @@ const MemberSearchPicker = ({
         additional={{ page: 1 }}
         placeholder={placeholder}
         value={value}
-        cacheUniqs={[value, excludeMemberId]}
+        cacheUniqs={[value, excludeMemberId, onlyActivePackage]}
         getOptionLabel={(option) => `${option?.name} - ${option?.code}`}
         getOptionValue={(option) => option?.id?.toString() || ""}
         debounceTimeout={500}
+        noOptionsMessage={() =>
+          onlyActivePackage
+            ? "Tidak ada member berpaket aktif yang cocok"
+            : "Member tidak ditemukan"
+        }
         onChange={(val) => onChange(val as MemberDetail | null)}
       />
       {emptyAction}

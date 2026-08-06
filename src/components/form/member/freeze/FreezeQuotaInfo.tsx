@@ -9,12 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 type Props = {
   memberCode?: string
   requestedDays?: number
+  startDate?: string
 }
 
-export const useFreezeQuota = (memberCode?: string) => {
+export const useFreezeQuota = (memberCode?: string, startDate?: string) => {
   const { data, isLoading } = useQuery({
-    queryKey: [QUERY_KEY.freezeQuota, memberCode],
-    queryFn: () => apiGetMemberFreezeQuota(memberCode as string),
+    queryKey: [QUERY_KEY.freezeQuota, memberCode, startDate],
+    queryFn: () => apiGetMemberFreezeQuota(memberCode as string, startDate),
     select: (res) => res.data,
     enabled: Boolean(memberCode),
   })
@@ -22,8 +23,8 @@ export const useFreezeQuota = (memberCode?: string) => {
   return { quota: data, isLoadingQuota: isLoading }
 }
 
-const FreezeQuotaInfo = ({ memberCode, requestedDays }: Props) => {
-  const { quota, isLoadingQuota } = useFreezeQuota(memberCode)
+const FreezeQuotaInfo = ({ memberCode, requestedDays, startDate }: Props) => {
+  const { quota, isLoadingQuota } = useFreezeQuota(memberCode, startDate)
 
   if (isLoadingQuota) {
     return <Skeleton className="h-16 w-full" />
@@ -45,8 +46,8 @@ const FreezeQuotaInfo = ({ memberCode, requestedDays }: Props) => {
   }
 
   const dayPercent =
-    quota.max_days_per_year > 0
-      ? Math.min(100, (quota.used_days / quota.max_days_per_year) * 100)
+    quota.max_days_per_month > 0
+      ? Math.min(100, (quota.used_days / quota.max_days_per_month) * 100)
       : 0
 
   const requestExhausted =
@@ -62,23 +63,31 @@ const FreezeQuotaInfo = ({ memberCode, requestedDays }: Props) => {
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Kuota hari</span>
           <span className="text-foreground font-medium">
-            {quota.max_days_per_year > 0
-              ? `${quota.used_days} dari ${quota.max_days_per_year} hari terpakai`
+            {quota.max_days_per_month > 0
+              ? `${quota.used_days} dari ${quota.max_days_per_month} hari terpakai`
               : `${quota.used_days} hari terpakai · tanpa batas`}
           </span>
         </div>
-        {quota.max_days_per_year > 0 ? <Progress value={dayPercent} /> : null}
+        {quota.max_days_per_month > 0 ? <Progress value={dayPercent} /> : null}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Kuota pengajuan</span>
           <span className="text-foreground font-medium">
-            {quota.max_request_per_year > 0
-              ? `${quota.used_requests} dari ${quota.max_request_per_year} pengajuan`
+            {quota.max_request_per_month > 0
+              ? `${quota.used_requests} dari ${quota.max_request_per_month} pengajuan`
               : `${quota.used_requests} pengajuan · tanpa batas`}
           </span>
         </div>
+        {quota.min_advance_days > 0 ? (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Paling cepat mulai</span>
+            <span className="text-foreground font-medium">
+              {quota.earliest_start_date} (H-{quota.min_advance_days})
+            </span>
+          </div>
+        ) : null}
         <p className="text-muted-foreground text-xs">
-          Dihitung dari 12 bulan terakhir ({quota.period_start} s/d{" "}
-          {quota.period_end}). Freeze yang dibatalkan tidak dihitung.
+          Kuota bulan berjalan ({quota.period_start} s/d {quota.period_end}) dan
+          kembali penuh tanggal 1. Freeze yang dibatalkan tidak dihitung.
         </p>
       </div>
 
@@ -86,7 +95,7 @@ const FreezeQuotaInfo = ({ memberCode, requestedDays }: Props) => {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Kuota pengajuan freeze sudah habis untuk 12 bulan terakhir.
+            Kuota pengajuan freeze bulan ini sudah habis.
           </AlertDescription>
         </Alert>
       ) : notEnoughDays ? (

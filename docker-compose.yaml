@@ -31,15 +31,15 @@ services:
     restart: unless-stopped
     environment:
       # ---- OPTIONAL (runtime) ---- port nginx listens on inside the container.
-      APP_PORT: ${APP_PORT:-5737}
+      APP_PORT: ${APP_PORT:-57370}
     ports:
       # host:container — PORT is the host port; Coolify ignores this and maps the domain itself.
-      - "${PORT:-5737}:${APP_PORT:-5737}"
+      - "${PORT:-57370}:${APP_PORT:-57370}"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget -q --tries=1 --spider http://localhost:${APP_PORT:-5737}/health || exit 1",
+          "wget -q --tries=1 --spider http://localhost:${APP_PORT:-57370}/health || exit 1",
         ]
       interval: 30s
       timeout: 10s

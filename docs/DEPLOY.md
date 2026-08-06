@@ -6,7 +6,7 @@ One deployable: a Vite SPA built to static files and served by nginx.
 | ---------------- | ------------------------------------------------------ |
 | Build            | `vite build --mode $BUILD_MODE` → `dist/`              |
 | Runtime          | `nginx:alpine`, SPA fallback to `index.html`           |
-| Container port   | `APP_PORT` (default `5737`)                            |
+| Container port   | `APP_PORT` (default `57370`)                           |
 | Health endpoint  | `GET /health` → `healthy`                              |
 
 Files: [docker-compose.yaml](docker-compose.yaml), [Dockerfile](Dockerfile),
@@ -39,8 +39,8 @@ The only true runtime variable is `APP_PORT`, which nginx's entrypoint substitut
 | `VITE_APP_CLIENT_SECRET` | **yes**  | build   | —            | OAuth client secret from `migios-be`                         |
 | `VITE_BASENAME`          | no       | build   | *(empty)*    | router basename for sub-path hosting (e.g. `/app`)           |
 | `BUILD_MODE`             | no       | build   | `production` | `production` \| `staging` \| `development`                   |
-| `APP_PORT`               | no       | runtime | `5737`       | port nginx listens on inside the container                   |
-| `PORT`                   | no       | runtime | `5737`       | host port published by compose (Coolify ignores it)          |
+| `APP_PORT`               | no       | runtime | `57370`      | port nginx listens on inside the container                   |
+| `PORT`                   | no       | runtime | `57370`      | host port published by compose (Coolify ignores it)          |
 
 The three required ones use `${VAR:?…}` in compose — **the stack refuses to start** with a
 readable message if any is missing, instead of shipping a bundle pointing at nothing.
@@ -50,7 +50,7 @@ readable message if any is missing, instead of shipping a bundle pointing at not
 ```bash
 cp .env.example .env      # fill in the three required values
 docker compose up --build # → http://localhost:$PORT
-curl localhost:5737/health
+curl localhost:57370/health
 ```
 
 ## Coolify
@@ -59,7 +59,7 @@ curl localhost:5737/health
 2. **Base Directory**: `/migios-shadcn` (this folder, where the compose file lives).
 3. **Environment Variables**: add the three required vars from the table above; add the
    optional ones only if you need to override a default.
-4. Attach the domain to the `migios-shadcn` service, container port `5737` (or whatever
+4. Attach the domain to the `migios-shadcn` service, container port `57370` (or whatever
    `APP_PORT` you set). SSL is issued automatically.
 5. Deploy. Coolify builds the image and passes the env vars through as build args.
 

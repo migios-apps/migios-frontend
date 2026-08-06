@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/kill-port.mjs",
     "dev": "vite",
     "prebuild": "npm run lint && npm run prettier",
     "build": "vite build --mode development && ENV_CONFIG=development npm run generate-build",

@@ -4,6 +4,8 @@ export type ActivationMode = "on_purchase" | "on_first_checkin"
 
 export type TransferFeeType = "none" | "flat"
 
+export type FreezeFeeType = "none" | "flat" | "per_day"
+
 export type TransferFeeBasis = "per_transfer" | "per_package"
 
 export type TransferAllowedPackageType = "membership" | "pt_program" | "class"
@@ -35,11 +37,12 @@ export interface SettingsType {
   membership_grace_period_days?: number
   freeze_enabled?: number
   freeze_require_approval?: boolean
-  freeze_min_days?: number
-  freeze_max_days_per_request?: number
-  freeze_max_days_per_year?: number
-  freeze_max_request_per_year?: number
   freeze_extend_end_date?: boolean
+  freeze_fee_type?: FreezeFeeType
+  freeze_fee_amount?: number
+  freeze_min_advance_days?: number
+  freeze_max_days_per_month?: number
+  freeze_max_request_per_month?: number
   checkin_max_per_day?: number
   checkin_block_when_expired?: boolean
   checkin_auto_checkout_hours?: number

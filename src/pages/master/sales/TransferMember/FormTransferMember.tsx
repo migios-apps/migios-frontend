@@ -126,6 +126,7 @@ const FormTransferMember = ({
                       onChangeSelected([])
                     }}
                     excludeMemberId={to?.id}
+                    onlyActivePackage
                   />
                   {from ? (
                     <PackagePicker

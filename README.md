@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-Aplikasi akan berjalan di `http://localhost:5173`
+Aplikasi akan berjalan di `http://localhost:30250`
 
 ## Build
 

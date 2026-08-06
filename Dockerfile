@@ -39,7 +39,7 @@ FROM nginx:alpine AS runner
 # /etc/nginx/templates/*.template at startup, so this stays the single source of truth.
 # The filter keeps envsubst away from nginx's own $uri variables. No trailing regex
 # anchor on purpose: a literal $ here would be read as a Dockerfile variable.
-ENV APP_PORT=5737 \
+ENV APP_PORT=57370 \
     NGINX_ENVSUBST_FILTER=^APP_PORT
 
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template

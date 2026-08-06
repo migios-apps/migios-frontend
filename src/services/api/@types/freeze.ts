@@ -1,3 +1,5 @@
+import type { FreezeFeeType } from "./settings/settings"
+
 export interface FreezePayload {
   club_id: number
   member_id: number
@@ -31,10 +33,14 @@ export interface FreezeQuota {
   enabled: boolean
   require_approval: boolean
   extend_end_date: boolean
-  min_days: number
-  max_days_per_request: number
-  max_days_per_year: number
-  max_request_per_year: number
+  fee_type: FreezeFeeType
+  fee_amount: number
+  min_advance_days: number
+  max_days_per_month: number
+  max_request_per_month: number
+  earliest_start_date: string
+  active_package_count: number
+  package_end_date: string | null
   period_start: string
   period_end: string
   used_days: number

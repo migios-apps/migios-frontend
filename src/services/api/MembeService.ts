@@ -72,10 +72,14 @@ export async function apiGetMemberFreezeList(params?: ParamsFilter) {
   })
 }
 
-export async function apiGetMemberFreezeQuota(code: string) {
+export async function apiGetMemberFreezeQuota(
+  code: string,
+  startDate?: string
+) {
   return ApiService.fetchDataWithAxios<FreezeQuotaResponse>({
     url: `/member/freeze-quota/${code}`,
     method: "get",
+    params: startDate ? { start_date: startDate } : undefined,
   })
 }
 
