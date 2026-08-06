@@ -1,7 +1,11 @@
 import React from "react"
 import { SubmitHandler } from "react-hook-form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { CreateMemberTypes } from "@/services/api/@types/member"
+import {
+  CreateMemberTypes,
+  MemberDetail,
+  MemberDetailResponse,
+} from "@/services/api/@types/member"
 import {
   apiCreateMember,
   apiDeleteMember,
@@ -48,6 +52,7 @@ type FormProps = {
   type: "create" | "update"
   formProps: ReturnMemberSchema
   onClose: () => void
+  onCreated?: (member: MemberDetail) => void
 }
 
 const FormMember: React.FC<FormProps> = ({
@@ -55,6 +60,7 @@ const FormMember: React.FC<FormProps> = ({
   type,
   formProps,
   onClose,
+  onCreated,
 }) => {
   const queryClient = useQueryClient()
   const club = useSessionUser((state) => state.club)
@@ -79,13 +85,19 @@ const FormMember: React.FC<FormProps> = ({
     handleClose()
   }
 
+  const handleCreated = (result: MemberDetailResponse) => {
+    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.members] })
+    if (result?.data) onCreated?.(result.data)
+    handleClose()
+  }
+
   // Mutations
   const create = useMutation({
     mutationFn: (data: CreateMemberTypes) => apiCreateMember(data),
     onError: (error) => {
       console.log("error create", error)
     },
-    onSuccess: handlePrefecth,
+    onSuccess: handleCreated,
   })
 
   const update = useMutation({

@@ -11,6 +11,8 @@ export const statusColor: Record<string, string> = {
     "bg-amber-100 dark:bg-amber-100/30 text-amber-700 dark:text-amber-300 border-amber-300",
   pending_activation:
     "bg-indigo-100 dark:bg-indigo-100/30 text-indigo-700 dark:text-indigo-300 border-indigo-300",
+  transferred:
+    "bg-violet-100 dark:bg-violet-100/30 text-violet-700 dark:text-violet-300 border-violet-300",
   error: "bg-rose-100 text-rose-700 border-rose-300",
   approve: "bg-teal-100 text-teal-700 border-teal-300",
   rejected: "bg-orange-100 text-orange-700 border-orange-300",

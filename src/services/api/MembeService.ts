@@ -31,7 +31,7 @@ export async function apiGetMember(code: string) {
 }
 
 export async function apiCreateMember(data: CreateMemberTypes) {
-  return ApiService.fetchDataWithAxios<OriginalMemberDetail>({
+  return ApiService.fetchDataWithAxios<MemberDetailResponse>({
     url: `/member`,
     method: "post",
     data: data as unknown as Record<string, unknown>,

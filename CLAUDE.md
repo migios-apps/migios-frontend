@@ -76,6 +76,8 @@ Jangan taruh dokumen baru di root repo — root hanya untuk berkas yang memang h
 
 - [docs/MEMBERSHIP_SETTINGS_FE_PLAN.md](docs/MEMBERSHIP_SETTINGS_FE_PLAN.md) — pengaturan
   keanggotaan, pasangan dari [migios-be/docs/MEMBERSHIP_SETTINGS_PLAN.md](../migios-be/docs/MEMBERSHIP_SETTINGS_PLAN.md)
+- [docs/MEMBER_TRANSFER_FE_PLAN.md](docs/MEMBER_TRANSFER_FE_PLAN.md) — transfer kepemilikan
+  paket member, pasangan dari [migios-be/docs/MEMBER_TRANSFER_PLAN.md](../migios-be/docs/MEMBER_TRANSFER_PLAN.md)
 
 Di dalam `docs/`, path berawalan `../` merujuk root repo ini dan `../../migios-be/` merujuk
 backend.

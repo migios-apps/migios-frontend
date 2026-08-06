@@ -2,6 +2,12 @@ export type CrossClubAccess = "own_club" | "selected_clubs" | "all_clubs"
 
 export type ActivationMode = "on_purchase" | "on_first_checkin"
 
+export type TransferFeeType = "none" | "flat"
+
+export type TransferFeeBasis = "per_transfer" | "per_package"
+
+export type TransferAllowedPackageType = "membership" | "pt_program" | "class"
+
 export interface SettingsType {
   id: number
   club_id: number
@@ -37,6 +43,14 @@ export interface SettingsType {
   checkin_max_per_day?: number
   checkin_block_when_expired?: boolean
   checkin_auto_checkout_hours?: number
+  transfer_enabled?: number
+  transfer_fee_type?: TransferFeeType
+  transfer_fee_amount?: number
+  transfer_fee_basis?: TransferFeeBasis
+  transfer_max_chain_length?: number
+  transfer_min_remaining_days?: number
+  transfer_allowed_package_types?: TransferAllowedPackageType[]
+  transfer_void_window_hours?: number
   member_code_prefix?: string
   member_code_sequence_length?: number
   member_code_include_club_id?: boolean

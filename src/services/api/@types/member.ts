@@ -67,6 +67,9 @@ export interface CreateMemberTypes {
 export interface MemberPackageTypes {
   id: number
   member_id: number
+  transferred_from_id?: number | null
+  transferred_from_name?: string | null
+  transferred_to_name?: string | null
   package_id: number
   duration: number
   duration_type: string

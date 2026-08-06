@@ -229,7 +229,7 @@ export interface SalesDetailType {
     product_id: number | null
     package_id: number | null
     freeze_id: number | null
-    item_type: "package" | "product"
+    item_type: "package" | "product" | "service" | "freeze" | "transfer"
     source_from: "redeem_item" | "item"
     loyalty_reward_id: number | null
     loyalty_reward_name: string | null
@@ -313,6 +313,29 @@ export interface SalesDetailType {
       gender: string
     } | null
     freeze?: any | null
+    transfer?: {
+      id: number
+      transferred_at: string
+      status: "completed" | "voided"
+      fee_amount: string
+      reason: string | null
+      notes: string | null
+      from_member_id: number
+      from_member_name: string
+      from_member_code: string
+      to_member_id: number
+      to_member_name: string
+      to_member_code: string
+      packages: {
+        id: number
+        from_member_package_id: number
+        to_member_package_id: number | null
+        session_remaining: number
+        package_type: "membership" | "pt_program" | "class"
+        original_end_date: string | null
+        package_name: string
+      }[]
+    } | null
   }[]
   payments: {
     id: number

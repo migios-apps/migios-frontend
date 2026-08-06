@@ -149,6 +149,67 @@ const InvoiceA5 = ({ detail }: InvoiceA5Props) => {
                               ) : null}
                             </div>
                           ) : null}
+
+                          {item.item_type === "transfer" && item.transfer ? (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-muted-foreground">
+                                Dari:{" "}
+                                <span className="text-foreground font-medium">
+                                  {item.transfer.from_member_name}
+                                </span>{" "}
+                                ({item.transfer.from_member_code})
+                              </p>
+                              <p className="text-muted-foreground">
+                                Ke:{" "}
+                                <span className="text-foreground font-medium">
+                                  {item.transfer.to_member_name}
+                                </span>{" "}
+                                ({item.transfer.to_member_code})
+                              </p>
+                              <p className="text-muted-foreground">
+                                Tanggal transfer:{" "}
+                                {dayjs(item.transfer.transferred_at).format(
+                                  "DD MMM YYYY"
+                                )}
+                              </p>
+
+                              <div className="mt-1 space-y-0.5">
+                                <p className="text-foreground font-medium">
+                                  Paket yang dipindahkan:
+                                </p>
+                                {item.transfer.packages.map((pkg) => (
+                                  <p
+                                    key={pkg.id}
+                                    className="text-muted-foreground"
+                                  >
+                                    • {pkg.package_name} ({pkg.package_type})
+                                    {pkg.original_end_date
+                                      ? ` — berlaku s/d ${dayjs(pkg.original_end_date).format("DD MMM YYYY")}`
+                                      : " — belum aktif"}
+                                    {pkg.session_remaining > 0
+                                      ? ` • ${pkg.session_remaining} sesi`
+                                      : ""}
+                                  </p>
+                                ))}
+                              </div>
+
+                              {item.transfer.reason ? (
+                                <p className="text-muted-foreground">
+                                  Alasan: {item.transfer.reason}
+                                </p>
+                              ) : null}
+                              {item.transfer.notes ? (
+                                <p className="text-muted-foreground">
+                                  Catatan trainer: {item.transfer.notes}
+                                </p>
+                              ) : null}
+                              {item.transfer.status === "voided" ? (
+                                <p className="text-destructive font-medium">
+                                  Transfer ini sudah dibatalkan
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </div>
                       </td>
                       <td className="border-border border px-1 py-2 text-center align-top">

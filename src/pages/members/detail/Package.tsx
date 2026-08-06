@@ -57,6 +57,7 @@ import {
   LevelClassOptions,
   VisibleForOptions,
 } from "@/components/form/class/validation"
+import PackageTransferBadge from "@/components/package/PackageTransferBadge"
 
 interface PackageProps {
   member: MemberDetail | null
@@ -145,13 +146,16 @@ const PackageDetailDialog = ({
               >
                 {isPendingActivation(data)
                   ? "Belum aktif"
-                  : data.duration_status}
+                  : data.duration_status === "transferred"
+                    ? "Ditransfer"
+                    : data.duration_status}
               </Badge>
               {isPendingActivation(data) ? (
                 <span className="text-muted-foreground text-xs">
                   {PENDING_ACTIVATION_HINT}
                 </span>
               ) : null}
+              <PackageTransferBadge data={data} />
               <div className="bg-background flex items-center gap-2 rounded-full border p-1 pr-2">
                 <Switch
                   id="package-status"
@@ -597,7 +601,9 @@ const Package: React.FC<PackageProps> = ({ member }) => {
                 <span className="capitalize">
                   {isPendingActivation(row)
                     ? "Belum aktif"
-                    : row.duration_status}
+                    : row.duration_status === "transferred"
+                      ? "Ditransfer"
+                      : row.duration_status}
                 </span>
               </Badge>
             </div>
@@ -608,7 +614,12 @@ const Package: React.FC<PackageProps> = ({ member }) => {
         accessorKey: "package.name",
         header: "Nama",
         cell: ({ row }) => {
-          return <div className="capitalize">{row.original.package?.name}</div>
+          return (
+            <div className="space-y-1">
+              <div className="capitalize">{row.original.package?.name}</div>
+              <PackageTransferBadge data={row.original} />
+            </div>
+          )
         },
       },
       {

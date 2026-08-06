@@ -14,6 +14,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
   const routeInvoice = "/settings/others/invoice"
   const routeLoyaltyPoint = "/settings/others/loyalty-point"
   const routeMembership = "/settings/others/membership"
+  const routeTransfer = "/settings/others/transfer"
   const routeVoucher = "/settings/others/voucher"
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const LayoutOtherSetting = ({ children }: { children?: React.ReactNode }) => {
     { route: routeLoyaltyPoint, label: "Poin Loyalitas" },
     { route: routeVoucher, label: "Voucher" },
     { route: routeMembership, label: "Keanggotaan" },
+    { route: routeTransfer, label: "Transfer Paket" },
   ]
 
   return (
