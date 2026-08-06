@@ -14,7 +14,6 @@ import { toast } from "sonner"
 import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { useSettings } from "@/hooks/use-settings"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import FormMember from "@/components/form/member/FormMember"
 import { useMemberValidation } from "@/components/form/member/memberValidation"
 import SalesLayout from "../Layout"
@@ -119,50 +118,52 @@ const TransferMember = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.transferList] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.transferEligible] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.members] })
-      const recipientCode = to?.code
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.sales] })
+      const transactionId = res.data.transaction_id
       resetForm()
-      if (recipientCode) navigate(`/members/detail/${recipientCode}`)
+      if (transactionId) navigate(`/sales/${transactionId}`)
     },
   })
 
   if (isLoadingSettings) return null
 
-  if (!transferEnabled) {
-    return (
-      <SalesLayout>
-        <Card>
-          <CardContent className="space-y-3 py-10 text-center">
-            <InfoCircle
-              size={40}
-              variant="Bulk"
-              className="text-muted-foreground mx-auto"
-            />
-            <p className="font-medium">Transfer paket sedang dimatikan</p>
-            <p className="text-muted-foreground mx-auto max-w-md text-sm">
-              Fitur ini memindahkan kepemilikan paket berbayar antar member.
-              Nyalakan lebih dulu di Pengaturan → Lainnya → Transfer Paket,
-              beserta biaya dan pembatasnya.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/settings/others/transfer")}
-            >
-              Buka Pengaturan Transfer
-            </Button>
-          </CardContent>
-        </Card>
-      </SalesLayout>
-    )
-  }
-
   return (
     <SalesLayout>
-      <div className="space-y-4">
-        <TransferHistory
-          onCreate={() => setOpenForm(true)}
-          canCreate={transferEnabled}
-        />
-      </div>
+      <TransferHistory
+        onCreate={() => setOpenForm(true)}
+        canCreate={transferEnabled}
+        notice={
+          transferEnabled ? null : (
+            <div className="bg-muted/40 flex flex-col gap-3 rounded-lg border border-dashed p-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
+                <InfoCircle
+                  size={20}
+                  variant="Bulk"
+                  className="text-muted-foreground mt-0.5 shrink-0"
+                />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">
+                    Transfer paket sedang dimatikan
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Riwayat lama tetap bisa dilihat, tapi transfer baru belum
+                    bisa dibuat. Nyalakan beserta biaya dan pembatasnya di
+                    Pengaturan → Lainnya → Transfer Paket.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => navigate("/settings/others/transfer")}
+              >
+                Buka Pengaturan
+              </Button>
+            </div>
+          )
+        }
+      />
 
       <FormTransferMember
         open={openForm}

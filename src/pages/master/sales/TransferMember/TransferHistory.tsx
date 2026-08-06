@@ -17,7 +17,6 @@ import { QUERY_KEY } from "@/constants/queryKeys.constant"
 import { useSettings } from "@/hooks/use-settings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import DataTable, { DataTableColumnDef } from "@/components/ui/data-table"
 import InputDebounce from "@/components/ui/input-debounce"
 import {
@@ -49,9 +48,14 @@ function voidBlockReason(
 type TransferHistoryProps = {
   onCreate: () => void
   canCreate: boolean
+  notice?: React.ReactNode
 }
 
-const TransferHistory = ({ onCreate, canCreate }: TransferHistoryProps) => {
+const TransferHistory = ({
+  onCreate,
+  canCreate,
+  notice,
+}: TransferHistoryProps) => {
   const queryClient = useQueryClient()
   const { settings } = useSettings()
   const voidWindowHours = Number(settings?.transfer_void_window_hours ?? 24)
@@ -253,51 +257,51 @@ const TransferHistory = ({ onCreate, canCreate }: TransferHistoryProps) => {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle>Riwayat Transfer</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="w-full max-w-xs">
-              <InputDebounce
-                name="transfer_history_search"
-                placeholder="Cari nama atau kode member"
-                handleOnchange={(value) =>
-                  setTableData((prev) => ({
-                    ...prev,
-                    query: value,
-                    pageIndex: 1,
-                  }))
-                }
-              />
-            </div>
-            {canCreate ? (
-              <Button onClick={onCreate}>
-                <Add color="currentColor" size={20} />
-                Transfer Baru
-              </Button>
-            ) : null}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={rows}
-            loading={isLoading}
-            pagingData={{
-              total: meta?.total ?? 0,
-              pageIndex: tableData.pageIndex as number,
-              pageSize: tableData.pageSize as number,
-            }}
-            onPaginationChange={(pageIndex) =>
-              setTableData((prev) => ({ ...prev, pageIndex }))
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h3>Riwayat Transfer</h3>
+        </div>
+
+        {notice}
+
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <InputDebounce
+            name="transfer_history_search"
+            placeholder="Cari nama atau kode member..."
+            handleOnchange={(value) =>
+              setTableData((prev) => ({
+                ...prev,
+                query: value,
+                pageIndex: 1,
+              }))
             }
-            onSelectChange={(pageSize) =>
-              setTableData((prev) => ({ ...prev, pageSize, pageIndex: 1 }))
-            }
-            noData={!isLoading && rows.length === 0}
           />
-        </CardContent>
-      </Card>
+          {canCreate ? (
+            <Button variant="default" onClick={onCreate}>
+              <Add color="currentColor" size={20} />
+              Transfer Baru
+            </Button>
+          ) : null}
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={rows}
+          loading={isLoading}
+          pagingData={{
+            total: meta?.total ?? 0,
+            pageIndex: tableData.pageIndex as number,
+            pageSize: tableData.pageSize as number,
+          }}
+          onPaginationChange={(pageIndex) =>
+            setTableData((prev) => ({ ...prev, pageIndex }))
+          }
+          onSelectChange={(pageSize) =>
+            setTableData((prev) => ({ ...prev, pageSize, pageIndex: 1 }))
+          }
+          noData={!isLoading && rows.length === 0}
+        />
+      </div>
 
       <Dialog
         open={Boolean(voidTarget)}
